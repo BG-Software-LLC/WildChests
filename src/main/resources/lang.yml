@@ -1,0 +1,69 @@
+#########################################################
+##                                                     ##
+##                 WildChests Messages                 ##
+##                 Developed by Ome_R                  ##
+##                                                     ##
+#########################################################
+
+# Only sent to operators
+AUTO_SAVE: '&7&o[WildChests: Saved all database]'
+
+# Called when a player runs a command not in the required usage
+COMMAND_USAGE: '&5&lWildChests &7Usage: /{0}'
+
+# Called when using /chests give command.
+CHEST_GIVE_PLAYER: '&5&lWildChests &7Successfully gave {0} x{1} {2}.'
+CHEST_RECIEVE: '&5&lWildChests &7You received x{0} {1} from {2}.'
+
+# Called when using /chests info command.
+CHEST_INFO_HEADER: '&8&m---------------&5&l WildChests &8&m---------------'
+CHEST_INFO_NAME: '&5 Chest&7: &f{0}'
+CHEST_INFO_TYPE: '&5 Type&7: &f{0}'
+CHEST_INFO_SIZE: '&5 Default Size&7: &f{0}'
+CHEST_INFO_DEFAULT_TITLE: '&5 Default Title&7: &f{0}'
+CHEST_INFO_SELL_MODE: '&5 Sell Mode&7: &f{0}'
+CHEST_INFO_RECIPES: '&5 Recipes&7: &f{0}'
+CHEST_INFO_FOOTER: '&8&m---------------&5&l WildChests &8&m---------------'
+
+# Called when crafting items in auto-crafter
+CRAFTED_ITEMS_HEADER: '&5&lWildChests &7You crafted the following items:'
+CRAFTED_ITEMS_LINE: '&5&lWildChests &7x{0} {1}'
+CRAFTED_ITEMS_FOOTER: '&5&lWildChests &7You crafted a total of {0} items'
+
+# Called when upgrading a chest
+EXPAND_CHEST: |-
+  &5&lWildChests &7You are going to purchase an extension for ${0}
+  &5&lWildChests &7If you want to continue, write &a&lCONFIRM&7.
+EXPAND_PURCHASED: '&5&lWildChests &7Successfully purchased an extension to your chest!'
+EXPAND_FAILED: '&5&lWildChests &7Opening chest...'
+
+# Called when a player runs an invalid chests sub-command.
+HELP_COMMAND_HEADER: '&8&m---------------&5&l WildChests &8&m---------------'
+HELP_COMMAND_LINE: '&7- &5/{0} &8- &f{1}'
+HELP_COMMAND_FOOTER: '&8&m---------------&5&l WildChests &8&m---------------'
+
+# Called when a player runs give command with an invalid argument.
+INVALID_PLAYER: '&5&lWildChests &7Coludn''t find a player called {0}.'
+INVALID_CHEST: '&5&lWildChests &7Coludn''t find a chest called {0}.'
+INVALID_AMOUNT: '&5&lWildChests &7Please specify a valid number.'
+
+# Called when using /chests link command
+INVALID_BLOCK_CHEST: '&5&lWildChests &7Couldn''t find a valid linked chest.'
+LINKED_SUCCEED: '&5&lWildChests &7Successfully linked chest [{0}] to this chest.'
+NOT_LINKED_CHEST: '&5&lWildChests &7You cannot link this chest.'
+SELECT_ANOTHER_CHEST: '&5&lWildChests &7Select another chest to link into with /chests link'
+LEFTOVERS_ITEMS_WARNING: '&5&lWildChests &7There were some leftovers items in the chest - they were transferred into the linked chest.'
+
+# Called when logging on and received money while being offline
+MONEY_EARNED_OFFLINE: '&5&lWildChests &7You received a total of ${0} while you were offline!'
+
+# Called when running a chests command without permission.
+NO_PERMISSION: '&fUnknown command. Type "/help" for help.'
+
+# Called when a player successfully reloaded all configuration files.
+RELOAD_SUCCESS: '&5&lWildChests &7Successfully reloaded the configuration files.'
+
+# Called when selling items into sell-chest
+SOLD_CHEST_HEADER: '&5&lWildChests &7{0} has sold you the following items:'
+SOLD_CHEST_LINE: '&5&lWildChests &7x{0} {1} for ${2}'
+SOLD_CHEST_FOOTER: '&5&lWildChests &7You earned a total of ${0}'

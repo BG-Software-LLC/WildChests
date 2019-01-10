@@ -1,0 +1,34 @@
+name: WildChests
+version: 1.0.2
+api-version: 1.13
+main: xyz.wildseries.wildchests.WildChestsPlugin
+description: Sell wildchests, auto-crafters, pouches and more in one plugin!
+website: http://wildseries.xyz/
+authors: [Ome_R, WildSeries]
+softdepend: [Essentials, ShopGUIPlus, Vault]
+commands:
+  chests:
+    description: Main command for the plugin
+permissions:
+  wildchests.*:
+    description: Gives access to all the commands
+    default: op
+    children:
+      wildchests.give: true
+      wildchests.info: true
+      wildchests.link: true
+      wildchests.reload: true
+      wildchests.save: true
+      wildchests.settings: true
+  wildchests.give:
+    description: Gives access to give chests to other players.
+  wildchests.info:
+    description: Gives access to see information about a chest.
+  wildchests.link:
+    description: Gives access to link linked chests into other chests.
+  wildchests.reload:
+    description: Gives access to reload all configuration files.
+  wildchests.save:
+    description: Gives access to save database into files.
+  wildchests.settings:
+    description: Gives access to use settings editor.

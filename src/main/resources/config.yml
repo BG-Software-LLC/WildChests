@@ -1,0 +1,87 @@
+#########################################################
+##                                                     ##
+##              WildChests Configuration               ##
+##                 Developed by Ome_R                  ##
+##                                                     ##
+#########################################################
+
+# How much time should be passed between saves? (in ticks)
+# Set 0 to disable (not recommended. saving is done async, and will not lag your server)
+save-interval: 6000
+
+# Should the chest-task be enabled?
+# Please note: The task runs every second and checks for items in the original chest (May cause lags)
+chest-task: false
+
+# The plugin checks if ShopGUIPlus or Essentials is installed.
+# If both are not installed, it will use this list for the sell-chest
+# prices list. If both are installed, ShopGUIPlus's prices will be used.
+prices-list:
+- 'STONE:5' #Each stone will cost $5
+- 'LOG:0:5' #Only oak logs will cost $5
+
+# The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and
+# you can create and mix between them. You can create chests that stores infinite amount of items, chests that
+# are connected to player vaults or factions, linked chests and many more!
+#
+# *** Chest Mode ***
+# Chests in this mode react like regular chests. This is the base mode, and used for creating
+# sell chests and larger chests.
+#
+# *** Linked Mode ***
+# Chests in this mode are all linked together, and work like ender chests, but globally.
+#
+# There are sections that can be applied to all of the chests:
+# size: Amount of rows the chest will have (INTEGER) (Will be overridden by pages' size)
+# title: Global title for all pages. Will be overridden by page's title (STRING)
+# sell-chest: Should items in this chest will be sold to the chest placer? (BOOLEAN)
+# crafter-chest: List of recipes that will take action in this chest (LIST)
+#      Please follow "TYPE" and "TYPE:DATA" formats
+# pages: Section that handles all settings for pages
+# pages.default: Default amount of pages (INTEGER) [REQUIRED FOR PAGES]
+# pages.<#>: Section that handles all settings for a specific page
+# pages.<#>.price: Price for upgrading to that page (DOUBLE) [REQUIRED]
+# pages.<#>.title: Custom title for that page.
+# item.name: Custom name for the chest (STRING)
+# item.lore: Custom lore for the chest (LIST)
+
+chests:
+  linked_chest:
+    chest-mode: LINKED_CHEST
+    title: 'Linked Chest'
+    item:
+      name: '&6Linked Chest &7(Place to active)'
+  large_chest:
+    chest-mode: CHEST
+    size: 6
+    item:
+      name: '&aLarge Chest &7(Place to active)'
+    pages:
+      default: 1
+      '2':
+        price: 500000.0
+        title: 'Chest #2'
+      '3':
+        price: 1000000.0
+        title: 'Chest #3'
+      '4':
+        price: 2000000.0
+        title: 'Chest #4'
+      '5':
+        price: 3000000.0
+        title: 'Chest #5'
+  sell_chest:
+    chest-mode: CHEST
+    size: 6
+    title: 'Drop your items here to sell them.'
+    item:
+      name: '&dSell Chest &7(Place to active)'
+    sell-mode: true
+  auto_crafter:
+    chest-mode: CHEST
+    size: 6
+    title: 'Drop your items here to auto-craft them.'
+    item:
+      name: '&cAuto Crafter &7(Place to active)'
+    crafter-chest:
+    - GOLD_INGOT
