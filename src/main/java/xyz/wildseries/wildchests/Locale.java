@@ -39,6 +39,7 @@ public final class Locale {
     public static Locale CHEST_INFO_SELL_MODE = new Locale("CHEST_INFO_SELL_MODE");
     public static Locale CHEST_INFO_RECIPES = new Locale("CHEST_INFO_RECIPES");
     public static Locale CHEST_INFO_FOOTER = new Locale("CHEST_INFO_FOOTER");
+    public static Locale CHEST_PLACED = new Locale("CHEST_PLACED");
     public static Locale AUTO_SAVE = new Locale("AUTO_SAVE");
     public static Locale INVALID_BLOCK_CHEST = new Locale("INVALID_BLOCK_CHEST");
     public static Locale NOT_LINKED_CHEST = new Locale("NOT_LINKED_CHEST");

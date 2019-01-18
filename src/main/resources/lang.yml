@@ -25,6 +25,9 @@ CHEST_INFO_SELL_MODE: '&5 Sell Mode&7: &f{0}'
 CHEST_INFO_RECIPES: '&5 Recipes&7: &f{0}'
 CHEST_INFO_FOOTER: '&8&m---------------&5&l WildChests &8&m---------------'
 
+# Called when a chest is placed down.
+CHEST_PLACED: '&5&lWildChests &7You placed a(n) {0}.'
+
 # Called when crafting items in auto-crafter
 CRAFTED_ITEMS_HEADER: '&5&lWildChests &7You crafted the following items:'
 CRAFTED_ITEMS_LINE: '&5&lWildChests &7x{0} {1}'
