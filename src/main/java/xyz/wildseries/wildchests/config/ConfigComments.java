@@ -50,6 +50,7 @@ public final class ConfigComments {
     @Comment("sell-chest: Should items in this chest will be sold to the chest placer? (BOOLEAN)")
     @Comment("crafter-chest: List of recipes that will take action in this chest (LIST)")
     @Comment("     Please follow \"TYPE\" and \"TYPE:DATA\" formats")
+    @Comment("hopper-filter: When enabled, only craftable items will go into hoppers below (BOOLEAN)")
     @Comment("pages: Section that handles all settings for pages")
     @Comment("pages.default: Default amount of pages (INTEGER) [REQUIRED FOR PAGES]")
     @Comment("pages.<#>: Section that handles all settings for a specific page")

@@ -1,7 +1,6 @@
 package xyz.wildseries.wildchests.task;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -13,7 +12,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
+import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.objects.WLocation;
+import xyz.wildseries.wildchests.objects.data.WChestData;
 
 import java.util.HashMap;
 
@@ -48,6 +49,8 @@ public final class HopperTask extends BukkitRunnable {
         if(hopperInventory == null)
             return;
 
+        ChestData chestData = chest.getData();
+
         int hopperAmount = plugin.getNMSAdapter().getHopperAmount(location.getWorld());
 
         outerLoop: for(int i = 0; i < chest.getPagesAmount(); i++){
@@ -55,7 +58,7 @@ public final class HopperTask extends BukkitRunnable {
             for(int slot = 0; slot < inventory.getSize(); slot++){
                 ItemStack itemStack = inventory.getItem(slot);
 
-                if(itemStack == null)
+                if(itemStack == null || (chestData.isHopperFilter() && !((WChestData) chestData).getRecipesSet().contains(itemStack)))
                     continue;
 
                 int amount = Math.min(getSpaceLeft(hopperInventory, itemStack), hopperAmount);

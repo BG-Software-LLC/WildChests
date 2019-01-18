@@ -23,6 +23,8 @@ public interface ChestData {
 
     boolean isSellMode();
 
+    boolean isHopperFilter();
+
     boolean isAutoCrafter();
 
     List<String> getRecipes();
@@ -36,6 +38,8 @@ public interface ChestData {
     void setDefaultTitle(String title);
 
     void setSellMode(boolean sellMode);
+
+    void setHopperFilter(boolean hopperFilter);
 
     void setAutoCrafter(List<String> recipes);
 

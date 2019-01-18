@@ -137,6 +137,10 @@ public final class SettingsHandler {
                 chestData.setAutoCrafter(cfg.getStringList("chests." + name + ".crafter-chest"));
             }
 
+            if(cfg.contains("chests." + name +".hopper-filter")){
+                chestData.setHopperFilter(cfg.getBoolean("chests." + name +".hopper-filter"));
+            }
+
             if(cfg.contains("chests." + name + ".pages")){
                 Map<Integer, InventoryData> pages = new HashMap<>();
                 for(String index : cfg.getConfigurationSection("chests." + name + ".pages").getKeys(false)){

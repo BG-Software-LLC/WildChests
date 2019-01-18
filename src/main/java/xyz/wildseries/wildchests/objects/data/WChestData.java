@@ -20,6 +20,7 @@ public final class WChestData implements ChestData {
     private int defaultSize;
     private String defaultTitle;
     private boolean sellMode;
+    private boolean hopperFilter;
     private KeySet recipes;
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
@@ -31,6 +32,7 @@ public final class WChestData implements ChestData {
         this.defaultSize = 9 * 3;
         this.defaultTitle = "Chest";
         this.sellMode = false;
+        this.hopperFilter = false;
         this.recipes = new KeySet();
         this.pagesData = new HashMap<>();
         this.defaultPagesAmount = 1;
@@ -72,6 +74,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public boolean isHopperFilter() {
+        return hopperFilter;
+    }
+
+    @Override
     public boolean isAutoCrafter() {
         return !recipes.isEmpty();
     }
@@ -79,6 +86,10 @@ public final class WChestData implements ChestData {
     @Override
     public List<String> getRecipes() {
         return new ArrayList<>(recipes.asStringSet());
+    }
+
+    public KeySet getRecipesSet(){
+        return recipes;
     }
 
     @Override
@@ -104,6 +115,11 @@ public final class WChestData implements ChestData {
     @Override
     public void setSellMode(boolean sellMode){
         this.sellMode = sellMode;
+    }
+
+    @Override
+    public void setHopperFilter(boolean hopperFilter) {
+        this.hopperFilter = hopperFilter;
     }
 
     @Override
