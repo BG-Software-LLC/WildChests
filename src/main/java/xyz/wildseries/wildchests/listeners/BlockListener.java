@@ -31,16 +31,6 @@ public final class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    public void interact(PlayerInteractEvent e){
-        if(e.getItem() != null && e.getItem().getType() == Material.LEATHER && e.getAction() == Action.LEFT_CLICK_BLOCK){
-            if(e.getClickedBlock().getType() == Material.CHEST){
-                e.setCancelled(true);
-                ((InventoryHolder) e.getClickedBlock().getState()).getInventory().addItem(new ItemStack(Material.DIRT));
-            }
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestPlace(BlockPlaceEvent e) {
         if (e.getBlockPlaced().getType() != Material.CHEST && e.getBlockPlaced().getType() != Material.TRAPPED_CHEST)
