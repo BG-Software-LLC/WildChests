@@ -195,8 +195,6 @@ public final class InventoryListener implements Listener {
         e.getPlayer().openInventory(chest.getPage(--pageIndex));
     }
 
-    private Set<WLocation> notReadyToCheck = new HashSet<>();
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryMoveItem(InventoryMoveItemEvent e){
         if(e.getSource().getType() != InventoryType.HOPPER || e.getDestination().getType() != InventoryType.CHEST)
@@ -220,18 +218,12 @@ public final class InventoryListener implements Listener {
 
                 WLocation location = WLocation.of(chest.getLocation());
 
-                if(!notReadyToCheck.contains(location)) {
-                    if (chest.getData().isAutoCrafter()) {
-                        ChestUtils.tryCraftChest(chest);
-                        notReadyToCheck.add(location);
-                        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> notReadyToCheck.remove(location), 20 * 3);
-                    }
+                if (chest.getData().isAutoCrafter()) {
+                    ChestUtils.tryCraftChest(chest);
+                }
 
-                    if (chest.getData().isSellMode()) {
-                        ChestUtils.trySellChest(chest);
-                        notReadyToCheck.add(location);
-                        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> notReadyToCheck.remove(location), 20 * 3);
-                    }
+                if (chest.getData().isSellMode()) {
+                    ChestUtils.trySellChest(chest);
                 }
 
             }
