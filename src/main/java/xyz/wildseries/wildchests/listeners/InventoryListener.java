@@ -1,10 +1,12 @@
 package xyz.wildseries.wildchests.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,12 +19,16 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.api.objects.data.InventoryData;
+import xyz.wildseries.wildchests.objects.Materials;
 import xyz.wildseries.wildchests.objects.WInventory;
 import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.utils.ChestUtils;
@@ -42,9 +48,11 @@ public final class InventoryListener implements Listener {
     private final Map<UUID, Location> playerChests = new HashMap<>();
     private final Map<UUID, InventoryData> buyNewPage = new HashMap<>();
     private final Set<UUID> openDifferentPage = new HashSet<>();
+    private Inventory guiConfirm;
 
     public InventoryListener(WildChestsPlugin plugin){
         this.plugin = plugin;
+        initGUIConfirm();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -158,9 +166,13 @@ public final class InventoryListener implements Listener {
                 e.getWhoClicked().openInventory(chest.getPage(index + 1));
             }else if(chestData.getPagesData().containsKey(++index + 1)){
                 InventoryData inventoryData = chestData.getPagesData().get(index + 1);
-                Locale.EXPAND_CHEST.send(e.getWhoClicked(), inventoryData.getPrice());
                 buyNewPage.put(e.getWhoClicked().getUniqueId(), inventoryData);
-                e.getWhoClicked().closeInventory();
+                if(plugin.getSettings().confirmGUI){
+                    e.getWhoClicked().openInventory(guiConfirm);
+                }else {
+                    Locale.EXPAND_CHEST.send(e.getWhoClicked(), inventoryData.getPrice());
+                    e.getWhoClicked().closeInventory();
+                }
             }
         }
 
@@ -201,6 +213,54 @@ public final class InventoryListener implements Listener {
         buyNewPage.remove(e.getPlayer().getUniqueId());
     }
 
+    @EventHandler
+    public void onPlayerBuyConfirm(InventoryClickEvent e){
+        if(!buyNewPage.containsKey(e.getWhoClicked().getUniqueId()))
+            return;
+
+        e.setCancelled(true);
+        Player player = (Player) e.getWhoClicked();
+
+        try {
+            Chest chest = plugin.getChestsManager().getChest(playerChests.get(player.getUniqueId()));
+            ChestData chestData = chest.getData();
+            InventoryData inventoryData = buyNewPage.get(player.getUniqueId());
+            int pageIndex = 0;
+
+            while (chest.getPagesAmount() > pageIndex)
+                pageIndex++;
+
+            if(e.getRawSlot() == 4){
+                if (plugin.getProviders().transactionSuccess(player, inventoryData.getPrice())) {
+                    Locale.EXPAND_PURCHASED.send(player);
+                    chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
+                } else {
+                    Locale.EXPAND_FAILED.send(player);
+                }
+            } else if(e.getRawSlot() == 0){
+                Locale.EXPAND_FAILED.send(player);
+            } else{
+                return;
+            }
+
+            player.openInventory(chest.getPage(--pageIndex));
+        }catch(Exception ex){
+            Locale.EXPAND_FAILED_CHEST_BROKEN.send(player);
+        }
+
+        buyNewPage.remove(player.getUniqueId());
+    }
+
+    @EventHandler
+    public void onPlayerBuyConfirm(InventoryCloseEvent e) {
+        if (e.getInventory().getTitle().equals(guiConfirm.getTitle())) {
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (buyNewPage.containsKey(e.getPlayer().getUniqueId()))
+                    e.getPlayer().openInventory(e.getInventory());
+            }, 1L);
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryMoveItem(InventoryMoveItemEvent e){
         if(e.getSource().getType() != InventoryType.HOPPER || e.getDestination().getType() != InventoryType.CHEST)
@@ -234,6 +294,33 @@ public final class InventoryListener implements Listener {
 
             }
         }, 1L);
+    }
+
+    private void initGUIConfirm(){
+        guiConfirm = Bukkit.createInventory(null, InventoryType.HOPPER, ChatColor.BOLD + "    Expand Confirmation");
+
+        ItemStack denyButton = Materials.RED_STAINED_GLASS_PANE.toBukkitItem();
+        ItemMeta denyMeta = denyButton.getItemMeta();
+        denyMeta.setDisplayName("" + ChatColor.RED + ChatColor.BOLD + "DENY");
+        denyButton.setItemMeta(denyMeta);
+
+        guiConfirm.setItem(0, denyButton);
+
+        ItemStack confirmButton = Materials.GREEN_STAINED_GLASS_PANE.toBukkitItem();
+        ItemMeta confirmMeta = confirmButton.getItemMeta();
+        confirmMeta.setDisplayName("" + ChatColor.GREEN + ChatColor.BOLD + "CONFIRM");
+        confirmButton.setItemMeta(confirmMeta);
+
+        guiConfirm.setItem(4, confirmButton);
+
+        ItemStack blankButton = Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem();
+        ItemMeta blankMeta = blankButton.getItemMeta();
+        blankMeta.setDisplayName("" + ChatColor.WHITE);
+        blankButton.setItemMeta(blankMeta);
+
+        guiConfirm.setItem(1, blankButton);
+        guiConfirm.setItem(2, blankButton);
+        guiConfirm.setItem(3, blankButton);
     }
 
 }

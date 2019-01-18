@@ -4,6 +4,7 @@ import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -99,6 +100,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             if(needClose)
                 nmsAdapter.playChestAction(chest.getLocation(), false);
         }
+        for(Player player : Bukkit.getOnlinePlayers())
+            player.closeInventory();
         Bukkit.getScheduler().cancelAllTasks();
         dataHandler.saveDatabase();
     }

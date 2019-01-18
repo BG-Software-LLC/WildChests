@@ -27,6 +27,10 @@ public final class ConfigComments {
     public static String CHEST_TASK = "chest-task";
 
     @Comment("")
+    @Comment("When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.")
+    public static String CONFIRM_GUI = "confirm-gui";
+
+    @Comment("")
     @Comment("The plugin checks if ShopGUIPlus or Essentials is installed.")
     @Comment("If both are not installed, it will use this list for the sell-chest")
     @Comment("prices list. If both are installed, ShopGUIPlus's prices will be used.")

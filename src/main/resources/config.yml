@@ -17,6 +17,9 @@ notifier-interval: 12000
 # Please note: The task runs every second and checks for items in the original chest (May cause lags)
 chest-task: false
 
+# When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.
+confirm-gui: false
+
 # The plugin checks if ShopGUIPlus or Essentials is installed.
 # If both are not installed, it will use this list for the sell-chest
 # prices list. If both are installed, ShopGUIPlus's prices will be used.

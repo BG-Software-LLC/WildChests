@@ -29,6 +29,7 @@ public final class SettingsHandler {
     public final long saveInterval;
     public final long notifyInterval;
     public final boolean chestTask;
+    public final boolean confirmGUI;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -47,6 +48,7 @@ public final class SettingsHandler {
         saveInterval = cfg.getLong("save-interval", 6000);
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         chestTask = cfg.getBoolean("chest-task", false);
+        confirmGUI = cfg.getBoolean("confirm-gui", false);
 
         Map<String, Double> prices = new HashMap<>();
 
