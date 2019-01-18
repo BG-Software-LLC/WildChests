@@ -36,6 +36,7 @@ EXPAND_CHEST: |-
   &5&lWildChests &7If you want to continue, write &a&lCONFIRM&7.
 EXPAND_PURCHASED: '&5&lWildChests &7Successfully purchased an extension to your chest!'
 EXPAND_FAILED: '&5&lWildChests &7Opening chest...'
+EXPAND_FAILED_CHEST_BROKEN: '&5&lWildChests &7Couldn''t find the chest anymore in world.'
 
 # Called when a player runs an invalid chests sub-command.
 HELP_COMMAND_HEADER: '&8&m---------------&5&l WildChests &8&m---------------'

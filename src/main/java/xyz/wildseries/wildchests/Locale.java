@@ -45,6 +45,7 @@ public final class Locale {
     public static Locale EXPAND_CHEST = new Locale("EXPAND_CHEST");
     public static Locale EXPAND_PURCHASED = new Locale("EXPAND_PURCHASED");
     public static Locale EXPAND_FAILED = new Locale("EXPAND_FAILED");
+    public static Locale EXPAND_FAILED_CHEST_BROKEN = new Locale("EXPAND_FAILED_CHEST_BROKEN");
     public static Locale MONEY_EARNED_OFFLINE = new Locale("MONEY_EARNED_OFFLINE");
     public static Locale LEFTOVERS_ITEMS_WARNING = new Locale("LEFTOVERS_ITEMS_WARNING");
 

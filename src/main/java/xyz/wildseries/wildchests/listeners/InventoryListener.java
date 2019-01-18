@@ -173,26 +173,32 @@ public final class InventoryListener implements Listener {
 
         e.setCancelled(true);
 
-        Chest chest = plugin.getChestsManager().getChest(playerChests.get(e.getPlayer().getUniqueId()));
-        ChestData chestData = chest.getData();
-        InventoryData inventoryData = buyNewPage.get(e.getPlayer().getUniqueId());
-        int pageIndex = 0;
-        while(chest.getPagesAmount() > pageIndex)
-            pageIndex++;
+        try {
+            Chest chest = plugin.getChestsManager().getChest(playerChests.get(e.getPlayer().getUniqueId()));
+            ChestData chestData = chest.getData();
+            InventoryData inventoryData = buyNewPage.get(e.getPlayer().getUniqueId());
+            int pageIndex = 0;
 
-        if(e.getMessage().equalsIgnoreCase("confirm")){
-            if(plugin.getProviders().transactionSuccess(e.getPlayer(), inventoryData.getPrice())) {
-                Locale.EXPAND_PURCHASED.send(e.getPlayer());
-                chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
-            }else{
+            while (chest.getPagesAmount() > pageIndex)
+                pageIndex++;
+
+            if (e.getMessage().equalsIgnoreCase("confirm")) {
+                if (plugin.getProviders().transactionSuccess(e.getPlayer(), inventoryData.getPrice())) {
+                    Locale.EXPAND_PURCHASED.send(e.getPlayer());
+                    chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
+                } else {
+                    Locale.EXPAND_FAILED.send(e.getPlayer());
+                }
+            } else {
                 Locale.EXPAND_FAILED.send(e.getPlayer());
             }
-        }else{
-            Locale.EXPAND_FAILED.send(e.getPlayer());
+
+            e.getPlayer().openInventory(chest.getPage(--pageIndex));
+        }catch(Exception ex){
+            Locale.EXPAND_FAILED_CHEST_BROKEN.send(e.getPlayer());
         }
 
         buyNewPage.remove(e.getPlayer().getUniqueId());
-        e.getPlayer().openInventory(chest.getPage(--pageIndex));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
