@@ -27,6 +27,7 @@ import java.util.Set;
 public final class SettingsHandler {
 
     public final long saveInterval;
+    public final long notifyInterval;
     public final boolean chestTask;
 
     public SettingsHandler(WildChestsPlugin plugin){
@@ -41,7 +42,10 @@ public final class SettingsHandler {
         CommentedConfiguration cfg = new CommentedConfiguration(ConfigComments.class);
         cfg.load(file);
 
+        cfg.resetYamlFile(plugin, "config.yml", ConfigComments.class);
+
         saveInterval = cfg.getLong("save-interval", 6000);
+        notifyInterval = cfg.getLong("notifier-interval", 12000);
         chestTask = cfg.getBoolean("chest-task", false);
 
         Map<String, Double> prices = new HashMap<>();
@@ -158,8 +162,6 @@ public final class SettingsHandler {
         } catch (NoSuchFieldException | IllegalAccessException e){
             e.printStackTrace();
         }
-
-        cfg.resetYamlFile(plugin, "config.yml", ConfigComments.class);
 
         WildChestsPlugin.log(" - Found " + chestsAmount + " chests in config.yml.");
         WildChestsPlugin.log("Loading configuration done (Took " + (System.currentTimeMillis() - startTime) + "ms)");

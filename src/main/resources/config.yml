@@ -9,6 +9,10 @@
 # Set 0 to disable (not recommended. saving is done async, and will not lag your server)
 save-interval: 6000
 
+# How much time should be passed between sell notifies? (in ticks)
+# Set 0 to disable this feature.
+notifier-interval: 12000
+
 # Should the chest-task be enabled?
 # Please note: The task runs every second and checks for items in the original chest (May cause lags)
 chest-task: false

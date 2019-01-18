@@ -5,6 +5,7 @@ import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.command.ICommand;
 import xyz.wildseries.wildchests.handlers.SettingsHandler;
+import xyz.wildseries.wildchests.task.NotifierTask;
 import xyz.wildseries.wildchests.task.SaveTask;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public final class CommandReload implements ICommand {
             SettingsHandler.reload();
             Locale.reload();
             SaveTask.start();
+            NotifierTask.start();
             Locale.RELOAD_SUCCESS.send(sender);
         }).start();
     }

@@ -20,6 +20,7 @@ import xyz.wildseries.wildchests.listeners.BlockListener;
 import xyz.wildseries.wildchests.listeners.InventoryListener;
 import xyz.wildseries.wildchests.listeners.PlayerListener;
 import xyz.wildseries.wildchests.nms.NMSAdapter;
+import xyz.wildseries.wildchests.task.NotifierTask;
 import xyz.wildseries.wildchests.task.SaveTask;
 
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         Locale.reload();
         SaveTask.start();
+        NotifierTask.start();
 
         if(!isVaultEnabled()){
             log("");
