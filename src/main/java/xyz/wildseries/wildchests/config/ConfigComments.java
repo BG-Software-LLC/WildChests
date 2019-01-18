@@ -17,6 +17,11 @@ public final class ConfigComments {
     public static String SAVE_INTERVAL = "save-interval";
 
     @Comment("")
+    @Comment("How much time should be passed between sell notifies? (in ticks)")
+    @Comment("Set 0 to disable this feature.")
+    public static String NOTIFIER_INTERVAL = "notifier-interval";
+
+    @Comment("")
     @Comment("Should the chest-task be enabled?")
     @Comment("Please note: The task runs every second and checks for items in the original chest (May cause lags)")
     public static String CHEST_TASK = "chest-task";

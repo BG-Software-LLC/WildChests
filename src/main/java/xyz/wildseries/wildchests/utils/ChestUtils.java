@@ -13,6 +13,7 @@ import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.key.KeySet;
 import xyz.wildseries.wildchests.objects.exceptions.PlayerNotOnlineException;
+import xyz.wildseries.wildchests.task.NotifierTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,19 +121,13 @@ public final class ChestUtils {
         }
 
         Inventory[] pages = chest.getPages();
-        StringBuilder message = new StringBuilder();
         UUID placer = chest.getPlacer();
-        Player player = Bukkit.getPlayer(placer);
-
-        if(!Locale.SOLD_CHEST_HEADER.isEmpty() && player != null)
-            message.append(Locale.SOLD_CHEST_HEADER.getMessage(player.getName()));
 
         List<ItemStack> itemStacks = new ArrayList<>();
         for(Inventory page : pages)
             itemStacks.addAll(Arrays.asList(page.getContents()));
 
         Map<ItemStack, Integer> sortedItems = getSortedItems(itemStacks.toArray(new ItemStack[0]));
-        double totalPrice = 0;
 
         for(ItemStack itemStack : sortedItems.keySet()){
             itemStack.setAmount(sortedItems.get(itemStack));
@@ -143,20 +138,12 @@ public final class ChestUtils {
                 if(price <= 0)
                     continue;
 
-                if (!Locale.SOLD_CHEST_LINE.isEmpty() && player != null)
-                    message.append("\n").append(Locale.SOLD_CHEST_LINE.getMessage(itemStack.getAmount(), itemStack.getType(), price));
-                totalPrice += price;
+                NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
             }catch(PlayerNotOnlineException ignored){ }
 
             for (Inventory page : pages)
                 page.removeItem(itemStack);
         }
-
-        if(!Locale.SOLD_CHEST_FOOTER.isEmpty() && player != null)
-            message.append("\n").append(Locale.SOLD_CHEST_FOOTER.getMessage(totalPrice));
-
-        if(player != null && totalPrice > 0)
-            player.sendMessage(message.toString());
     }
 
     private static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){

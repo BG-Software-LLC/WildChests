@@ -64,6 +64,6 @@ NO_PERMISSION: '&fUnknown command. Type "/help" for help.'
 RELOAD_SUCCESS: '&5&lWildChests &7Successfully reloaded the configuration files.'
 
 # Called when selling items into sell-chest
-SOLD_CHEST_HEADER: '&5&lWildChests &7{0} has sold you the following items:'
+SOLD_CHEST_HEADER: '&5&lWildChests &7Your transactions in the last 10 minutes:'
 SOLD_CHEST_LINE: '&5&lWildChests &7x{0} {1} for ${2}'
 SOLD_CHEST_FOOTER: '&5&lWildChests &7You earned a total of ${0}'
