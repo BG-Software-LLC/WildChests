@@ -1,5 +1,6 @@
 package xyz.wildseries.wildchests.objects.chests;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 
@@ -68,7 +69,9 @@ public abstract class WChest implements Chest {
 
     @Override
     public Inventory getPage(int page) {
-        return page < 0 || page >= pages.size() ? null : pages.get(page).getInventory();
+        WInventory pageInv = page < 0 || page >= pages.size() ? null : pages.get(page);
+        pageInv.setTitle(getData().getTitle(page + 1).replace("{0}", pages.size() + ""));
+        return pageInv.getInventory();
     }
 
     @Override
