@@ -34,8 +34,7 @@ public final class CommentedConfiguration extends YamlConfiguration{
         this.commentsClass = commentsClass;
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public void resetYamlFile(Plugin plugin, String resourceName, Class commentsClass){
+    public void resetYamlFile(Plugin plugin, String resourceName){
         File configFile = new File(plugin.getDataFolder(), resourceName);
         plugin.saveResource(resourceName, true);
 

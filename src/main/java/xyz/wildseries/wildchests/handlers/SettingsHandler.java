@@ -42,7 +42,7 @@ public final class SettingsHandler {
         CommentedConfiguration cfg = new CommentedConfiguration(ConfigComments.class);
         cfg.load(file);
 
-        cfg.resetYamlFile(plugin, "config.yml", ConfigComments.class);
+        cfg.resetYamlFile(plugin, "config.yml");
 
         saveInterval = cfg.getLong("save-interval", 6000);
         notifyInterval = cfg.getLong("notifier-interval", 12000);

@@ -3,6 +3,8 @@ package xyz.wildseries.wildchests;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import xyz.wildseries.wildchests.config.CommentedConfiguration;
+import xyz.wildseries.wildchests.config.LangComments;
 
 import java.io.File;
 import java.util.HashMap;
@@ -93,7 +95,10 @@ public final class Locale {
         if(!file.exists())
             WildChestsPlugin.getPlugin().saveResource("lang.yml", false);
 
-        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+        CommentedConfiguration cfg = new CommentedConfiguration(LangComments.class);
+        cfg.load(file);
+
+        cfg.resetYamlFile(WildChestsPlugin.getPlugin(), "lang.yml");
 
         for(String identifier : localeMap.keySet()){
             localeMap.get(identifier).setMessage(ChatColor.translateAlternateColorCodes('&', cfg.getString(identifier, "")));
