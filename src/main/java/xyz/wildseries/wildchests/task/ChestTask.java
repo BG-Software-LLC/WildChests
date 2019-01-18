@@ -8,7 +8,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
+import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.objects.WLocation;
+import xyz.wildseries.wildchests.utils.ChestUtils;
 import xyz.wildseries.wildchests.utils.ItemUtils;
 
 import java.util.HashSet;
@@ -63,6 +65,11 @@ public final class ChestTask extends BukkitRunnable {
             originalInventory.addItem(itemStack);
         }
 
+        ChestData chestData = chest.getData();
+        if(chestData.isSellMode())
+            ChestUtils.trySellChest(chest);
+        if(chestData.isAutoCrafter())
+            ChestUtils.tryCraftChest(chest);
     }
 
 }
