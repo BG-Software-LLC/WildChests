@@ -70,9 +70,19 @@ public final class ChestUtils {
             }
         }
 
+        List<ItemStack> toDrop = new ArrayList<>();
+
         for(ItemStack itemStack : toAdd) {
-            if(!ItemUtils.addToChest(chest, itemStack))
-                chest.getLocation().getWorld().dropItemNaturally(chest.getLocation(), itemStack);
+            if(!ItemUtils.addToChest(chest, itemStack)) {
+                toDrop.add(itemStack);
+            }
+        }
+
+        if(!toDrop.isEmpty()){
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                for(ItemStack itemStack : toDrop)
+                    chest.getLocation().getWorld().dropItemNaturally(chest.getLocation(), itemStack);
+            });
         }
     }
 
