@@ -14,7 +14,6 @@ import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.objects.WLocation;
-import xyz.wildseries.wildchests.objects.data.WChestData;
 
 import java.util.HashMap;
 
@@ -58,7 +57,7 @@ public final class HopperTask extends BukkitRunnable {
             for(int slot = 0; slot < inventory.getSize(); slot++){
                 ItemStack itemStack = inventory.getItem(slot);
 
-                if(itemStack == null || (chestData.isHopperFilter() && !((WChestData) chestData).getRecipesSet().contains(itemStack)))
+                if(itemStack == null || (chestData.isHopperFilter() && !chestData.containsRecipe(itemStack)))
                     continue;
 
                 int amount = Math.min(getSpaceLeft(hopperInventory, itemStack), hopperAmount);

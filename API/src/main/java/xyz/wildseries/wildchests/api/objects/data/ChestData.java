@@ -1,8 +1,10 @@
 package xyz.wildseries.wildchests.api.objects.data;
 
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import xyz.wildseries.wildchests.api.objects.ChestType;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +29,9 @@ public interface ChestData {
 
     boolean isAutoCrafter();
 
-    List<String> getRecipes();
+    Iterator<Recipe> getRecipes();
+
+    boolean containsRecipe(ItemStack result);
 
     Map<Integer, InventoryData> getPagesData();
 

@@ -1,6 +1,9 @@
 package xyz.wildseries.wildchests.objects.data;
 
+import com.google.common.collect.Iterators;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.api.objects.data.InventoryData;
@@ -8,6 +11,7 @@ import xyz.wildseries.wildchests.key.KeySet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +25,7 @@ public final class WChestData implements ChestData {
     private String defaultTitle;
     private boolean sellMode;
     private boolean hopperFilter;
-    private KeySet recipes;
+    private List<Recipe> recipes;
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
 
@@ -33,7 +37,7 @@ public final class WChestData implements ChestData {
         this.defaultTitle = "Chest";
         this.sellMode = false;
         this.hopperFilter = false;
-        this.recipes = new KeySet();
+        this.recipes = new ArrayList<>();
         this.pagesData = new HashMap<>();
         this.defaultPagesAmount = 1;
     }
@@ -80,16 +84,26 @@ public final class WChestData implements ChestData {
 
     @Override
     public boolean isAutoCrafter() {
-        return !recipes.isEmpty();
+        return Iterators.size(getRecipes()) != 0;
     }
 
     @Override
-    public List<String> getRecipes() {
-        return new ArrayList<>(recipes.asStringSet());
+    public Iterator<Recipe> getRecipes() {
+        return Iterators.unmodifiableIterator(recipes.iterator());
     }
 
-    public KeySet getRecipesSet(){
-        return recipes;
+    @Override
+    public boolean containsRecipe(ItemStack result) {
+        Iterator<Recipe> recipes = getRecipes();
+        boolean contains = false;
+
+        while(recipes.hasNext()){
+            Recipe recipe = recipes.next();
+            if(recipe.getResult().isSimilar(result))
+                contains = true;
+        }
+
+        return contains;
     }
 
     @Override
@@ -124,7 +138,17 @@ public final class WChestData implements ChestData {
 
     @Override
     public void setAutoCrafter(List<String> recipes) {
-        this.recipes = new KeySet(recipes);
+        KeySet recipesSet = new KeySet(recipes);
+        List<Recipe> recipesToAdd = new ArrayList<>();
+        Iterator<Recipe> bukkitRecipes = Bukkit.recipeIterator();
+
+        while(bukkitRecipes.hasNext()){
+            Recipe recipe = bukkitRecipes.next();
+            if(recipesSet.contains(recipe.getResult()))
+                recipesToAdd.add(recipe);
+        }
+
+        this.recipes.addAll(recipesToAdd);
     }
 
     @Override
@@ -145,7 +169,7 @@ public final class WChestData implements ChestData {
                 "defaultSize=" + defaultSize + "," +
                 "defaultTitle=" + defaultTitle + "," +
                 "sellMode=" + sellMode + "," +
-                "recipes=" + recipes +
+                "recipes=" + getRecipes() +
                 "}";
     }
 }

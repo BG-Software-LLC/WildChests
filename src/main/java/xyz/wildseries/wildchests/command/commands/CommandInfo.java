@@ -1,6 +1,7 @@
 package xyz.wildseries.wildchests.command.commands;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.Recipe;
 import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
@@ -8,6 +9,7 @@ import xyz.wildseries.wildchests.command.ICommand;
 import xyz.wildseries.wildchests.utils.ItemUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public final class CommandInfo implements ICommand {
@@ -63,7 +65,7 @@ public final class CommandInfo implements ICommand {
 
         //Optional sections
         if(chestData.isAutoCrafter())
-            Locale.CHEST_INFO_RECIPES.send(sender, getListAsString(chestData.getRecipes(), true));
+            Locale.CHEST_INFO_RECIPES.send(sender, getRecipesAsString(chestData.getRecipes()));
 
         //Footer
         Locale.CHEST_INFO_FOOTER.send(sender);
@@ -89,12 +91,14 @@ public final class CommandInfo implements ICommand {
         return null;
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private String getListAsString(List<String> list, boolean formatted){
+    private String getRecipesAsString(Iterator<Recipe> recipes){
         StringBuilder string = new StringBuilder();
 
-        for(String line : list){
-            string.append(", ").append(formatted ? ItemUtils.getFormattedType(line) : line);
+        while(recipes.hasNext()){
+            Recipe recipe = recipes.next();
+            String formattedItem = ItemUtils.getFormattedType(recipe.getResult().getType().name());
+            if(!string.toString().contains(formattedItem))
+                string.append(", ").append(formattedItem);
         }
 
         return string.substring(2);

@@ -10,7 +10,6 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
-import xyz.wildseries.wildchests.key.KeySet;
 import xyz.wildseries.wildchests.objects.exceptions.PlayerNotOnlineException;
 import xyz.wildseries.wildchests.task.NotifierTask;
 
@@ -35,16 +34,11 @@ public final class ChestUtils {
         Inventory[] pages = chest.getPages();
         Player player = Bukkit.getPlayer(chest.getPlacer());
 
-        KeySet recipes = new KeySet(chest.getData().getRecipes());
-        Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
+        Iterator<Recipe> recipes = chest.getData().getRecipes();
         List<ItemStack> toAdd = new ArrayList<>();
 
-        while(recipeIterator.hasNext()){
-            Recipe recipe = recipeIterator.next();
-
-            if(!recipes.contains(recipe.getResult()))
-                continue;
-
+        while(recipes.hasNext()){
+            Recipe recipe = recipes.next();
             List<ItemStack> ingredients;
 
             //Get the ingredients for the recipe
