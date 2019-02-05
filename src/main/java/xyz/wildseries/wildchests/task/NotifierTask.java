@@ -18,6 +18,7 @@ public final class NotifierTask extends BukkitRunnable {
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private static Map<UUID, Set<TransactionDetails>> amountEarned = new HashMap<>();
+    private static Map<UUID, Set<CraftingDetails>> craftings = new HashMap<>();
 
     private static int taskID = -1;
 
@@ -49,20 +50,23 @@ public final class NotifierTask extends BukkitRunnable {
                 Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), totalEarned);
             }
         }
-        amountEarned.clear();
-    }
+        for(UUID uuid : craftings.keySet()){
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+            if(offlinePlayer.isOnline()){
+                Set<CraftingDetails> itemsCrafted = craftings.get(uuid);
+                Locale.CRAFTED_ITEMS_HEADER.send(offlinePlayer.getPlayer());
+                int totalCrafted = 0;
 
-    private static class TransactionDetails{
-        private ItemStack itemStack;
-        private int amount;
-        private double amountEarned;
+                for(CraftingDetails item : itemsCrafted){
+                    Locale.CRAFTED_ITEMS_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType());
+                    totalCrafted += item.amount;
+                }
 
-        TransactionDetails(ItemStack itemStack, int amount, double amountEarned){
-            this.itemStack = itemStack;
-            this.amount = amount;
-            this.amountEarned = amountEarned;
+                Locale.CRAFTED_ITEMS_FOOTER.send(offlinePlayer.getPlayer(), totalCrafted);
+            }
         }
-
+        amountEarned.clear();
+        craftings.clear();
     }
 
     public static void addTransaction(UUID player, ItemStack itemStack, int amount, double _amountEarned){
@@ -81,6 +85,48 @@ public final class NotifierTask extends BukkitRunnable {
         details.amount += amount;
         details.amountEarned += _amountEarned;
         transectionDetails.add(details);
+    }
+
+    public static void addCrafting(UUID player, ItemStack itemStack, int amount){
+        if(!craftings.containsKey(player)) {
+            craftings.put(player, new HashSet<>());
+        }
+
+        Set<CraftingDetails> craftingDetails = craftings.get(player);
+        CraftingDetails details = new CraftingDetails(itemStack, 0);
+
+        for(CraftingDetails _craftingDetails : craftingDetails){
+            if(_craftingDetails.itemStack.isSimilar(itemStack))
+                details = _craftingDetails;
+        }
+
+        details.amount += amount;
+        craftingDetails.add(details);
+    }
+
+    private static class TransactionDetails{
+        private ItemStack itemStack;
+        private int amount;
+        private double amountEarned;
+
+        TransactionDetails(ItemStack itemStack, int amount, double amountEarned){
+            this.itemStack = itemStack;
+            this.amount = amount;
+            this.amountEarned = amountEarned;
+        }
+
+    }
+
+    private static class CraftingDetails{
+
+        private ItemStack itemStack;
+        private int amount;
+
+        CraftingDetails(ItemStack itemStack, int amount){
+            this.itemStack = itemStack;
+            this.amount = amount;
+        }
+
     }
 
 }

@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.key.KeySet;
@@ -34,25 +33,17 @@ public final class ChestUtils {
         }
 
         Inventory[] pages = chest.getPages();
-        StringBuilder message = new StringBuilder();
         Player player = Bukkit.getPlayer(chest.getPlacer());
-
-        if(!Locale.CRAFTED_ITEMS_HEADER.isEmpty() && player != null)
-            message.append(Locale.CRAFTED_ITEMS_HEADER.getMessage());
 
         KeySet recipes = new KeySet(chest.getData().getRecipes());
         Iterator<Recipe> recipeIterator = Bukkit.recipeIterator();
         List<ItemStack> toAdd = new ArrayList<>();
-
-        int totalCraftedItems = 0;
 
         while(recipeIterator.hasNext()){
             Recipe recipe = recipeIterator.next();
 
             if(!recipes.contains(recipe.getResult()))
                 continue;
-
-            int craftedItemsAmount = 0;
 
             List<ItemStack> ingredients;
 
@@ -91,27 +82,15 @@ public final class ChestUtils {
 
                     //Add the recipe's result to the inventory
                     toAdd.add(recipe.getResult());
-                    craftedItemsAmount += recipe.getResult().getAmount();
+                    NotifierTask.addCrafting(player.getUniqueId(), recipe.getResult(), recipe.getResult().getAmount());
                 }
             }while(canCraft);
-
-            totalCraftedItems += craftedItemsAmount;
-
-            if(craftedItemsAmount > 0)
-                if(!Locale.CRAFTED_ITEMS_LINE.isEmpty() && player != null)
-                    message.append("\n").append(Locale.CRAFTED_ITEMS_LINE.getMessage(craftedItemsAmount, recipe.getResult().getType()));
         }
 
         for(ItemStack itemStack : toAdd) {
             if(!ItemUtils.addToChest(chest, itemStack))
                 chest.getLocation().getWorld().dropItemNaturally(chest.getLocation(), itemStack);
         }
-
-        if(!Locale.CRAFTED_ITEMS_FOOTER.isEmpty() && player != null)
-            message.append("\n").append(Locale.CRAFTED_ITEMS_FOOTER.getMessage(totalCraftedItems));
-
-        if(!message.toString().isEmpty() && totalCraftedItems > 0 && player != null)
-            player.sendMessage(message.toString());
     }
 
     public static void trySellChest(Chest chest){

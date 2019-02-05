@@ -17,7 +17,7 @@ public final class ConfigComments {
     public static String SAVE_INTERVAL = "save-interval";
 
     @Comment("")
-    @Comment("How much time should be passed between sell notifies? (in ticks)")
+    @Comment("How much time should be passed between sell and crafting notifies? (in ticks)")
     @Comment("Set 0 to disable this feature.")
     public static String NOTIFIER_INTERVAL = "notifier-interval";
 

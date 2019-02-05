@@ -9,7 +9,7 @@
 # Set 0 to disable (not recommended. saving is done async, and will not lag your server)
 save-interval: 6000
 
-# How much time should be passed between sell notifies? (in ticks)
+# How much time should be passed between sell and crafting notifies? (in ticks)
 # Set 0 to disable this feature.
 notifier-interval: 12000
 
