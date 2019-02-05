@@ -36,13 +36,20 @@ public final class WInventory{
 
             Field titleField = minecraftInventory.getDeclaredField("title");
             titleField.setAccessible(true);
-            titleField.set(inventory, title);
+            try {
+                titleField.set(inventory, title);
+            }catch(IllegalArgumentException ex){
+                Class craftChatMessageClass = getBukkitClass("util.CraftChatMessage");
+                Object[] chatBaseComponent = (Object[]) craftChatMessageClass.getMethod("fromString", String.class).invoke(null, title);
+                titleField.set(inventory, chatBaseComponent[0]);
+            }
             titleField.setAccessible(false);
         }catch(Exception ex){
             ex.printStackTrace();
         }
     }
 
+    @SuppressWarnings("unused")
     public void setSize(int size){
         try{
             Class minecraftInventory = Arrays.stream(this.inventory.getClass().getDeclaredClasses())
