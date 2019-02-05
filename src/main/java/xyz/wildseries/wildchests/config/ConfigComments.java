@@ -31,6 +31,13 @@ public final class ConfigComments {
     public static String CONFIRM_GUI = "confirm-gui";
 
     @Comment("")
+    @Comment("Specify a command to be executed when a sell is running.")
+    @Comment("{player-name} - use as the player's name")
+    @Comment("{price} - use as the price of item")
+    @Comment("Set to '' in order to disable the feature.")
+    public static String SELL_COMMAND = "sell-command";
+
+    @Comment("")
     @Comment("The plugin checks if ShopGUIPlus or Essentials is installed.")
     @Comment("If both are not installed, it will use this list for the sell-chest")
     @Comment("prices list. If both are installed, ShopGUIPlus's prices will be used.")

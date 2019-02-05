@@ -112,10 +112,18 @@ public final class ChestUtils {
             itemStack.setAmount(sortedItems.get(itemStack));
 
             try {
-                double price = plugin.getProviders().trySellItem(placer, itemStack);
+                double price = plugin.getProviders().getPrice(placer, itemStack);
 
                 if(price <= 0)
                     continue;
+
+                if(plugin.getSettings().sellCommand.isEmpty()) {
+                    plugin.getProviders().trySellItem(placer, itemStack);
+                }else{
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                            .replace("{player-name}", Bukkit.getPlayer(placer).getName())
+                            .replace("{price}", String.valueOf(price)));
+                }
 
                 NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
             }catch(PlayerNotOnlineException ignored){ }

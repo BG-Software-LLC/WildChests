@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.hooks.PricesProvider;
 import xyz.wildseries.wildchests.hooks.PricesProvider_Default;
 import xyz.wildseries.wildchests.hooks.PricesProvider_Essentials;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public final class ProvidersHandler {
 
     private final Map<UUID, List<ItemStack>> awaitingItems = new HashMap<>();
+    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private boolean isVaultEnabled;
     private Economy economy;
@@ -68,14 +70,33 @@ public final class ProvidersHandler {
         for(ItemStack itemStack : items)
             totalPrice += getPrice(player, itemStack);
 
-        if(!economy.hasAccount(player))
-            economy.createPlayerAccount(player);
+        if(plugin.getSettings().sellCommand.isEmpty()) {
+            if (!economy.hasAccount(player))
+                economy.createPlayerAccount(player);
 
-        economy.depositPlayer(player, totalPrice);
+            economy.depositPlayer(player, totalPrice);
+        }
+        else{
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                    .replace("{player-name}", player.getName())
+                    .replace("{price}", String.valueOf(totalPrice)));
+        }
 
         return totalPrice;
     }
 
+    public double getPrice(UUID placer, ItemStack itemStack) throws PlayerNotOnlineException{
+        double price = 0;
+
+        if(!canSellItem(placer, itemStack))
+            return price;
+
+        //If item can be sold, the player is online for sure.
+        Player player = Bukkit.getPlayer(placer);
+        return pricesProvider.getPrice(player, itemStack);
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
     public double trySellItem(UUID placer, ItemStack itemStack) throws PlayerNotOnlineException {
         double price = 0;
 
@@ -97,6 +118,7 @@ public final class ProvidersHandler {
         return price;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean canSellItem(UUID playerUUID, ItemStack itemStack) throws PlayerNotOnlineException{
         if(itemStack == null)
             return false;

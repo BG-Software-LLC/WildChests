@@ -20,6 +20,12 @@ chest-task: false
 # When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.
 confirm-gui: false
 
+# Specify a command to be executed when a sell is running.
+# {player-name} - use as the player's name
+# {price} - use as the price of item
+# Set to '' in order to disable the feature.
+sell-command: ''
+
 # The plugin checks if ShopGUIPlus or Essentials is installed.
 # If both are not installed, it will use this list for the sell-chest
 # prices list. If both are installed, ShopGUIPlus's prices will be used.
