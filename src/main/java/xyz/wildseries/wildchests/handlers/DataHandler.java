@@ -27,7 +27,7 @@ public final class DataHandler {
 
     public DataHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
-        loadDatabase();
+        Bukkit.getScheduler().runTaskLater(plugin, this::loadDatabase, 20L);
     }
 
     public void saveDatabase(){
