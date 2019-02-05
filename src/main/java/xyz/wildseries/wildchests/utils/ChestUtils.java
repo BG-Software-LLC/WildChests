@@ -57,34 +57,23 @@ public final class ChestUtils {
             if (ingredients.isEmpty())
                 continue;
 
-            boolean canCraft;
-            do {
-                canCraft = false;
+            int amountOfRecipes = Integer.MAX_VALUE;
 
-                //Check if all the ingredients exist
-                outerLoop: for (ItemStack ingredient : ingredients) {
-                    for(Inventory page : pages){
-                        if (page.containsAtLeast(ingredient, ingredient.getAmount())) {
-                            canCraft = true;
-                            continue outerLoop;
-                        }
-                    }
+            for(ItemStack ingredient : ingredients){
+                for(Inventory page : pages){
+                    amountOfRecipes = Math.min(amountOfRecipes, ItemUtils.countItems(ingredient, page) / ingredient.getAmount());
                 }
+            }
 
-                if (canCraft) {
-                    //Only if we can craft, we need to remove the items
-                    outerLoop: for(ItemStack ingredient : ingredients) {
-                        for(Inventory page : pages){
-                            if(page.removeItem(ingredient).isEmpty())
-                                break outerLoop;
-                        }
-                    }
-
-                    //Add the recipe's result to the inventory
-                    toAdd.add(recipe.getResult());
-                    NotifierTask.addCrafting(player.getUniqueId(), recipe.getResult(), recipe.getResult().getAmount());
+            if(amountOfRecipes > 0) {
+                for (ItemStack ingredient : ingredients) {
+                    ItemUtils.removeFromChest(chest, ingredient, ingredient.getAmount() * amountOfRecipes);
                 }
-            }while(canCraft);
+                ItemStack result = recipe.getResult().clone();
+                result.setAmount(result.getAmount() * amountOfRecipes);
+                toAdd.add(result);
+                NotifierTask.addCrafting(player.getUniqueId(), result, result.getAmount());
+            }
         }
 
         for(ItemStack itemStack : toAdd) {

@@ -7,6 +7,7 @@ import xyz.wildseries.wildchests.api.objects.chests.Chest;
 
 import java.util.HashMap;
 
+@SuppressWarnings("WeakerAccess")
 public final class ItemUtils {
 
     public static void addItem(ItemStack itemStack, Inventory inventory, Location location){
@@ -42,6 +43,31 @@ public final class ItemUtils {
         }while(!additionalItems.isEmpty() && currentInventory < chest.getPagesAmount());
 
         return additionalItems.isEmpty();
+    }
+
+    public static void removeFromChest(Chest chest, ItemStack itemStack, int amount){
+        Inventory[] pages = chest.getPages();
+
+        int itemsRemoved = 0;
+
+        for(int i = 0; i < pages.length && itemsRemoved < amount; i++){
+            Inventory page = pages[i];
+            int toRemove = Math.min(amount - itemsRemoved, countItems(itemStack, page));
+            ItemStack cloned = itemStack.clone();
+            cloned.setAmount(toRemove);
+            page.removeItem(cloned);
+        }
+    }
+
+    public static int countItems(ItemStack itemStack, Inventory inventory){
+        int amount = 0;
+
+        for(ItemStack _itemStack : inventory.getContents()){
+            if(_itemStack != null && _itemStack.isSimilar(itemStack))
+                amount += _itemStack.getAmount();
+        }
+
+        return amount;
     }
 
 }
