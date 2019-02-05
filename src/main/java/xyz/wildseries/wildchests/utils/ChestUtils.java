@@ -110,7 +110,7 @@ public final class ChestUtils {
         if(!Locale.CRAFTED_ITEMS_FOOTER.isEmpty() && player != null)
             message.append("\n").append(Locale.CRAFTED_ITEMS_FOOTER.getMessage(totalCraftedItems));
 
-        if(totalCraftedItems > 0 && player != null)
+        if(!message.toString().isEmpty() && totalCraftedItems > 0 && player != null)
             player.sendMessage(message.toString());
     }
 
