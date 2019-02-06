@@ -5,14 +5,15 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import xyz.wildseries.wildchests.api.handlers.ChestsManager;
-import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
+import xyz.wildseries.wildchests.api.objects.chests.StorageChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
 import xyz.wildseries.wildchests.api.objects.chests.RegularChest;
 import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.objects.chests.WLinkedChest;
 import xyz.wildseries.wildchests.objects.chests.WRegularChest;
+import xyz.wildseries.wildchests.objects.chests.WStorageChest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,14 +40,26 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     @Override
+    public StorageChest getStorageChest(Location location) {
+        return getChest(WLocation.of(location), StorageChest.class);
+    }
+
+    @Override
     public Chest addChest(UUID placer, Location location, ChestData chestData){
         Chest chest = null;
 
         if(!isChest(location)){
-            if(chestData.getChestType() == ChestType.CHEST)
-                chest = new WRegularChest(placer, WLocation.of(location), chestData);
-            else if(chestData.getChestType() == ChestType.LINKED_CHEST)
-                chest = new WLinkedChest(placer, WLocation.of(location), chestData);
+            switch (chestData.getChestType()){
+                case CHEST:
+                    chest = new WRegularChest(placer, WLocation.of(location), chestData);
+                    break;
+                case LINKED_CHEST:
+                    chest = new WLinkedChest(placer, WLocation.of(location), chestData);
+                    break;
+                case STORAGE_UNIT:
+                    chest = new WStorageChest(placer, WLocation.of(location), chestData);
+                    break;
+            }
         }
 
         if(chest != null){

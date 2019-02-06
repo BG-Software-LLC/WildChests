@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
+import xyz.wildseries.wildchests.api.objects.chests.StorageChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 
 import java.util.List;
@@ -15,6 +16,8 @@ public interface ChestsManager {
     Chest getChest(Location location);
 
     LinkedChest getLinkedChest(Location location);
+
+    StorageChest getStorageChest(Location location);
 
     Chest addChest(UUID placer, Location location, ChestData chestData);
 
