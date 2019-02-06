@@ -1,5 +1,8 @@
 package xyz.wildseries.wildchests.objects.chests;
 
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
@@ -73,10 +76,32 @@ public final class WLinkedChest extends WChest implements LinkedChest {
 
     @Override
     public void remove() {
+        super.remove();
         //We want to unlink all linked chests only if that's the original chest
         if(this.linkedChest == null)
             getAllLinkedChests().forEach(linkedChest -> linkedChest.linkIntoChest(null));
-        plugin.getChestsManager().removeChest(this);
     }
 
+    @Override
+    public boolean onBreak(BlockBreakEvent event) {
+        if(!isLinkedIntoChest()){
+            return super.onBreak(event);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onOpen(PlayerInteractEvent event) {
+        super.onOpen(event);
+        getAllLinkedChests().forEach(linkedChest -> plugin.getNMSAdapter().playChestAction(linkedChest.getLocation(), true));
+        return true;
+    }
+
+    @Override
+    public boolean onClose(InventoryCloseEvent event) {
+        super.onClose(event);
+        getAllLinkedChests().forEach(linkedChest -> plugin.getNMSAdapter().playChestAction(linkedChest.getLocation(), false));
+        return true;
+    }
 }

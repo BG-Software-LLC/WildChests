@@ -10,7 +10,6 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.wildseries.wildchests.api.WildChests;
-import xyz.wildseries.wildchests.api.handlers.ChestsManager;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.command.CommandsHandler;
 import xyz.wildseries.wildchests.handlers.ChestsHandler;
@@ -31,7 +30,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     private static WildChestsPlugin plugin;
 
-    private ChestsManager chestsManager;
+    private ChestsHandler chestsManager;
     private SettingsHandler settingsHandler;
     private DataHandler dataHandler;
     private ProvidersHandler providersHandler;
@@ -136,7 +135,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     }
 
     @Override
-    public ChestsManager getChestsManager() {
+    public ChestsHandler getChestsManager() {
         return chestsManager;
     }
 

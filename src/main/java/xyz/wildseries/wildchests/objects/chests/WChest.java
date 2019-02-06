@@ -1,8 +1,24 @@
 package xyz.wildseries.wildchests.objects.chests;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 
+import org.bukkit.inventory.ItemStack;
+import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
@@ -12,16 +28,22 @@ import xyz.wildseries.wildchests.objects.WInventory;
 import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.task.ChestTask;
 import xyz.wildseries.wildchests.task.HopperTask;
+import xyz.wildseries.wildchests.utils.ChestUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @SuppressWarnings("all")
 public abstract class WChest implements Chest {
 
     protected final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    public static final Map<UUID, Chest> viewers = Maps.newHashMap();
+    public static final Set<UUID> movingBetweenPages = Sets.newHashSet(), buyingNewPage = Sets.newHashSet();
+    public static Inventory guiConfirm;
 
     private final HopperTask hopperTask;
     private final ChestTask chestTask;
@@ -91,6 +113,18 @@ public abstract class WChest implements Chest {
     }
 
     @Override
+    public void openPage(Player player, int page) {
+        viewers.put(player.getUniqueId(), this);
+        player.openInventory(getPage(page));
+    }
+
+    @Override
+    public void closePage(Player player) {
+        viewers.remove(player.getUniqueId());
+        player.closeInventory();
+    }
+
+    @Override
     public int getPagesAmount() {
         return pages.size();
     }
@@ -104,4 +138,125 @@ public abstract class WChest implements Chest {
 
         return 0;
     }
+
+    @Override
+    public void remove(){
+        plugin.getChestsManager().removeChest(this);
+    }
+
+    @Override
+    public boolean onBreak(BlockBreakEvent event){
+        Location loc = getLocation();
+        for(int page = 0; page < getPagesAmount(); page++){
+            Inventory inventory = getPage(page);
+            for(ItemStack itemStack : inventory.getContents())
+                if (itemStack != null && itemStack.getType() != Material.AIR)
+                    loc.getWorld().dropItemNaturally(loc, itemStack);
+            inventory.clear();
+        }
+
+        Iterator<UUID> viewers = this.viewers.keySet().iterator();
+
+        while(viewers.hasNext()){
+            UUID uuid = viewers.next();
+            if(this.viewers.get(uuid).equals(this))
+                viewers.remove();
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onPlace(BlockPlaceEvent event){
+        return true;
+    }
+
+    @Override
+    public boolean onOpen(PlayerInteractEvent event){
+        if(event.getPlayer().getGameMode() != GameMode.SPECTATOR)
+            plugin.getNMSAdapter().playChestAction(getLocation(), true);
+        return true;
+    }
+
+    @Override
+    public boolean onClose(InventoryCloseEvent event) {
+        //Checking if player is buying new page
+        if(buyingNewPage.contains(event.getPlayer().getUniqueId()))
+            return false;
+
+        //Checking if player is moving between pages
+        if(movingBetweenPages.contains(event.getPlayer().getUniqueId())) {
+            if(event.getPlayer().getGameMode() != GameMode.SPECTATOR)
+                Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getNMSAdapter().playChestAction(getLocation(), true), 1L);
+            movingBetweenPages.remove(event.getPlayer().getUniqueId());
+            return false;
+        }
+
+        //Checking that it's the last player that views the inventory
+        if(getViewersAmount(event.getViewers()) > 1)
+            return false;
+
+        //Playing close particle
+        if(event.getPlayer().getGameMode() != GameMode.SPECTATOR)
+            plugin.getNMSAdapter().playChestAction(getLocation(), false);
+
+        //Selling & crafting chest if needed
+        ChestData chestData = getData();
+        if(chestData.isAutoCrafter()) ChestUtils.tryCraftChest(this);
+        if(chestData.isSellMode()) ChestUtils.trySellChest(this);
+
+        return true;
+    }
+
+    @Override
+    public boolean onInteract(InventoryClickEvent event) {
+        if(event.getSlotType() != InventoryType.SlotType.OUTSIDE)
+            return false;
+
+        ChestData chestData = getData();
+        int index = getPageIndex(event.getWhoClicked().getOpenInventory().getTopInventory());
+
+        if(event.getClick() == ClickType.LEFT){
+            //Making sure he's not in the first page
+            if(index != 0){
+                movingBetweenPages.add(event.getWhoClicked().getUniqueId());
+                openPage((Player) event.getWhoClicked(), index - 1);
+            }
+        }
+
+        else if(event.getClick() == ClickType.RIGHT){
+            //Making sure it's not the last page
+            if(index + 1 < getPagesAmount()){
+                movingBetweenPages.add(event.getWhoClicked().getUniqueId());
+                openPage((Player) event.getWhoClicked(), index + 1);
+            }
+
+            //Making sure next page is purchasble
+            else if(chestData.getPagesData().containsKey(++index + 1)){
+                InventoryData inventoryData = chestData.getPagesData().get(index + 1);
+                buyingNewPage.add(event.getWhoClicked().getUniqueId());
+
+                if(plugin.getSettings().confirmGUI){
+                    event.getWhoClicked().openInventory(guiConfirm);
+                }else {
+                    Locale.EXPAND_CHEST.send(event.getWhoClicked(), inventoryData.getPrice());
+                    event.getWhoClicked().closeInventory();
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private int getViewersAmount(List<HumanEntity> viewersList){
+        int viewers = 0;
+
+        for(HumanEntity viewer : viewersList){
+            if(viewer.getGameMode() != GameMode.SPECTATOR)
+                viewers++;
+        }
+
+        return viewers;
+    }
+
 }

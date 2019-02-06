@@ -12,8 +12,4 @@ public final class WRegularChest extends WChest implements RegularChest {
         super(placer, location, chestData);
     }
 
-    @Override
-    public void remove() {
-        plugin.getChestsManager().removeChest(this);
-    }
 }

@@ -7,19 +7,12 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 
 import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
-import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
-import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 
 @SuppressWarnings("unused")
@@ -50,7 +43,9 @@ public final class BlockListener implements Listener {
         if(chestData == null)
             return;
 
-        plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
+        Chest chest = plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
+
+        chest.onPlace(e);
 
         Locale.CHEST_PLACED.send(e.getPlayer(), chestData.getName());
     }
@@ -67,15 +62,7 @@ public final class BlockListener implements Listener {
         if(e.getPlayer().getGameMode() != GameMode.CREATIVE)
             e.getPlayer().getWorld().dropItemNaturally(chest.getLocation(), chest.getData().getItemStack());
 
-        if(chest.getChestType() != ChestType.LINKED_CHEST || !((LinkedChest) chest).isLinkedIntoChest()){
-            for(int page = 0; page < chest.getPagesAmount(); page++){
-                Inventory inventory = chest.getPage(page);
-                for(ItemStack itemStack : inventory.getContents())
-                    if (itemStack != null && itemStack.getType() != Material.AIR)
-                        e.getPlayer().getWorld().dropItemNaturally(chest.getLocation(), itemStack);
-                inventory.clear();
-            }
-        }
+        chest.onBreak(e);
 
         chest.remove();
         e.getBlock().setType(Material.AIR);
