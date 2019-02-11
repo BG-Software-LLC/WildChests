@@ -71,14 +71,15 @@ public final class WStorageChest extends WChest implements StorageChest {
     public boolean onInteract(InventoryClickEvent event) {
         ItemStack cursor = event.getCursor();
 
-        if(event.getRawSlot() >= 5) {
-            if(!event.getClick().name().contains("SHIFT"))
-                return false;
-            else
-                cursor = event.getCurrentItem();
+        if(event.getClick().name().contains("SHIFT")){
+            event.setCancelled(true);
+            return false;
         }
 
-        if(event.getRawSlot() < 5 && event.getRawSlot() != 2){
+        if(event.getRawSlot() >= 5)
+            return false;
+
+        if(event.getRawSlot() != 2){
             event.setCancelled(true);
             return false;
         }
