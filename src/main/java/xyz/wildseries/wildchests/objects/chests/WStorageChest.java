@@ -108,17 +108,21 @@ public final class WStorageChest extends WChest implements StorageChest {
     public boolean onInteract(InventoryClickEvent event) {
         ItemStack cursor = event.getCursor();
 
-        if(event.getClick().name().contains("SHIFT")){
+        if(event.getRawSlot() >= 5 && !event.getClick().name().contains("SHIFT"))
+            return false;
+
+        if(event.getRawSlot() < 5 && event.getRawSlot() != 2){
             event.setCancelled(true);
             return false;
         }
 
-        if(event.getRawSlot() >= 5)
-            return false;
-
-        if(event.getRawSlot() != 2){
+        if(event.getClick().name().contains("SHIFT")){
+            if(event.getCurrentItem() == null)
+                return false;
+            cursor = event.getCurrentItem();
+            event.setCurrentItem(new ItemStack(Material.AIR));
+            event.getInventory().setItem(2, cursor);
             event.setCancelled(true);
-            return false;
         }
 
         ItemStack chestItem = getItemStack();
@@ -171,10 +175,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private void updateInventory(Inventory inventory){
         for (HumanEntity viewer : inventory.getViewers()) {
             if (viewer instanceof Player) {
-                WChest.viewers.remove(viewer.getUniqueId());
-                viewer.closeInventory();
-                WChest.viewers.put(viewer.getUniqueId(), this);
-                viewer.openInventory(getPage(0));
+                plugin.getNMSAdapter().refreshHopperInventory((Player) viewer, getPage(0));
             }
         }
     }
