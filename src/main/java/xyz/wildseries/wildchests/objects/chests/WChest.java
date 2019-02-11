@@ -155,7 +155,7 @@ public abstract class WChest implements Chest {
             inventory.clear();
         }
 
-        Iterator<UUID> viewers = this.viewers.keySet().iterator();
+        Iterator<UUID> viewers = WChest.viewers.keySet().iterator();
 
         while(viewers.hasNext()){
             UUID uuid = viewers.next();
