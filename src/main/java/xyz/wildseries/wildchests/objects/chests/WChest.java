@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -246,6 +247,46 @@ public abstract class WChest implements Chest {
         }
 
         return true;
+    }
+
+    public void saveIntoFile(YamlConfiguration cfg){
+        cfg.set("placer", placer.toString());
+        cfg.set("data", getData().getName());
+
+        int index = 0;
+        Inventory inventory;
+
+        while((inventory = getPage(index)) != null){
+            cfg.set("inventory." + index, "empty");
+            for(int slot = 0; slot < inventory.getSize(); slot++){
+                ItemStack itemStack = inventory.getItem(slot);
+
+                if(itemStack == null)
+                    continue;
+
+                cfg.set("inventory." + index + "." + slot, itemStack);
+            }
+            index++;
+        }
+    }
+
+    public void loadFromFile(YamlConfiguration cfg){
+        if (cfg.contains("inventory")) {
+            ChestData chestData = getData();
+            for (String inventoryIndex : cfg.getConfigurationSection("inventory").getKeys(false)) {
+                Inventory inventory = Bukkit.createInventory(null, chestData.getDefaultSize(), chestData.getTitle(Integer.valueOf(inventoryIndex) + 1));
+                if(cfg.isConfigurationSection("inventory." + inventoryIndex)){
+                    for (String slot : cfg.getConfigurationSection("inventory." + inventoryIndex).getKeys(false)) {
+                        try {
+                            inventory.setItem(Integer.valueOf(slot), cfg.getItemStack("inventory." + inventoryIndex + "." + slot));
+                        } catch (Exception ex) {
+                            break;
+                        }
+                    }
+                }
+                setPage(Integer.valueOf(inventoryIndex), inventory);
+            }
+        }
     }
 
     private int getViewersAmount(List<HumanEntity> viewersList){

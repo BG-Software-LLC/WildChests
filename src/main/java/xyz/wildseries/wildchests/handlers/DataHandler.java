@@ -3,13 +3,11 @@ package xyz.wildseries.wildchests.handlers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
-import xyz.wildseries.wildchests.api.objects.chests.LinkedChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.objects.WLocation;
+import xyz.wildseries.wildchests.objects.chests.WChest;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -52,29 +50,7 @@ public final class DataHandler {
 
                 YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
-                cfg.set("placer", chest.getPlacer().toString());
-                cfg.set("data", chest.getData().getName());
-
-                int index = 0;
-                Inventory inventory;
-
-                while((inventory = chest.getPage(index)) != null){
-                    cfg.set("inventory." + index, "empty");
-                    for(int slot = 0; slot < inventory.getSize(); slot++){
-                        ItemStack itemStack = inventory.getItem(slot);
-
-                        if(itemStack == null)
-                            continue;
-
-                        cfg.set("inventory." + index + "." + slot, itemStack);
-                    }
-                    index++;
-                }
-
-                if(chest instanceof LinkedChest){
-                    if(((LinkedChest) chest).isLinkedIntoChest())
-                        cfg.set("linked-chest", WLocation.of(((LinkedChest) chest).getLinkedChest().getLocation()).toString());
-                }
+                ((WChest) chest).saveIntoFile(cfg);
 
                 cfg.save(file);
             }catch(IOException ex){
@@ -104,30 +80,9 @@ public final class DataHandler {
                 Location location = WLocation.of(chestFile.getName().replace(".yml", "")).getLocation();
                 ChestData chestData = plugin.getChestsManager().getChestData(cfg.getString("data"));
 
-                Chest chest = plugin.getChestsManager().addChest(placer, location, chestData);
+                WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
 
-                if (cfg.contains("inventory")) {
-                    for (String inventoryIndex : cfg.getConfigurationSection("inventory").getKeys(false)) {
-                        Inventory inventory = Bukkit.createInventory(null, chestData.getDefaultSize(), chestData.getTitle(Integer.valueOf(inventoryIndex) + 1));
-                        if(cfg.isConfigurationSection("inventory." + inventoryIndex)){
-                            for (String slot : cfg.getConfigurationSection("inventory." + inventoryIndex).getKeys(false)) {
-                                try {
-                                    inventory.setItem(Integer.valueOf(slot), cfg.getItemStack("inventory." + inventoryIndex + "." + slot));
-                                } catch (Exception ex) {
-                                    break;
-                                }
-                            }
-                        }
-                        chest.setPage(Integer.valueOf(inventoryIndex), inventory);
-                    }
-                }
-
-                if (cfg.contains("linked-chest")) {
-                    //We want to run it on the first tick, after all chests were loaded.
-                    Location linkedChest = WLocation.of(cfg.getString("linked-chest")).getLocation();
-                    Bukkit.getScheduler().runTaskLater(plugin, () ->
-                            ((LinkedChest) chest).linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
-                }
+                chest.loadFromFile(cfg);
 
                 chestsAmount++;
             }catch(Exception ex){

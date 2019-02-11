@@ -3,6 +3,7 @@ package xyz.wildseries.wildchests.objects.chests;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -145,6 +146,22 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
 
         return true;
+    }
+
+    @Override
+    public void saveIntoFile(YamlConfiguration cfg) {
+        cfg.set("placer", placer.toString());
+        cfg.set("data", getData().getName());
+        cfg.set("item", itemStack);
+        cfg.set("amount", amount);
+    }
+
+    @Override
+    public void loadFromFile(YamlConfiguration cfg) {
+        if(cfg.contains("item"))
+            itemStack = cfg.getItemStack("item");
+        if(cfg.contains("amount"))
+            amount = cfg.getInt("amount");
     }
 
     private void updateInventory(Inventory inventory){

@@ -1,5 +1,8 @@
 package xyz.wildseries.wildchests.objects.chests;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -103,5 +106,23 @@ public final class WLinkedChest extends WChest implements LinkedChest {
         super.onClose(event);
         getAllLinkedChests().forEach(linkedChest -> plugin.getNMSAdapter().playChestAction(linkedChest.getLocation(), false));
         return true;
+    }
+
+    @Override
+    public void saveIntoFile(YamlConfiguration cfg) {
+        super.saveIntoFile(cfg);
+        if(isLinkedIntoChest())
+            cfg.set("linked-chest", WLocation.of(getLinkedChest().getLocation()).toString());
+    }
+
+    @Override
+    public void loadFromFile(YamlConfiguration cfg) {
+        super.loadFromFile(cfg);
+        if (cfg.contains("linked-chest")) {
+            //We want to run it on the first tick, after all chests are loaded.
+            Location linkedChest = WLocation.of(cfg.getString("linked-chest")).getLocation();
+            Bukkit.getScheduler().runTaskLater(plugin, () ->
+                    linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
+        }
     }
 }
