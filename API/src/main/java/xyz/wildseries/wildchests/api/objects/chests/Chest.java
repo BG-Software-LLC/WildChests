@@ -6,12 +6,12 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 
-import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -50,5 +50,7 @@ public interface Chest {
     boolean onClose(InventoryCloseEvent event);
 
     boolean onInteract(InventoryClickEvent event);
+
+    boolean onHopperMove(InventoryMoveItemEvent event);
 
 }

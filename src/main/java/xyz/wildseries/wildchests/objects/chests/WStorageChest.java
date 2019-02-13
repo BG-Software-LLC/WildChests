@@ -8,6 +8,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +47,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack.clone();
+        Bukkit.broadcastMessage(this.itemStack + "");
         ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1) : this.itemStack.clone();
         designItem.setAmount(1);
         Inventory page = getPage(0);
@@ -154,6 +156,33 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean onHopperMove(InventoryMoveItemEvent event) {
+        ItemStack item = event.getItem().clone();
+        ItemStack itemStack = getItemStack();
+
+        Inventory page = getPage(0);
+        if(page == null)
+            return false;
+
+        if(itemStack.getType() == Material.AIR){
+            event.getSource().removeItem(item);
+            setItemStack(item);
+            setAmount(item.getAmount());
+            updateInventory(page);
+            return true;
+        }
+
+        else if(event.getItem().isSimilar(itemStack)){
+            event.getSource().removeItem(event.getItem());
+            setAmount(getAmount() + event.getItem().getAmount());
+            updateInventory(page);
+            return true;
+        }
+
+        return false;
     }
 
     @Override

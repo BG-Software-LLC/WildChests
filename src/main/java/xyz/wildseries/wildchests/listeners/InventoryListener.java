@@ -2,8 +2,6 @@ package xyz.wildseries.wildchests.listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.block.Hopper;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,7 +14,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import xyz.wildseries.wildchests.Locale;
@@ -26,10 +23,7 @@ import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.api.objects.data.InventoryData;
 import xyz.wildseries.wildchests.objects.Materials;
 import xyz.wildseries.wildchests.objects.WInventory;
-import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.objects.chests.WChest;
-import xyz.wildseries.wildchests.utils.ChestUtils;
-import xyz.wildseries.wildchests.utils.ItemUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -198,34 +192,7 @@ public final class InventoryListener implements Listener {
 
         e.setCancelled(true);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if(ItemUtils.addToChest(chest, e.getItem())) {
-                e.getSource().removeItem(e.getItem());
-                ((Hopper) e.getSource().getHolder()).update();
-
-                WLocation location = WLocation.of(chest.getLocation());
-
-                if (chest.getData().isAutoCrafter()) {
-                    ChestUtils.tryCraftChest(chest);
-                }
-
-                if (chest.getData().isSellMode()) {
-                    ChestUtils.trySellChest(chest);
-                }
-
-            }
-        }, 1L);
-    }
-
-    private void updateInventory(Inventory inventory, Chest chest){
-        for (HumanEntity viewer : inventory.getViewers()) {
-            if (viewer instanceof Player) {
-                WChest.viewers.remove(viewer.getUniqueId());
-                viewer.closeInventory();
-                WChest.viewers.put(viewer.getUniqueId(), chest);
-                viewer.openInventory(chest.getPage(0));
-            }
-        }
+        Bukkit.getScheduler().runTaskLater(plugin, () -> chest.onHopperMove(e), 1L);
     }
 
     private void initGUIConfirm(){

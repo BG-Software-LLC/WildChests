@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -30,6 +32,7 @@ import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.task.ChestTask;
 import xyz.wildseries.wildchests.task.HopperTask;
 import xyz.wildseries.wildchests.utils.ChestUtils;
+import xyz.wildseries.wildchests.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -246,6 +249,23 @@ public abstract class WChest implements Chest {
             }
         }
 
+        return true;
+    }
+
+    @Override
+    public boolean onHopperMove(InventoryMoveItemEvent event) {
+        if(ItemUtils.addToChest(this, event.getItem())) {
+            event.getSource().removeItem(event.getItem());
+            ((Hopper) event.getSource().getHolder()).update();
+
+            if (getData().isAutoCrafter()) {
+                ChestUtils.tryCraftChest(this);
+            }
+
+            if (getData().isSellMode()) {
+                ChestUtils.trySellChest(this);
+            }
+        }
         return true;
     }
 
