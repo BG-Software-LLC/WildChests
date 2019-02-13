@@ -44,6 +44,10 @@ prices-list:
 # *** Linked Mode ***
 # Chests in this mode are all linked together, and work like ender chests, but globally.
 #
+# *** Storage Units Mode ***
+# Chests in this mode will have unlimited amount of storage, but only for one specific item.
+# Note: Auto sell & auto craft modes doesn't work for this mode!
+#
 # There are sections that can be applied to all of the chests:
 # size: Amount of rows the chest will have (INTEGER) (Will be overridden by pages' size)
 # title: Global title for all pages. Will be overridden by page's title (STRING)
@@ -99,3 +103,9 @@ chests:
       name: '&cAuto Crafter &7(Place to active)'
     crafter-chest:
     - GOLD_INGOT
+  storage_unit:
+    chest-mode: STORAGE_UNIT
+    size: 3 #Must be here, isn't get counted
+    title: 'Storage Unit {0}'
+    item:
+      name: '&bStorage Unit &7(Place to active)'
