@@ -1,6 +1,7 @@
 package xyz.wildseries.wildchests.utils;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
@@ -68,6 +69,23 @@ public final class ItemUtils {
         }
 
         return amount;
+    }
+
+    public static int getSpaceLeft(Inventory inventory, ItemStack itemStack){
+        int spaceLeft = 0, counter = 0;
+
+        for(ItemStack _itemStack : inventory.getContents()){
+            if(counter >= 5)
+                break;
+            else if(_itemStack == null || _itemStack.getType() == Material.AIR) {
+                spaceLeft += itemStack.getMaxStackSize();
+            }
+            else if(_itemStack.isSimilar(itemStack)){
+                spaceLeft += Math.max(0, _itemStack.getMaxStackSize() - _itemStack.getAmount());
+            }
+            counter++;
+        }
+        return spaceLeft;
     }
 
 }

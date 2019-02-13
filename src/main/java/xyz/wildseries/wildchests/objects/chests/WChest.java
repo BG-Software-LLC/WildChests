@@ -35,6 +35,7 @@ import xyz.wildseries.wildchests.utils.ChestUtils;
 import xyz.wildseries.wildchests.utils.ItemUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -266,6 +267,48 @@ public abstract class WChest implements Chest {
                 ChestUtils.trySellChest(this);
             }
         }
+        return true;
+    }
+
+    @Override
+    public boolean onHopperItemTake(Inventory hopperInventory) {
+        ChestData chestData = getData();
+
+        int hopperAmount = plugin.getNMSAdapter().getHopperAmount(location.getWorld());
+
+        outerLoop: for(int i = 0; i < getPagesAmount(); i++){
+            Inventory inventory = getPage(i);
+            for(int slot = 0; slot < inventory.getSize(); slot++){
+                ItemStack itemStack = inventory.getItem(slot);
+
+                if(itemStack == null || (chestData.isHopperFilter() && !chestData.containsRecipe(itemStack)))
+                    continue;
+
+                int amount = Math.min(ItemUtils.getSpaceLeft(hopperInventory, itemStack), hopperAmount);
+
+                if(amount == 0)
+                    continue;
+
+                amount = Math.min(amount, itemStack.getAmount());
+
+                ItemStack copyItem = itemStack.clone();
+
+                copyItem.setAmount(amount);
+
+                HashMap<Integer, ItemStack> additionalItems = hopperInventory.addItem(copyItem);
+
+                if(additionalItems.isEmpty()) {
+                    if(itemStack.getAmount() > amount){
+                        itemStack.setAmount(itemStack.getAmount() - amount);
+                    }else{
+                        itemStack.setType(Material.AIR);
+                    }
+                    inventory.setItem(slot, itemStack);
+                    break outerLoop;
+                }
+            }
+        }
+
         return true;
     }
 

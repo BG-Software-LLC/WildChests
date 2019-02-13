@@ -16,8 +16,10 @@ import xyz.wildseries.wildchests.api.objects.chests.StorageChest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.objects.WInventory;
 import xyz.wildseries.wildchests.objects.WLocation;
+import xyz.wildseries.wildchests.utils.ItemUtils;
 import xyz.wildseries.wildchests.utils.Materials;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
@@ -183,6 +185,36 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean onHopperItemTake(Inventory hopperInventory) {
+        ItemStack itemStack = getItemStack();
+        Inventory page = getPage(0);
+
+        if(page == null)
+            return false;
+
+        int hopperAmount = plugin.getNMSAdapter().getHopperAmount(location.getWorld());
+
+        int amount = Math.min(ItemUtils.getSpaceLeft(hopperInventory, itemStack), hopperAmount);
+
+        if(amount == 0)
+            return false;
+
+        int itemAmount = Math.min(itemStack.getMaxStackSize(), getAmount());
+        amount = Math.min(amount, itemAmount);
+
+        itemStack.setAmount(amount);
+
+        HashMap<Integer, ItemStack> additionalItems = hopperInventory.addItem(itemStack);
+
+        if(additionalItems.isEmpty()) {
+            setAmount(getAmount() - amount);
+            updateInventory(page);
+        }
+
+        return true;
     }
 
     @Override

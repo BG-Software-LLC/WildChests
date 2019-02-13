@@ -48,60 +48,7 @@ public final class HopperTask extends BukkitRunnable {
         if(hopperInventory == null)
             return;
 
-        ChestData chestData = chest.getData();
-
-        int hopperAmount = plugin.getNMSAdapter().getHopperAmount(location.getWorld());
-
-        outerLoop: for(int i = 0; i < chest.getPagesAmount(); i++){
-            Inventory inventory = chest.getPage(i);
-            for(int slot = 0; slot < inventory.getSize(); slot++){
-                ItemStack itemStack = inventory.getItem(slot);
-
-                if(itemStack == null || (chestData.isHopperFilter() && !chestData.containsRecipe(itemStack)))
-                    continue;
-
-                int amount = Math.min(getSpaceLeft(hopperInventory, itemStack), hopperAmount);
-
-                if(amount == 0)
-                    continue;
-
-                amount = Math.min(amount, itemStack.getAmount());
-
-                ItemStack copyItem = itemStack.clone();
-
-                copyItem.setAmount(amount);
-
-                HashMap<Integer, ItemStack> additionalItems = hopperInventory.addItem(copyItem);
-
-                if(additionalItems.isEmpty()) {
-                    if(itemStack.getAmount() > amount){
-                        itemStack.setAmount(itemStack.getAmount() - amount);
-                    }else{
-                        itemStack.setType(Material.AIR);
-                    }
-                    inventory.setItem(slot, itemStack);
-                    break outerLoop;
-                }
-            }
-        }
-
-    }
-
-    private int getSpaceLeft(Inventory inventory, ItemStack itemStack){
-        int spaceLeft = 0, counter = 0;
-
-        for(ItemStack _itemStack : inventory.getContents()){
-            if(counter >= 5)
-                break;
-            else if(_itemStack == null || _itemStack.getType() == Material.AIR) {
-                spaceLeft += itemStack.getMaxStackSize();
-            }
-            else if(_itemStack.isSimilar(itemStack)){
-                spaceLeft += Math.max(0, _itemStack.getMaxStackSize() - _itemStack.getAmount());
-            }
-            counter++;
-        }
-        return spaceLeft;
+        chest.onHopperItemTake(hopperInventory);
     }
 
     private Inventory getHopperInventory(Block hopperBlock){

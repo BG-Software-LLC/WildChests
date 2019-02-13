@@ -53,4 +53,6 @@ public interface Chest {
 
     boolean onHopperMove(InventoryMoveItemEvent event);
 
+    boolean onHopperItemTake(Inventory hopperInventory);
+
 }
