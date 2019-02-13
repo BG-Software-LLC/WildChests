@@ -145,7 +145,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
         else{
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                int itemAmount = Math.min(64, getAmount());
+                int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
                 setAmount(getAmount() - itemAmount);
                 chestItem.setAmount(itemAmount);
                 updateInventory(event.getInventory());
