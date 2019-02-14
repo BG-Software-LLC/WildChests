@@ -49,7 +49,6 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack.clone();
-        Bukkit.broadcastMessage(this.itemStack + "");
         ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1) : this.itemStack.clone();
         designItem.setAmount(1);
         Inventory page = getPage(0);
