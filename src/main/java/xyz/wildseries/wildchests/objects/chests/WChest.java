@@ -27,6 +27,7 @@ import xyz.wildseries.wildchests.api.objects.ChestType;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
 import xyz.wildseries.wildchests.api.objects.data.ChestData;
 import xyz.wildseries.wildchests.api.objects.data.InventoryData;
+import xyz.wildseries.wildchests.listeners.InventoryListener;
 import xyz.wildseries.wildchests.objects.WInventory;
 import xyz.wildseries.wildchests.objects.WLocation;
 import xyz.wildseries.wildchests.task.ChestTask;
@@ -47,7 +48,7 @@ public abstract class WChest implements Chest {
 
     protected final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     public static final Map<UUID, Chest> viewers = Maps.newHashMap();
-    public static final Set<UUID> movingBetweenPages = Sets.newHashSet(), buyingNewPage = Sets.newHashSet();
+    public static final Set<UUID> movingBetweenPages = Sets.newHashSet();
     public static Inventory guiConfirm;
 
     private final HopperTask hopperTask;
@@ -186,7 +187,7 @@ public abstract class WChest implements Chest {
     @Override
     public boolean onClose(InventoryCloseEvent event) {
         //Checking if player is buying new page
-        if(buyingNewPage.contains(event.getPlayer().getUniqueId()))
+        if(InventoryListener.buyNewPage.containsKey(event.getPlayer().getUniqueId()))
             return false;
 
         //Checking if player is moving between pages
@@ -239,7 +240,7 @@ public abstract class WChest implements Chest {
             //Making sure next page is purchasble
             else if(chestData.getPagesData().containsKey(++index + 1)){
                 InventoryData inventoryData = chestData.getPagesData().get(index + 1);
-                buyingNewPage.add(event.getWhoClicked().getUniqueId());
+                InventoryListener.buyNewPage.put(event.getWhoClicked().getUniqueId(), inventoryData);
 
                 if(plugin.getSettings().confirmGUI){
                     event.getWhoClicked().openInventory(guiConfirm);

@@ -34,7 +34,7 @@ public final class InventoryListener implements Listener {
 
     private final WildChestsPlugin plugin;
 
-    private final Map<UUID, InventoryData> buyNewPage = new HashMap<>();
+    public static final Map<UUID, InventoryData> buyNewPage = new HashMap<>();
 
     public InventoryListener(WildChestsPlugin plugin){
         this.plugin = plugin;
