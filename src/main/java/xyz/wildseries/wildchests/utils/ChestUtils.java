@@ -113,9 +113,10 @@ public final class ChestUtils {
                 if(plugin.getSettings().sellCommand.isEmpty()) {
                     plugin.getProviders().trySellItem(placer, itemStack);
                 }else{
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                            .replace("{player-name}", Bukkit.getPlayer(placer).getName())
-                            .replace("{price}", String.valueOf(price)));
+                    Bukkit.getScheduler().runTask(plugin, () ->
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                                .replace("{player-name}", Bukkit.getPlayer(placer).getName())
+                                .replace("{price}", String.valueOf(price))));
                 }
 
                 NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
