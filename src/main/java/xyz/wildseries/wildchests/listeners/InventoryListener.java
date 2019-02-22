@@ -1,5 +1,7 @@
 package xyz.wildseries.wildchests.listeners;
 
+import com.google.common.collect.Maps;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -13,9 +15,9 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
 import xyz.wildseries.wildchests.Locale;
 import xyz.wildseries.wildchests.WildChestsPlugin;
 import xyz.wildseries.wildchests.api.objects.chests.Chest;
@@ -25,7 +27,6 @@ import xyz.wildseries.wildchests.objects.Materials;
 import xyz.wildseries.wildchests.objects.WInventory;
 import xyz.wildseries.wildchests.objects.chests.WChest;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public final class InventoryListener implements Listener {
 
     private final WildChestsPlugin plugin;
 
-    public static final Map<UUID, InventoryData> buyNewPage = new HashMap<>();
+    public static final Map<UUID, InventoryData> buyNewPage = Maps.newHashMap();
 
     public InventoryListener(WildChestsPlugin plugin){
         this.plugin = plugin;
@@ -64,7 +65,7 @@ public final class InventoryListener implements Listener {
         chest.openPage(e.getPlayer(), 0);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestClose(InventoryCloseEvent e){
         Chest chest = WChest.viewers.get(e.getPlayer().getUniqueId());
 
@@ -80,18 +81,42 @@ public final class InventoryListener implements Listener {
         chest.closePage((Player) e.getPlayer());
     }
 
-    @EventHandler
-    public void onPageMove(InventoryClickEvent e){
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onChestInteract(InventoryClickEvent e){
         Chest chest = WChest.viewers.get(e.getWhoClicked().getUniqueId());
 
         //Making sure it's still a valid chest
         if(chest == null) {
             WChest.viewers.remove(e.getWhoClicked().getUniqueId());
+            e.setCancelled(true);
             return;
         }
 
         chest.onInteract(e);
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onHopperMove(InventoryMoveItemEvent e){
+        if(e.getSource().getType() != InventoryType.HOPPER || e.getDestination().getType() != InventoryType.CHEST)
+            return;
+
+        if(!(e.getDestination().getHolder() instanceof org.bukkit.block.Chest))
+            return;
+
+        org.bukkit.block.Chest bukkitChest = (org.bukkit.block.Chest) e.getDestination().getHolder();
+        Chest chest = plugin.getChestsManager().getChest(bukkitChest.getLocation());
+
+        if(chest == null)
+            return;
+
+        e.setCancelled(true);
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> chest.onHopperMove(e), 1L);
+    }
+
+    /*
+     *  Upgrade Events
+     */
 
     @EventHandler
     public void onPlayerBuyConfirm(AsyncPlayerChatEvent e){
@@ -174,25 +199,6 @@ public final class InventoryListener implements Listener {
                     e.getPlayer().openInventory(e.getInventory());
             }, 1L);
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onInventoryMoveItem(InventoryMoveItemEvent e){
-        if(e.getSource().getType() != InventoryType.HOPPER || e.getDestination().getType() != InventoryType.CHEST)
-            return;
-
-        if(!(e.getDestination().getHolder() instanceof org.bukkit.block.Chest))
-            return;
-
-        org.bukkit.block.Chest bukkitChest = (org.bukkit.block.Chest) e.getDestination().getHolder();
-        Chest chest = plugin.getChestsManager().getChest(bukkitChest.getLocation());
-
-        if(chest == null)
-            return;
-
-        e.setCancelled(true);
-
-        Bukkit.getScheduler().runTaskLater(plugin, () -> chest.onHopperMove(e), 1L);
     }
 
     private void initGUIConfirm(){
