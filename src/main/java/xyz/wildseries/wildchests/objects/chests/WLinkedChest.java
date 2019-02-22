@@ -42,7 +42,7 @@ public final class WLinkedChest extends WChest implements LinkedChest {
 
         LinkedChest linkedChest = plugin.getChestsManager().getLinkedChest(this.linkedChest.getLocation());
 
-        if(linkedChest.isLinkedIntoChest())
+        if(linkedChest != null && linkedChest.isLinkedIntoChest())
             linkIntoChest(linkedChest);
 
         return linkedChest;
