@@ -85,7 +85,8 @@ public final class CommandLink implements ICommand {
             players.remove(player.getUniqueId());
 
 
-            if(originalChest == null || originalChest.getLocation().equals(linkedChest.getLocation())){
+            if(originalChest == null || originalChest.getLocation().equals(linkedChest.getLocation()) ||
+                    originalChest.equals(linkedChest.getLinkedChest())){
                 Locale.NOT_LINKED_CHEST.send(player);
                 return;
             }
