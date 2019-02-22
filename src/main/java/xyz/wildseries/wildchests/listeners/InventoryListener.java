@@ -88,7 +88,6 @@ public final class InventoryListener implements Listener {
         //Making sure it's still a valid chest
         if(chest == null) {
             WChest.viewers.remove(e.getWhoClicked().getUniqueId());
-            e.setCancelled(true);
             return;
         }
 
