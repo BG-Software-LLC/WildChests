@@ -122,7 +122,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     private boolean loadNMSAdapter(){
         String version = getServer().getClass().getPackage().getName().split("\\.")[3];
         try {
-            nmsAdapter = (NMSAdapter) Class.forName("xyz.wildseries.wildchests.nms.NMSAdapter_" + version).newInstance();
+            nmsAdapter = (NMSAdapter) Class.forName("com.bgsoftware.wildchests.nms.NMSAdapter_" + version).newInstance();
             return true;
         } catch (Exception ex){
             log("Error while loading adapter - unknown adapter " + version + "... Please contact @Ome_R");
