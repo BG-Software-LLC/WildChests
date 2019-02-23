@@ -19,6 +19,7 @@ import xyz.wildseries.wildchests.handlers.SettingsHandler;
 import xyz.wildseries.wildchests.listeners.BlockListener;
 import xyz.wildseries.wildchests.listeners.InventoryListener;
 import xyz.wildseries.wildchests.listeners.PlayerListener;
+import xyz.wildseries.wildchests.metrics.Metrics;
 import xyz.wildseries.wildchests.nms.NMSAdapter;
 import xyz.wildseries.wildchests.task.NotifierTask;
 import xyz.wildseries.wildchests.task.SaveTask;
@@ -40,6 +41,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     @Override
     public void onEnable() {
         plugin = this;
+        new Metrics(this);
+
         log("******** ENABLE START ********");
 
         chestsManager = new ChestsHandler();
