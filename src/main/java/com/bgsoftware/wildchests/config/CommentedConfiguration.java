@@ -28,7 +28,7 @@ import java.util.Map;
 public final class CommentedConfiguration extends YamlConfiguration{
 
     private Class commentsClass;
-    private String[] ignoredSections = new String[] {"limits"};
+    private String[] ignoredSections = new String[] {"chests"};
 
     public CommentedConfiguration(Class commentsClass){
         this.commentsClass = commentsClass;
