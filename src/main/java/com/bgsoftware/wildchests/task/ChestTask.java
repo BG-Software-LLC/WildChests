@@ -2,7 +2,6 @@ package com.bgsoftware.wildchests.task;
 
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ChestUtils;
-import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -54,9 +53,7 @@ public final class ChestTask extends BukkitRunnable {
         for(int i = 0; i < originalInventory.getSize(); i++){
             ItemStack itemStack = originalInventory.getItem(i);
             if(itemStack != null && itemStack.getType() != Material.AIR){
-                if(!ItemUtils.addToChest(chest, itemStack)){
-                    additionalItems.add(itemStack);
-                }
+                additionalItems.addAll(chest.addItems(itemStack).values());
                 originalInventory.setItem(i, new ItemStack(Material.AIR));
             }
         }

@@ -60,9 +60,9 @@ public final class ChestUtils {
             }
 
             if(amountOfRecipes > 0) {
-                for (ItemStack ingredient : ingredients) {
-                    ItemUtils.removeFromChest(chest, ingredient, ingredient.getAmount() * amountOfRecipes);
-                }
+                for (ItemStack ingredient : ingredients)
+                    chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
+
                 ItemStack result = recipe.getResult().clone();
                 result.setAmount(result.getAmount() * amountOfRecipes);
                 toAdd.add(result);
@@ -70,13 +70,7 @@ public final class ChestUtils {
             }
         }
 
-        List<ItemStack> toDrop = new ArrayList<>();
-
-        for(ItemStack itemStack : toAdd) {
-            if(!ItemUtils.addToChest(chest, itemStack)) {
-                toDrop.add(itemStack);
-            }
-        }
+        List<ItemStack> toDrop = new ArrayList<>(chest.addItems(toAdd.toArray(new ItemStack[]{})).values());
 
         if(!toDrop.isEmpty()){
             Bukkit.getScheduler().runTask(plugin, () -> {

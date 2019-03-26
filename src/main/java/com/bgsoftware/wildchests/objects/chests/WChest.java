@@ -151,6 +151,43 @@ public abstract class WChest implements Chest {
     }
 
     @Override
+    public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
+        Map<Integer, ItemStack> additionalItems = new HashMap<>();
+        Map<Integer, ItemStack> itemAdditionalItems;
+
+        for(ItemStack itemStack : itemStacks) {
+            if (itemStack != null) {
+                int currentInventory = 0;
+
+                do {
+                    Inventory inventory = getPage(currentInventory);
+                    itemAdditionalItems = inventory.addItem(itemStack);
+                    currentInventory++;
+                } while (!additionalItems.isEmpty() && currentInventory < getPagesAmount());
+
+                additionalItems.putAll(itemAdditionalItems);
+            }
+        }
+
+        return additionalItems;
+    }
+
+    @Override
+    public void removeItem(int amountToRemove, ItemStack itemStack) {
+        Inventory[] pages = getPages();
+
+        int itemsRemoved = 0;
+
+        for(int i = 0; i < pages.length && itemsRemoved < amountToRemove; i++){
+            Inventory page = pages[i];
+            int toRemove = Math.min(amountToRemove - itemsRemoved, ItemUtils.countItems(itemStack, page));
+            ItemStack cloned = itemStack.clone();
+            cloned.setAmount(toRemove);
+            page.removeItem(cloned);
+        }
+    }
+
+    @Override
     public boolean onBreak(BlockBreakEvent event){
         Location loc = getLocation();
         for(int page = 0; page < getPagesAmount(); page++){
@@ -256,7 +293,7 @@ public abstract class WChest implements Chest {
 
     @Override
     public boolean onHopperMove(InventoryMoveItemEvent event) {
-        if(ItemUtils.addToChest(this, event.getItem())) {
+        if(addItems(event.getItem()).isEmpty()){
             event.getSource().removeItem(event.getItem());
             ((Hopper) event.getSource().getHolder()).update();
 

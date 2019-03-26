@@ -4,11 +4,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
 
 import java.util.HashMap;
 
-@SuppressWarnings("WeakerAccess")
 public final class ItemUtils {
 
     public static void addItem(ItemStack itemStack, Inventory inventory, Location location){
@@ -30,36 +28,6 @@ public final class ItemUtils {
         }
 
         return name.toString();
-    }
-
-    public static boolean addToChest(Chest chest, ItemStack itemStack){
-        HashMap<Integer, ItemStack> additionalItems = null;
-
-        if(itemStack != null) {
-            int currentInventory = 0;
-
-            do {
-                Inventory inventory = chest.getPage(currentInventory);
-                additionalItems = inventory.addItem(itemStack);
-                currentInventory++;
-            } while (!additionalItems.isEmpty() && currentInventory < chest.getPagesAmount());
-        }
-
-        return additionalItems == null || additionalItems.isEmpty();
-    }
-
-    public static void removeFromChest(Chest chest, ItemStack itemStack, int amount){
-        Inventory[] pages = chest.getPages();
-
-        int itemsRemoved = 0;
-
-        for(int i = 0; i < pages.length && itemsRemoved < amount; i++){
-            Inventory page = pages[i];
-            int toRemove = Math.min(amount - itemsRemoved, countItems(itemStack, page));
-            ItemStack cloned = itemStack.clone();
-            cloned.setAmount(toRemove);
-            page.removeItem(cloned);
-        }
     }
 
     public static int countItems(ItemStack itemStack, Inventory inventory){

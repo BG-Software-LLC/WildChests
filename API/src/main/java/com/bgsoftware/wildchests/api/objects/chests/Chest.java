@@ -11,7 +11,10 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -40,6 +43,10 @@ public interface Chest {
     int getPageIndex(Inventory inventory);
 
     void remove();
+
+    Map<Integer, ItemStack> addItems(ItemStack... itemStacks);
+
+    void removeItem(int amountToRemove, ItemStack itemStack);
 
     boolean onBreak(BlockBreakEvent event);
 

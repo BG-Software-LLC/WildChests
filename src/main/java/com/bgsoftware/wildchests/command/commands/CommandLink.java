@@ -14,7 +14,6 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.command.ICommand;
-import com.bgsoftware.wildchests.utils.ItemUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,8 +107,7 @@ public final class CommandLink implements ICommand {
             Locale.LINKED_SUCCEED.send(player, WLocation.of(originalChest.getLocation()));
 
             if(!toMove.isEmpty()){
-                for(ItemStack itemStack : toMove)
-                    ItemUtils.addToChest(linkedChest, itemStack);
+                linkedChest.addItems(toMove.toArray(new ItemStack[]{}));
                 Locale.LEFTOVERS_ITEMS_WARNING.send(player);
             }
 
