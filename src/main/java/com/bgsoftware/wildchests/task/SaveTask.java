@@ -14,7 +14,7 @@ public final class SaveTask extends BukkitRunnable {
 
     private SaveTask(){
         if(plugin.getSettings().saveInterval > 0)
-            taskID = runTaskTimerAsynchronously(plugin, plugin.getSettings().saveInterval, plugin.getSettings().saveInterval).getTaskId();
+            taskID = runTaskTimer(plugin, plugin.getSettings().saveInterval, plugin.getSettings().saveInterval).getTaskId();
     }
 
     public static void start(){
