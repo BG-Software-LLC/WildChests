@@ -33,17 +33,19 @@ public final class ItemUtils {
     }
 
     public static boolean addToChest(Chest chest, ItemStack itemStack){
-        HashMap<Integer, ItemStack> additionalItems;
+        HashMap<Integer, ItemStack> additionalItems = null;
 
-        int currentInventory = 0;
+        if(itemStack != null) {
+            int currentInventory = 0;
 
-        do{
-            Inventory inventory = chest.getPage(currentInventory);
-            additionalItems = inventory.addItem(itemStack);
-            currentInventory++;
-        }while(!additionalItems.isEmpty() && currentInventory < chest.getPagesAmount());
+            do {
+                Inventory inventory = chest.getPage(currentInventory);
+                additionalItems = inventory.addItem(itemStack);
+                currentInventory++;
+            } while (!additionalItems.isEmpty() && currentInventory < chest.getPagesAmount());
+        }
 
-        return additionalItems.isEmpty();
+        return additionalItems == null || additionalItems.isEmpty();
     }
 
     public static void removeFromChest(Chest chest, ItemStack itemStack, int amount){
