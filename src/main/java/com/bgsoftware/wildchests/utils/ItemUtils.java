@@ -15,7 +15,7 @@ public final class ItemUtils {
         HashMap<Integer, ItemStack> additionalItems = inventory.addItem(itemStack);
         if(location != null && !additionalItems.isEmpty()){
             for(ItemStack additional : additionalItems.values())
-                location.getWorld().dropItemNaturally(location, additional);
+                dropItem(location, additional);
         }
     }
 
@@ -86,6 +86,21 @@ public final class ItemUtils {
             counter++;
         }
         return spaceLeft;
+    }
+
+    public static void dropItem(Location location, ItemStack itemStack){
+        int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
+
+        ItemStack cloned = itemStack.clone();
+        cloned.setAmount(itemStack.getMaxStackSize());
+
+        for(int i = 0; i < amountOfIterates; i++)
+            location.getWorld().dropItemNaturally(location, cloned);
+
+        if(itemStack.getAmount() % itemStack.getMaxStackSize() > 0){
+            cloned.setAmount(itemStack.getAmount() % itemStack.getMaxStackSize());
+            location.getWorld().dropItemNaturally(location, cloned);
+        }
     }
 
 }

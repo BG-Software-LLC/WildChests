@@ -157,7 +157,7 @@ public abstract class WChest implements Chest {
             Inventory inventory = getPage(page);
             for(ItemStack itemStack : inventory.getContents())
                 if (itemStack != null && itemStack.getType() != Material.AIR)
-                    loc.getWorld().dropItemNaturally(loc, itemStack);
+                    ItemUtils.dropItem(loc, itemStack);
             inventory.clear();
         }
 

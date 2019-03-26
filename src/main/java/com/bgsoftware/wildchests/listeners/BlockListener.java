@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -59,7 +60,7 @@ public final class BlockListener implements Listener {
         e.setCancelled(true);
 
         if(e.getPlayer().getGameMode() != GameMode.CREATIVE)
-            e.getPlayer().getWorld().dropItemNaturally(chest.getLocation(), chest.getData().getItemStack());
+            ItemUtils.dropItem(chest.getLocation(), chest.getData().getItemStack());
 
         chest.onBreak(e);
 

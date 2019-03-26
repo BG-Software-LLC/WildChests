@@ -81,7 +81,7 @@ public final class ChestUtils {
         if(!toDrop.isEmpty()){
             Bukkit.getScheduler().runTask(plugin, () -> {
                 for(ItemStack itemStack : toDrop)
-                    chest.getLocation().getWorld().dropItemNaturally(chest.getLocation(), itemStack);
+                    ItemUtils.dropItem(chest.getLocation(), itemStack);
             });
         }
     }

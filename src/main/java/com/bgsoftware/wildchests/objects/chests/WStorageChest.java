@@ -89,16 +89,8 @@ public final class WStorageChest extends WChest implements StorageChest {
         Location loc = getLocation();
 
         ItemStack itemStack = getItemStack();
-        itemStack.setAmount(64);
-
-        for(int i = 0; i < amount / 64; i++){
-            loc.getWorld().dropItemNaturally(loc, itemStack);
-        }
-
-        if(amount % 64 != 0){
-            itemStack.setAmount(amount % 64);
-            loc.getWorld().dropItemNaturally(loc, itemStack);
-        }
+        itemStack.setAmount(amount);
+        ItemUtils.dropItem(loc, itemStack);
 
         Inventory page = getPage(0);
         if(page != null) page.clear();
