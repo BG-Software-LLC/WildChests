@@ -70,6 +70,10 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     private boolean isChest(Location location) {
+        // If the chunk is not loaded, we wil lreturn true without checking the actual block.
+        if(!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
+            return true;
+
         if(location.getBlock().getType() != Material.CHEST)
             chests.remove(WLocation.of(location));
 
