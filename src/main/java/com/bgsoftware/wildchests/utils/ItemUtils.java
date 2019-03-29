@@ -59,6 +59,9 @@ public final class ItemUtils {
     }
 
     public static void dropItem(Location location, ItemStack itemStack){
+        if(itemStack.getMaxStackSize() <= 0)
+            return;
+
         int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
 
         ItemStack cloned = itemStack.clone();
