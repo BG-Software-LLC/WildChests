@@ -119,15 +119,6 @@ public final class WInventory{
         return Class.forName("org.bukkit.craftbukkit." + WInventory.plugin.getNMSAdapter().getVersion() + "." + clazz);
     }
 
-    private Method getMethod(Class clazz, String name) throws NoSuchMethodException{
-        for(Method method : clazz.getMethods()) {
-            if (method.getName().equals(name))
-                return method;
-        }
-
-        throw new NoSuchMethodException();
-    }
-
     public static WInventory of(int size, String title){
         return of(Bukkit.createInventory(null, size, title));
     }
