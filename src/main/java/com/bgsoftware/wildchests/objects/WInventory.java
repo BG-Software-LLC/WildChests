@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 @SuppressWarnings({"unchecked", "ConstantConditions", "SameParameterValue", "OptionalGetWithoutIsPresent"})
 public final class WInventory{
@@ -25,25 +26,35 @@ public final class WInventory{
     }
 
     public void setTitle(String title){
-        try{
+        try {
             Class minecraftInventory = Arrays.stream(this.inventory.getClass().getDeclaredClasses())
                     .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst().get();
 
-            Field field = getBukkitClass("inventory.CraftInventory").getDeclaredField("inventory");
-            field.setAccessible(true);
-            Object inventory = field.get(this.inventory);
-            field.setAccessible(false);
+            Object inventory = getBukkitClass("inventory.CraftInventory").getMethod("getInventory").invoke(this.inventory);
 
             Field titleField = minecraftInventory.getDeclaredField("title");
             titleField.setAccessible(true);
             try {
                 titleField.set(inventory, title);
-            }catch(IllegalArgumentException ex){
+            } catch (IllegalArgumentException ex) {
                 Class craftChatMessageClass = getBukkitClass("util.CraftChatMessage");
                 Object[] chatBaseComponent = (Object[]) craftChatMessageClass.getMethod("fromString", String.class).invoke(null, title);
                 titleField.set(inventory, chatBaseComponent[0]);
             }
             titleField.setAccessible(false);
+        }catch(NoSuchElementException ex){
+            try {
+                Object inventory = getBukkitClass("inventory.CraftInventory").getMethod("getInventory").invoke(this.inventory);
+                Class craftChatMessageClass = getBukkitClass("util.CraftChatMessage");
+                Object[] chatBaseComponent = (Object[]) craftChatMessageClass.getMethod("fromString", String.class).invoke(null, title);
+
+                Field field = getNMSClass("TileEntityLootable").getDeclaredField("i");
+                field.setAccessible(true);
+                field.set(inventory, chatBaseComponent[0]);
+                field.setAccessible(false);
+            }catch(Exception ex1){
+                ex1.printStackTrace();
+            }
         }catch(Exception ex){
             ex.printStackTrace();
         }
@@ -106,6 +117,15 @@ public final class WInventory{
 
     private Class getBukkitClass(String clazz) throws ClassNotFoundException{
         return Class.forName("org.bukkit.craftbukkit." + WInventory.plugin.getNMSAdapter().getVersion() + "." + clazz);
+    }
+
+    private Method getMethod(Class clazz, String name) throws NoSuchMethodException{
+        for(Method method : clazz.getMethods()) {
+            if (method.getName().equals(name))
+                return method;
+        }
+
+        throw new NoSuchMethodException();
     }
 
     public static WInventory of(int size, String title){
