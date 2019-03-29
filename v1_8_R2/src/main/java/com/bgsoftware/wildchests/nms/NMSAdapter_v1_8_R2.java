@@ -43,7 +43,20 @@ public final class NMSAdapter_v1_8_R2 implements NMSAdapter {
     @Override
     public void refreshHopperInventory(Player player, Inventory inventory) {
         EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
-        Container container = new CraftContainer(inventory, player, entityPlayer.nextContainerCounter());
+
+        Container container;
+
+        try{
+            container = new CraftContainer(inventory, player, entityPlayer.nextContainerCounter());
+        }catch(Throwable th){
+            try{
+                container = (Container) CraftContainer.class.getConstructors()[1].newInstance(inventory, entityPlayer, entityPlayer.nextContainerCounter());
+            }catch(Exception ex){
+                ex.printStackTrace();
+                return;
+            }
+        }
+
         String title = container.getBukkitView().getTitle();
         int size = container.getBukkitView().getTopInventory().getSize();
         entityPlayer.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, "minecraft:hopper", new ChatComponentText(title), size));
