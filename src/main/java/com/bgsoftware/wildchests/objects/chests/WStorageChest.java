@@ -20,6 +20,8 @@ import com.bgsoftware.wildchests.utils.ItemUtils;
 import com.bgsoftware.wildchests.utils.Materials;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
@@ -99,6 +101,8 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
+    private Set<UUID> recentlyClicked = new HashSet<>();
+
     @Override
     public boolean onInteract(InventoryClickEvent event) {
         ItemStack cursor = event.getCursor();
@@ -110,6 +114,14 @@ public final class WStorageChest extends WChest implements StorageChest {
             event.setCancelled(true);
             return false;
         }
+
+        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())){
+            event.setCancelled(true);
+            return false;
+        }
+
+        recentlyClicked.add(event.getWhoClicked().getUniqueId());
+        Bukkit.getScheduler().runTaskLater(plugin, () -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()), 5L);
 
         if(event.getClick().name().contains("SHIFT")){
             if(event.getCurrentItem() == null)
@@ -139,8 +151,9 @@ public final class WStorageChest extends WChest implements StorageChest {
             }, 1L);
         }
         else{
-            if(event.getCurrentItem() != null)
+            if(event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR)
                 return false;
+
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
                 setAmount(getAmount() - itemAmount);
