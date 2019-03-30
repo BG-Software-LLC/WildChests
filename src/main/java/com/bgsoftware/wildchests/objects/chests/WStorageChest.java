@@ -1,9 +1,11 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -18,6 +20,7 @@ import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import com.bgsoftware.wildchests.utils.Materials;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,7 +55,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack.clone();
         ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1) : this.itemStack.clone();
-        designItem.setAmount(1);
+        plugin.getNMSAdapter().setDesignItem(designItem);
         Inventory page = getPage(0);
         if(page != null) {
             page.setItem(0, designItem);

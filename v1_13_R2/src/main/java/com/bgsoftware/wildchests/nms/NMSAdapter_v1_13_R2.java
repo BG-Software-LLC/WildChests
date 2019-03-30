@@ -4,15 +4,19 @@ import net.minecraft.server.v1_13_R2.BlockPosition;
 import net.minecraft.server.v1_13_R2.ChatComponentText;
 import net.minecraft.server.v1_13_R2.Container;
 import net.minecraft.server.v1_13_R2.EntityPlayer;
+import net.minecraft.server.v1_13_R2.ItemStack;
 import net.minecraft.server.v1_13_R2.PacketPlayOutOpenWindow;
 import net.minecraft.server.v1_13_R2.TileEntityChest;
 import net.minecraft.server.v1_13_R2.World;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_13_R2.inventory.CraftContainer;
+import org.bukkit.craftbukkit.v1_13_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
 public final class NMSAdapter_v1_13_R2 implements NMSAdapter {
@@ -50,4 +54,14 @@ public final class NMSAdapter_v1_13_R2 implements NMSAdapter {
         entityPlayer.activeContainer = container;
         entityPlayer.activeContainer.addSlotListener(entityPlayer);
     }
+
+    @Override
+    public void setDesignItem(org.bukkit.inventory.ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+        itemMeta.setDisplayName(ChatColor.RESET + nmsItem.getName().getString());
+        itemStack.setItemMeta(itemMeta);
+        itemStack.setAmount(1);
+    }
+
 }
