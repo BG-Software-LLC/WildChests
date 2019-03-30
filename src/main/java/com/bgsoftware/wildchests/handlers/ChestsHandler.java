@@ -46,25 +46,23 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public Chest addChest(UUID placer, Location location, ChestData chestData){
-        Chest chest = null;
+        Chest chest;
 
-        if(!isChest(location)){
-            switch (chestData.getChestType()){
-                case CHEST:
-                    chest = new WRegularChest(placer, WLocation.of(location), chestData);
-                    break;
-                case LINKED_CHEST:
-                    chest = new WLinkedChest(placer, WLocation.of(location), chestData);
-                    break;
-                case STORAGE_UNIT:
-                    chest = new WStorageChest(placer, WLocation.of(location), chestData);
-                    break;
-            }
+        switch (chestData.getChestType()){
+            case CHEST:
+                chest = new WRegularChest(placer, WLocation.of(location), chestData);
+                break;
+            case LINKED_CHEST:
+                chest = new WLinkedChest(placer, WLocation.of(location), chestData);
+                break;
+            case STORAGE_UNIT:
+                chest = new WStorageChest(placer, WLocation.of(location), chestData);
+                break;
+            default:
+                return null;
         }
 
-        if(chest != null){
-            chests.put(WLocation.of(location), chest);
-        }
+        chests.put(WLocation.of(location), chest);
 
         return chest;
     }
