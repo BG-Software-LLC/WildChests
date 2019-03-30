@@ -1,11 +1,9 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -20,11 +18,8 @@ import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import com.bgsoftware.wildchests.utils.Materials;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
@@ -104,8 +99,6 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
-    private Set<UUID> recentlyClicked = new HashSet<>();
-
     @Override
     public boolean onInteract(InventoryClickEvent event) {
         ItemStack cursor = event.getCursor();
@@ -117,14 +110,6 @@ public final class WStorageChest extends WChest implements StorageChest {
             event.setCancelled(true);
             return false;
         }
-
-        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())){
-            event.setCancelled(true);
-            return false;
-        }
-
-        recentlyClicked.add(event.getWhoClicked().getUniqueId());
-        Bukkit.getScheduler().runTaskLater(plugin, () -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()), 5L);
 
         if(event.getClick().name().contains("SHIFT")){
             if(event.getCurrentItem() == null)
