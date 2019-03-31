@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -39,6 +40,30 @@ public final class InventoryListener implements Listener {
     public InventoryListener(WildChestsPlugin plugin){
         this.plugin = plugin;
         initGUIConfirm();
+    }
+
+    /**
+     * The following two events are here for patching a dupe glitch caused
+     * by shift clicking and closing the inventory in the same time.
+     */
+
+    private Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryClickMonitor(InventoryClickEvent e){
+        latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
+        Bukkit.getScheduler().runTaskLater(plugin, () -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onInventoryCloseMonitor(InventoryCloseEvent e){
+        if(latestClickedItem.containsKey(e.getPlayer().getUniqueId())){
+            ItemStack clickedItem = latestClickedItem.get(e.getPlayer().getUniqueId());
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                e.getPlayer().getInventory().removeItem(clickedItem);
+                ((Player) e.getPlayer()).updateInventory();
+            }, 1L);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
