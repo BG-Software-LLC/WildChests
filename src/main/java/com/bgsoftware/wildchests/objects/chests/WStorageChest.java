@@ -115,8 +115,10 @@ public final class WStorageChest extends WChest implements StorageChest {
             return false;
         }
 
-        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId()))
+        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())) {
+            event.setCancelled(true);
             return false;
+        }
 
         recentlyClicked.add(event.getWhoClicked().getUniqueId());
         Bukkit.getScheduler().runTask(plugin, () -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
