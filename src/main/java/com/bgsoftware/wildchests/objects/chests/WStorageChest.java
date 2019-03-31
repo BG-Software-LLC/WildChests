@@ -20,6 +20,8 @@ import com.bgsoftware.wildchests.utils.ItemUtils;
 import com.bgsoftware.wildchests.utils.Materials;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
@@ -99,6 +101,8 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
+    private Set<UUID> recentlyClicked = new HashSet<>();
+
     @Override
     public boolean onInteract(InventoryClickEvent event) {
         ItemStack cursor = event.getCursor();
@@ -110,6 +114,12 @@ public final class WStorageChest extends WChest implements StorageChest {
             event.setCancelled(true);
             return false;
         }
+
+        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId()))
+            return false;
+
+        recentlyClicked.add(event.getWhoClicked().getUniqueId());
+        Bukkit.getScheduler().runTask(plugin, () -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
 
         if(event.getClick().name().contains("SHIFT")){
             if(event.getCurrentItem() == null)
