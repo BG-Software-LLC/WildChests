@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests;
 
+import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.command.CommandsHandler;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
@@ -23,6 +24,7 @@ import com.bgsoftware.wildchests.listeners.BlockListener;
 import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.listeners.PlayerListener;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +64,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         getCommand("chests").setTabCompleter(commandsHandler);
 
         Locale.reload();
+        loadAPI();
         SaveTask.start();
         NotifierTask.start();
 
@@ -103,6 +106,19 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             player.closeInventory();
         Bukkit.getScheduler().cancelTasks(this);
         dataHandler.saveDatabase();
+    }
+
+    private void loadAPI(){
+        try{
+            Field instance = WildChestsAPI.class.getDeclaredField("instance");
+            instance.setAccessible(true);
+            instance.set(null, this);
+        }catch(Exception ex){
+            log("Failed to set-up API - disabling plugin...");
+            setEnabled(false);
+            Bukkit.getScheduler().runTask(this, () -> getServer().getPluginManager().disablePlugin(this));
+            ex.printStackTrace();
+        }
     }
 
     private boolean isVaultEnabled() {
