@@ -26,8 +26,8 @@ public final class WInventory{
     }
 
     public void setTitle(String title){
-        if(title.length() > 32)
-            title = title.substring(0, 32);
+        if(title.length() >= 32)
+            title = title.substring(0, 31);
         try {
             Class minecraftInventory = Arrays.stream(this.inventory.getClass().getDeclaredClasses())
                     .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst().get();
@@ -122,6 +122,8 @@ public final class WInventory{
     }
 
     public static WInventory of(int size, String title){
+        if(title.length() >= 32)
+            title = title.substring(0, 31);
         return of(Bukkit.createInventory(null, size, title));
     }
 
