@@ -51,7 +51,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null) {
+        if(e.getCurrentItem() != null && e.isCancelled()) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Bukkit.getScheduler().runTaskLater(plugin, () -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
