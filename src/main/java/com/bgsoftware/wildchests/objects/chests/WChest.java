@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("all")
 public abstract class WChest implements Chest {
@@ -106,7 +107,7 @@ public abstract class WChest implements Chest {
     public Inventory[] getPages() {
         List<Inventory> inventories = new ArrayList<>();
         pages.forEach(inventory -> inventories.add(inventory.getInventory()));
-        return inventories.toArray(new Inventory[0]);
+        return inventories.stream().filter(inv -> inv != null).collect(Collectors.toList()).toArray(new Inventory[0]);
     }
 
     @Override
