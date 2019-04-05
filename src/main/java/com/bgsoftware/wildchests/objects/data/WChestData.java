@@ -69,7 +69,9 @@ public final class WChestData implements ChestData {
 
     @Override
     public String getTitle(int page) {
-        return pagesData.containsKey(page) ? pagesData.get(page).getTitle() : defaultTitle;
+        String title = pagesData.containsKey(page) ? pagesData.get(page).getTitle() : defaultTitle;
+        if(title.length() >= 32) title = title.substring(0, 31);
+        return title;
     }
 
     @Override
