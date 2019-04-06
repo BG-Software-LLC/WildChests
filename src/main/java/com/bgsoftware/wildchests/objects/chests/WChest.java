@@ -154,7 +154,7 @@ public abstract class WChest implements Chest {
     @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
-        Map<Integer, ItemStack> itemAdditionalItems;
+        Map<Integer, ItemStack> itemAdditionalItems = new HashMap<>();
 
         for(ItemStack itemStack : itemStacks) {
             if (itemStack != null) {
@@ -162,8 +162,10 @@ public abstract class WChest implements Chest {
 
                 do {
                     Inventory inventory = getPage(currentInventory);
-                    itemAdditionalItems = inventory.addItem(itemStack);
-                    currentInventory++;
+                    if(inventory != null) {
+                        itemAdditionalItems = inventory.addItem(itemStack);
+                        currentInventory++;
+                    }
                 } while (!additionalItems.isEmpty() && currentInventory < getPagesAmount());
 
                 additionalItems.putAll(itemAdditionalItems);
