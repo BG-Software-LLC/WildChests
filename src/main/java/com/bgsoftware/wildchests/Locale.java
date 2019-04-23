@@ -95,8 +95,7 @@ public final class Locale {
         if(!file.exists())
             WildChestsPlugin.getPlugin().saveResource("lang.yml", false);
 
-        CommentedConfiguration cfg = new CommentedConfiguration(LangComments.class);
-        cfg.load(file);
+        CommentedConfiguration cfg = new CommentedConfiguration(LangComments.class, file);
 
         cfg.resetYamlFile(WildChestsPlugin.getPlugin(), "lang.yml");
 
