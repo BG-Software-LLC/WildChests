@@ -26,6 +26,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -48,11 +49,11 @@ public final class InventoryListener implements Listener {
      */
 
     private Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
+    private String[] inventoryTitles = new String[] {"Expand Confirmation", };
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null && e.isCancelled() && e.getClickedInventory().getType() == InventoryType.CHEST &&
-                e.getView().getTopInventory().equals(e.getClickedInventory())) {
+        if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getClickedInventory().getName().contains(title))) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Bukkit.getScheduler().runTaskLater(plugin, () -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
