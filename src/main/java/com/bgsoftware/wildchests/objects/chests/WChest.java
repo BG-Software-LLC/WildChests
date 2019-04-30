@@ -51,6 +51,7 @@ public abstract class WChest implements Chest {
     public static final Map<UUID, Chest> viewers = Maps.newHashMap();
     public static final Set<UUID> movingBetweenPages = Sets.newHashSet();
     public static Inventory guiConfirm;
+    public static String guiConfirmTitle;
 
     private final HopperTask hopperTask;
     private final ChestTask chestTask;

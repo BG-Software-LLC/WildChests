@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.objects.WInventory;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -19,5 +20,7 @@ public interface NMSAdapter {
     void refreshHopperInventory(Player player, Inventory inventory);
 
     void setDesignItem(ItemStack itemStack);
+
+    void setTitle(Inventory bukkitInventory, String title);
 
 }

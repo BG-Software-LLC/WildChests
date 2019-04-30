@@ -1,10 +1,10 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.objects.Materials;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -17,7 +17,6 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ItemUtils;
-import com.bgsoftware.wildchests.utils.Materials;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,7 +50,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void setItemStack(ItemStack itemStack) {
         this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack.clone();
-        ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1) : this.itemStack.clone();
+        ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem() : this.itemStack.clone();
         plugin.getNMSAdapter().setDesignItem(designItem);
         Inventory page = getPage(0);
         if(page != null) {
@@ -240,19 +239,17 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     private void updateInventory(Inventory inventory){
-        for (HumanEntity viewer : inventory.getViewers()) {
-            if (viewer instanceof Player) {
-                plugin.getNMSAdapter().refreshHopperInventory((Player) viewer, getPage(0));
-            }
-        }
+        inventory.getViewers().stream()
+                .filter(viewer -> viewer instanceof Player)
+                .forEach(viewer -> plugin.getNMSAdapter().refreshHopperInventory((Player) viewer, getPage(0)));
     }
 
     private static void initDefaultInventory(){
         Inventory defaultInventory = Bukkit.createInventory(null, InventoryType.HOPPER);
-        defaultInventory.setItem(0, Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1));
-        defaultInventory.setItem(1, Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1));
-        defaultInventory.setItem(3, Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1));
-        defaultInventory.setItem(4, Materials.BLACK_STAINED_GLASS_PANE.toItemStack(1));
+        defaultInventory.setItem(0, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
+        defaultInventory.setItem(1, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
+        defaultInventory.setItem(3, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
+        defaultInventory.setItem(4, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
         WStorageChest.defaultInventory = defaultInventory.getContents();
     }
 

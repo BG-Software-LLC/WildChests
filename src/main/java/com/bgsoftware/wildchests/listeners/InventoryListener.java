@@ -53,7 +53,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getClickedInventory().getName().contains(title))) {
+        if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getView().getTitle().contains(title))) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Bukkit.getScheduler().runTaskLater(plugin, () -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
@@ -220,7 +220,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
-        if (e.getInventory().getTitle().equals(WChest.guiConfirm.getTitle())) {
+        if (e.getView().getTitle().equals(WChest.guiConfirmTitle)) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (buyNewPage.containsKey(e.getPlayer().getUniqueId()))
                     e.getPlayer().openInventory(e.getInventory());
@@ -230,6 +230,7 @@ public final class InventoryListener implements Listener {
 
     private void initGUIConfirm(){
         WChest.guiConfirm = Bukkit.createInventory(null, InventoryType.HOPPER, ChatColor.BOLD + "    Expand Confirmation");
+        WChest.guiConfirmTitle = ChatColor.BOLD + "    Expand Confirmation";
 
         ItemStack denyButton = Materials.RED_STAINED_GLASS_PANE.toBukkitItem();
         ItemMeta denyMeta = denyButton.getItemMeta();

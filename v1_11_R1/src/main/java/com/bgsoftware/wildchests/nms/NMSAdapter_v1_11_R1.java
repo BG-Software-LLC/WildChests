@@ -4,19 +4,26 @@ import net.minecraft.server.v1_11_R1.BlockPosition;
 import net.minecraft.server.v1_11_R1.ChatComponentText;
 import net.minecraft.server.v1_11_R1.Container;
 import net.minecraft.server.v1_11_R1.EntityPlayer;
+import net.minecraft.server.v1_11_R1.IInventory;
 import net.minecraft.server.v1_11_R1.ItemStack;
 import net.minecraft.server.v1_11_R1.PacketPlayOutOpenWindow;
 import net.minecraft.server.v1_11_R1.TileEntityChest;
+import net.minecraft.server.v1_11_R1.TileEntityHopper;
 import net.minecraft.server.v1_11_R1.World;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_11_R1.inventory.CraftContainer;
+import org.bukkit.craftbukkit.v1_11_R1.inventory.CraftInventory;
 import org.bukkit.craftbukkit.v1_11_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Optional;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
 public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
@@ -75,6 +82,29 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
         itemMeta.setDisplayName(ChatColor.RESET + nmsItem.getName());
         itemStack.setItemMeta(itemMeta);
         itemStack.setAmount(1);
+    }
+
+    @Override
+    public void setTitle(Inventory bukkitInventory, String title) {
+        try {
+            IInventory inventory = ((CraftInventory) bukkitInventory).getInventory();
+
+            Optional<Class<?>> optionalClass = Arrays.stream(bukkitInventory.getClass().getDeclaredClasses())
+                    .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst();
+
+            if(optionalClass.isPresent()){
+                Class minecraftInventory = optionalClass.get();
+                Field titleField = minecraftInventory.getDeclaredField("title");
+                titleField.setAccessible(true);
+                titleField.set(inventory, title);
+                titleField.setAccessible(false);
+            }else{
+                TileEntityHopper tileEntityHopper = (TileEntityHopper) inventory;
+                tileEntityHopper.a(title);
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
 
 

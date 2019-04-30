@@ -18,10 +18,10 @@ public enum Materials {
     private String legacyType;
     private byte legacyData;
 
-    private static boolean v1_13 = Bukkit.getBukkitVersion().contains("1.13");
+    private static boolean isLegacy = !Bukkit.getBukkitVersion().contains("1.13") && !Bukkit.getBukkitVersion().contains("1.14");
 
     public ItemStack toBukkitItem(){
-        return v1_13 ? new ItemStack(Material.matchMaterial(name())) : new ItemStack(Material.matchMaterial(legacyType), 1, legacyData);
+        return !isLegacy ? new ItemStack(Material.matchMaterial(name())) : new ItemStack(Material.matchMaterial(legacyType), 1, legacyData);
     }
 
 }

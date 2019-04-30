@@ -8,7 +8,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.AbstractList;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 
 @SuppressWarnings({"unchecked", "ConstantConditions", "SameParameterValue", "OptionalGetWithoutIsPresent"})
 public final class WInventory{
@@ -28,38 +27,7 @@ public final class WInventory{
     public void setTitle(String title){
         if(title.length() >= 32)
             title = title.substring(0, 31);
-        try {
-            Class minecraftInventory = Arrays.stream(this.inventory.getClass().getDeclaredClasses())
-                    .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst().get();
-
-            Object inventory = getBukkitClass("inventory.CraftInventory").getMethod("getInventory").invoke(this.inventory);
-
-            Field titleField = minecraftInventory.getDeclaredField("title");
-            titleField.setAccessible(true);
-            try {
-                titleField.set(inventory, title);
-            } catch (IllegalArgumentException ex) {
-                Class craftChatMessageClass = getBukkitClass("util.CraftChatMessage");
-                Object[] chatBaseComponent = (Object[]) craftChatMessageClass.getMethod("fromString", String.class).invoke(null, title);
-                titleField.set(inventory, chatBaseComponent[0]);
-            }
-            titleField.setAccessible(false);
-        }catch(NoSuchElementException ex){
-            try {
-                Object inventory = getBukkitClass("inventory.CraftInventory").getMethod("getInventory").invoke(this.inventory);
-                Class craftChatMessageClass = getBukkitClass("util.CraftChatMessage");
-                Object[] chatBaseComponent = (Object[]) craftChatMessageClass.getMethod("fromString", String.class).invoke(null, title);
-
-                Field field = getNMSClass("TileEntityLootable").getDeclaredField("i");
-                field.setAccessible(true);
-                field.set(inventory, chatBaseComponent[0]);
-                field.setAccessible(false);
-            }catch(Exception ex1){
-                ex1.printStackTrace();
-            }
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
+        plugin.getNMSAdapter().setTitle(inventory, title);
     }
 
     @SuppressWarnings("unused")
