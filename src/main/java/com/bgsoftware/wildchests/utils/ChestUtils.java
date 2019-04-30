@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.utils;
 
+import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -93,19 +94,22 @@ public final class ChestUtils {
         for(Inventory page : pages)
             itemStacks.addAll(Arrays.asList(page.getContents()));
 
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, 1);
+        Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
+
         Map<ItemStack, Integer> sortedItems = getSortedItems(itemStacks.toArray(new ItemStack[0]));
 
         for(ItemStack itemStack : sortedItems.keySet()){
             itemStack.setAmount(sortedItems.get(itemStack));
 
             try {
-                double price = plugin.getProviders().getPrice(placer, itemStack);
+                double price = plugin.getProviders().getPrice(placer, itemStack) * sellChestTaskEvent.getMultiplier();
 
                 if(price <= 0)
                     continue;
 
                 if(plugin.getSettings().sellCommand.isEmpty()) {
-                    plugin.getProviders().trySellItem(placer, itemStack);
+                    plugin.getProviders().trySellItem(placer, itemStack, sellChestTaskEvent.getMultiplier());
                 }else{
                     Bukkit.getScheduler().runTask(plugin, () ->
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand

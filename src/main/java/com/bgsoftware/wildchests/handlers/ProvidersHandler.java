@@ -97,7 +97,7 @@ public final class ProvidersHandler {
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public double trySellItem(UUID placer, ItemStack itemStack) throws PlayerNotOnlineException {
+    public double trySellItem(UUID placer, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException {
         double price = 0;
 
         if(!canSellItem(placer, itemStack))
@@ -106,7 +106,7 @@ public final class ProvidersHandler {
         //If item can be sold, the player is online for sure.
         Player player = Bukkit.getPlayer(placer);
 
-        price = getPrice(player, itemStack);
+        price = getPrice(player, itemStack) * multiplier;
 
         if(price > 0) {
             if (!economy.hasAccount(player))
