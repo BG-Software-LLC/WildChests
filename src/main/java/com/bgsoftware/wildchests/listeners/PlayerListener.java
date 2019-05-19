@@ -37,7 +37,7 @@ public final class PlayerListener implements Listener {
         }
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            int moneyEarned = plugin.getProviders().tryDepositMoney(e.getPlayer());
+            double moneyEarned = plugin.getProviders().tryDepositMoney(e.getPlayer());
             if(moneyEarned > 0){
                 Locale.MONEY_EARNED_OFFLINE.send(e.getPlayer(), moneyEarned);
             }

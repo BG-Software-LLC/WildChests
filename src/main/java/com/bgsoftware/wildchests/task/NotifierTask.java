@@ -7,6 +7,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,11 +41,11 @@ public final class NotifierTask extends BukkitRunnable {
             if(offlinePlayer.isOnline()){
                 Set<TransactionDetails> itemsSold = amountEarned.get(uuid);
                 Locale.SOLD_CHEST_HEADER.send(offlinePlayer.getPlayer());
-                double totalEarned = 0;
+                BigDecimal totalEarned = BigDecimal.ZERO;
 
                 for(TransactionDetails item : itemsSold){
                     Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), item.amountEarned);
-                    totalEarned += item.amountEarned;
+                    totalEarned  = totalEarned.add(item.amountEarned);
                 }
 
                 Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), totalEarned);
@@ -75,7 +76,7 @@ public final class NotifierTask extends BukkitRunnable {
         }
 
         Set<TransactionDetails> transectionDetails = amountEarned.get(player);
-        TransactionDetails details = new TransactionDetails(itemStack, 0, 0);
+        TransactionDetails details = new TransactionDetails(itemStack, 0, BigDecimal.ZERO);
 
         for(TransactionDetails _transectionDetails : transectionDetails){
             if(_transectionDetails.itemStack.isSimilar(itemStack))
@@ -83,7 +84,7 @@ public final class NotifierTask extends BukkitRunnable {
         }
 
         details.amount += amount;
-        details.amountEarned += _amountEarned;
+        details.amountEarned = BigDecimal.valueOf(_amountEarned);
         transectionDetails.add(details);
     }
 
@@ -107,9 +108,9 @@ public final class NotifierTask extends BukkitRunnable {
     private static class TransactionDetails{
         private ItemStack itemStack;
         private int amount;
-        private double amountEarned;
+        private BigDecimal amountEarned;
 
-        TransactionDetails(ItemStack itemStack, int amount, double amountEarned){
+        TransactionDetails(ItemStack itemStack, int amount, BigDecimal amountEarned){
             this.itemStack = itemStack;
             this.amount = amount;
             this.amountEarned = amountEarned;

@@ -13,6 +13,7 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,7 @@ public final class ProvidersHandler {
         economy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
     }
 
-    public int tryDepositMoney(Player player){
+    public double tryDepositMoney(Player player){
         if(!awaitingItems.containsKey(player.getUniqueId()))
             return 0;
 
@@ -65,16 +66,16 @@ public final class ProvidersHandler {
         if(!isVaultEnabled)
             return 0;
 
-        int totalPrice = 0;
+        BigDecimal totalPrice = BigDecimal.ZERO;
 
         for(ItemStack itemStack : items)
-            totalPrice += getPrice(player, itemStack);
+            totalPrice = totalPrice.add(BigDecimal.valueOf(getPrice(player, itemStack)));
 
         if(plugin.getSettings().sellCommand.isEmpty()) {
             if (!economy.hasAccount(player))
                 economy.createPlayerAccount(player);
 
-            economy.depositPlayer(player, totalPrice);
+            economy.depositPlayer(player, totalPrice.doubleValue());
         }
         else{
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
@@ -82,7 +83,7 @@ public final class ProvidersHandler {
                     .replace("{price}", String.valueOf(totalPrice)));
         }
 
-        return totalPrice;
+        return totalPrice.doubleValue();
     }
 
     public double getPrice(UUID placer, ItemStack itemStack) throws PlayerNotOnlineException {
