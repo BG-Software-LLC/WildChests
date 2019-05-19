@@ -18,6 +18,7 @@ import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,7 +33,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     private ItemStack itemStack = new ItemStack(Material.AIR);
-    private int amount = 0;
+    private BigInteger amount = BigInteger.ZERO;
 
     public WStorageChest(UUID placer, WLocation location, ChestData chestData) {
         super(placer, location, chestData);
@@ -43,7 +44,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public ItemStack getItemStack() {
-        if(amount <= 0) setItemStack(null);
+        if(amount.compareTo(BigInteger.ZERO) < 1) setItemStack(null);
         return itemStack.clone();
     }
 
@@ -62,14 +63,25 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
+    @Deprecated
     public int getAmount() {
+        return amount.intValue();
+    }
+
+    @Override
+    public BigInteger getExactAmount() {
         return amount;
     }
 
     @Override
     public void setAmount(int amount) {
-        this.amount = Math.max(0, amount);
-        if(this.amount == 0) setItemStack(new ItemStack(Material.AIR));
+        setAmount(BigInteger.valueOf(amount));
+    }
+
+    @Override
+    public void setAmount(BigInteger amount) {
+        this.amount = amount.max(BigInteger.ZERO);
+        if(amount.compareTo(BigInteger.ZERO) == 0) setItemStack(new ItemStack(Material.AIR));
     }
 
     @Override
@@ -90,8 +102,20 @@ public final class WStorageChest extends WChest implements StorageChest {
         Location loc = getLocation();
 
         ItemStack itemStack = getItemStack();
-        itemStack.setAmount(amount);
-        ItemUtils.dropItem(loc, itemStack);
+
+        BigInteger[] divideAndRemainder = amount.divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
+        int amountOfMaximums = divideAndRemainder[0].intValue();
+        int reminder = divideAndRemainder[1].intValue();
+
+        for(int i = 0; i < amountOfMaximums; i++) {
+            itemStack.setAmount(Integer.MAX_VALUE);
+            ItemUtils.dropItem(loc, itemStack);
+        }
+
+        if(reminder > 0){
+            itemStack.setAmount(reminder);
+            ItemUtils.dropItem(loc, itemStack);
+        }
 
         Inventory page = getPage(0);
         if(page != null) page.clear();
@@ -143,7 +167,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if(event.getInventory().getItem(2) != null) {
-                    setAmount(getAmount() + event.getInventory().getItem(2).getAmount());
+                    setAmount(amount.add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount())));
                     event.getInventory().setItem(2, new ItemStack(Material.AIR));
                     updateInventory(event.getInventory());
                 }
@@ -154,9 +178,10 @@ public final class WStorageChest extends WChest implements StorageChest {
                 return false;
 
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
-                setAmount(getAmount() - itemAmount);
-                chestItem.setAmount(itemAmount);
+                //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
+                BigInteger itemAmount = amount.min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
+                setAmount(amount.subtract(itemAmount));
+                chestItem.setAmount(itemAmount.intValue());
                 updateInventory(event.getInventory());
                 event.getWhoClicked().setItemOnCursor(chestItem);
             }, 1L);
@@ -184,7 +209,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         else if(event.getItem().isSimilar(itemStack)){
             event.getSource().removeItem(event.getItem());
-            setAmount(getAmount() + event.getItem().getAmount());
+            setAmount(amount.add(BigInteger.valueOf(event.getItem().getAmount())));
             updateInventory(page);
             return true;
         }
@@ -207,7 +232,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         if(amount == 0)
             return false;
 
-        int itemAmount = Math.min(itemStack.getMaxStackSize(), getAmount());
+        int itemAmount = this.amount.min(BigInteger.valueOf(itemStack.getMaxStackSize())).intValue();
         amount = Math.min(amount, itemAmount);
 
         itemStack.setAmount(amount);
@@ -215,7 +240,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         HashMap<Integer, ItemStack> additionalItems = hopperInventory.addItem(itemStack);
 
         if(additionalItems.isEmpty()) {
-            setAmount(getAmount() - amount);
+            setAmount(this.amount.subtract(BigInteger.valueOf(amount)));
             updateInventory(page);
         }
 
@@ -227,15 +252,19 @@ public final class WStorageChest extends WChest implements StorageChest {
         cfg.set("placer", placer.toString());
         cfg.set("data", getData().getName());
         cfg.set("item", itemStack);
-        cfg.set("amount", amount);
+        cfg.set("amount", amount.toString());
     }
 
     @Override
     public void loadFromFile(YamlConfiguration cfg) {
         if(cfg.contains("item"))
             setItemStack(cfg.getItemStack("item"));
-        if(cfg.contains("amount"))
-            setAmount(cfg.getInt("amount"));
+        if(cfg.contains("amount")) {
+            if(cfg.isInt("amount"))
+                setAmount(cfg.getInt("amount"));
+            else if(cfg.isString("amount"))
+                setAmount(new BigInteger(cfg.getString("amount")));
+        }
     }
 
     private void updateInventory(Inventory inventory){
