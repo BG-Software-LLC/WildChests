@@ -17,6 +17,7 @@ import com.bgsoftware.wildchests.objects.data.WInventoryData;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,6 +157,12 @@ public final class SettingsHandler {
                     }
                 }
                 chestData.setPagesData(pages);
+            }
+
+            if(cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT){
+                chestData.setStorageUnitMaxAmount(cfg.isInt("chests." + name + ".max-amount") ?
+                        BigInteger.valueOf(cfg.getInt("chests." + name + ".max-amount")) :
+                        new BigInteger(cfg.getString("chests." + name + ".max-amount")));
             }
 
             chestsData.add(chestData);

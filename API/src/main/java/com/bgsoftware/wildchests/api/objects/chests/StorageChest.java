@@ -19,4 +19,6 @@ public interface StorageChest extends RegularChest, Chest {
 
     void setAmount(BigInteger amount);
 
+    BigInteger getMaxAmount();
+
 }

@@ -9,6 +9,7 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.key.KeySet;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,9 @@ public final class WChestData implements ChestData {
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
 
+    //Storage Units only!
+    private BigInteger maxAmount;
+
     public WChestData(String name, ItemStack itemStack, ChestType chestType) {
         this.name = name;
         this.itemStack = itemStack;
@@ -40,6 +44,7 @@ public final class WChestData implements ChestData {
         this.recipes = new ArrayList<>();
         this.pagesData = new HashMap<>();
         this.defaultPagesAmount = 1;
+        this.maxAmount = BigInteger.valueOf(-1);
     }
 
     @Override
@@ -119,6 +124,14 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public BigInteger getStorageUnitMaxAmount() {
+        if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
+            throw new UnsupportedOperationException("Cannot get max amount of an unknown storage unit.");
+
+        return maxAmount;
+    }
+
+    @Override
     public void setDefaultSize(int size) {
         this.defaultSize = size;
     }
@@ -161,6 +174,14 @@ public final class WChestData implements ChestData {
     @Override
     public void setDefaultPagesAmount(int defaultPagesAmount) {
         this.defaultPagesAmount = defaultPagesAmount;
+    }
+
+    @Override
+    public void setStorageUnitMaxAmount(BigInteger maxAmount) {
+        if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
+            throw new UnsupportedOperationException("Cannot set max amount of an unknown storage unit.");
+
+        this.maxAmount = maxAmount;
     }
 
     @Override

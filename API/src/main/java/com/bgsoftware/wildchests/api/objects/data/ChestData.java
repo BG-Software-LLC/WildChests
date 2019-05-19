@@ -4,6 +4,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 
+import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ public interface ChestData {
 
     int getDefaultPagesAmount();
 
+    BigInteger getStorageUnitMaxAmount();
+
     void setDefaultSize(int size);
 
     void setDefaultTitle(String title);
@@ -50,5 +53,7 @@ public interface ChestData {
     void setPagesData(Map<Integer, InventoryData> pagesData);
 
     void setDefaultPagesAmount(int defaultPagesAmount);
+
+    void setStorageUnitMaxAmount(BigInteger maxAmount);
 
 }

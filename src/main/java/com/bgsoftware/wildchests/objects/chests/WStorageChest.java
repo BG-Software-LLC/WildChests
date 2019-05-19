@@ -33,13 +33,14 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     private ItemStack itemStack = new ItemStack(Material.AIR);
-    private BigInteger amount = BigInteger.ZERO;
+    private BigInteger amount = BigInteger.ZERO, maxAmount;
 
     public WStorageChest(UUID placer, WLocation location, ChestData chestData) {
         super(placer, location, chestData);
         Inventory defaultInventory = Bukkit.createInventory(null, InventoryType.HOPPER);
         defaultInventory.setContents(WStorageChest.defaultInventory);
         setPage(0, defaultInventory);
+        maxAmount = chestData.getStorageUnitMaxAmount();
     }
 
     @Override
@@ -82,6 +83,11 @@ public final class WStorageChest extends WChest implements StorageChest {
     public void setAmount(BigInteger amount) {
         this.amount = amount.max(BigInteger.ZERO);
         if(amount.compareTo(BigInteger.ZERO) == 0) setItemStack(new ItemStack(Material.AIR));
+    }
+
+    @Override
+    public BigInteger getMaxAmount() {
+        return maxAmount;
     }
 
     @Override
@@ -165,9 +171,21 @@ public final class WStorageChest extends WChest implements StorageChest {
                 return false;
             }
 
+            //Add items into storage unit
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if(event.getInventory().getItem(2) != null) {
-                    setAmount(amount.add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount())));
+                    boolean hasMaxAmount = maxAmount.compareTo(BigInteger.ZERO) >= 0;
+                    BigInteger newAmount = amount.add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount()));
+                    BigInteger reminder = newAmount.subtract(maxAmount);
+                    if(hasMaxAmount)
+                        newAmount = newAmount.min(maxAmount);
+                    setAmount(newAmount);
+                    //Less than 0
+                    if(hasMaxAmount && reminder.compareTo(BigInteger.ZERO) > 0) {
+                        ItemStack itemStack = event.getInventory().getItem(2).clone();
+                        itemStack.setAmount(reminder.intValue());
+                        event.getWhoClicked().setItemOnCursor(itemStack);
+                    }
                     event.getInventory().setItem(2, new ItemStack(Material.AIR));
                     updateInventory(event.getInventory());
                 }
@@ -177,6 +195,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             if(event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR)
                 return false;
 
+            //Take items out of storage unit
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
                 BigInteger itemAmount = amount.min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
@@ -253,6 +272,8 @@ public final class WStorageChest extends WChest implements StorageChest {
         cfg.set("data", getData().getName());
         cfg.set("item", itemStack);
         cfg.set("amount", amount.toString());
+        if(maxAmount.compareTo(BigInteger.ZERO) >= 0)
+            cfg.set("max-amount", maxAmount.toString());
     }
 
     @Override
@@ -265,6 +286,8 @@ public final class WStorageChest extends WChest implements StorageChest {
             else if(cfg.isString("amount"))
                 setAmount(new BigInteger(cfg.getString("amount")));
         }
+        if(cfg.contains("max-amount"))
+            maxAmount = new BigInteger(cfg.getString("max-amount"));
     }
 
     private void updateInventory(Inventory inventory){
