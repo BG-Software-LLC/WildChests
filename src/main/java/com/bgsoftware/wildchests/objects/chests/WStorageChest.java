@@ -180,12 +180,14 @@ public final class WStorageChest extends WChest implements StorageChest {
                     if(hasMaxAmount)
                         newAmount = newAmount.min(maxAmount);
                     setAmount(newAmount);
+                    
                     //Less than 0
                     if(hasMaxAmount && reminder.compareTo(BigInteger.ZERO) > 0) {
                         ItemStack itemStack = event.getInventory().getItem(2).clone();
                         itemStack.setAmount(reminder.intValue());
                         event.getWhoClicked().setItemOnCursor(itemStack);
                     }
+
                     event.getInventory().setItem(2, new ItemStack(Material.AIR));
                     updateInventory(event.getInventory());
                 }
