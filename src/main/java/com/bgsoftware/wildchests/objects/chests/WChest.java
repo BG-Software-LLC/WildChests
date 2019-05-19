@@ -53,7 +53,7 @@ public abstract class WChest implements Chest {
     public static Inventory guiConfirm;
     public static String guiConfirmTitle;
 
-    private final HopperTask hopperTask;
+    protected final HopperTask hopperTask;
     private final ChestTask chestTask;
 
     protected final UUID placer;
