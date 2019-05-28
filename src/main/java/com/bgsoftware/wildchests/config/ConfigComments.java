@@ -44,6 +44,10 @@ public final class ConfigComments {
     public static String PRICES_LIST = "prices-list";
 
     @Comment("")
+    @Comment("What prices provider should the plugin use? (ShopGUIPlus, Essentials, WildChests)")
+    public static String PRICES_PROVIDER = "prices-provider";
+
+    @Comment("")
     @Comment("The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and")
     @Comment("you can create and mix between them. You can create chests that stores infinite amount of items, chests that")
     @Comment("are connected to player vaults or factions, linked chests and many more!")

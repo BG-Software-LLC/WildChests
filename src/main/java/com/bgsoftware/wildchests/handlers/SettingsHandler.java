@@ -32,6 +32,7 @@ public final class SettingsHandler {
     public final boolean chestTask;
     public final boolean confirmGUI;
     public final String sellCommand;
+    public final String pricesProvider;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -51,6 +52,7 @@ public final class SettingsHandler {
         chestTask = cfg.getBoolean("chest-task", false);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
+        pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
 
         Map<String, Double> prices = new HashMap<>();
 

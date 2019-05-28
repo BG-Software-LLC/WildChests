@@ -32,11 +32,20 @@ public final class ProvidersHandler {
     private final PricesProvider pricesProvider;
 
     public ProvidersHandler(){
-        if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus"))
-            pricesProvider = new PricesProvider_ShopGUIPlus();
-        else if(Bukkit.getPluginManager().isPluginEnabled("Essentials"))
-            pricesProvider = new PricesProvider_Essentials();
-        else pricesProvider = new PricesProvider_Default();
+        switch (plugin.getSettings().pricesProvider.toUpperCase()){
+            case "SHOPGUIPLUS":
+                if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+                    pricesProvider = new PricesProvider_ShopGUIPlus();
+                    break;
+                }
+            case "ESSENTIALS":
+                if(Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
+                    pricesProvider = new PricesProvider_Essentials();
+                    break;
+                }
+            default:
+                pricesProvider = new PricesProvider_Default();
+        }
     }
 
     /*
