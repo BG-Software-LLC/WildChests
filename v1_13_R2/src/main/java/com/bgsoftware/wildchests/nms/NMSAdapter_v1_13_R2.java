@@ -84,7 +84,7 @@ public final class NMSAdapter_v1_13_R2 implements NMSAdapter {
                 Class minecraftInventory = optionalClass.get();
                 Field titleField = minecraftInventory.getDeclaredField("title");
                 titleField.setAccessible(true);
-                titleField.set(inventory, title);
+                titleField.set(inventory, CraftChatMessage.fromStringOrNull(title));
                 titleField.setAccessible(false);
             }else{
                 TileEntityHopper tileEntityHopper = (TileEntityHopper) inventory;
