@@ -59,7 +59,7 @@ public final class ChestsHandler implements ChestsManager {
                 chest = new WStorageChest(placer, WLocation.of(location), chestData);
                 break;
             default:
-                return null;
+                throw new IllegalArgumentException("Invalid chest at " + location);
         }
 
         chests.put(WLocation.of(location), chest);
