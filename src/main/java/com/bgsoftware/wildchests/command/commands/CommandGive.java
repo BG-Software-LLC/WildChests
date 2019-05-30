@@ -73,8 +73,8 @@ public final class CommandGive implements ICommand {
         }
 
         ItemUtils.addItem(chestItem, target.getInventory(), target.getLocation());
-        Locale.CHEST_GIVE_PLAYER.send(sender, chestItem.getAmount(), chestData.getName(), target.getName());
-        Locale.CHEST_RECIEVE.send(target, chestItem.getAmount(), chestData.getName(), sender.getName());
+        Locale.CHEST_GIVE_PLAYER.send(sender, target.getName(), chestItem.getAmount(), chestData.getName(), chestItem.getItemMeta().getDisplayName());
+        Locale.CHEST_RECIEVE.send(target, chestItem.getAmount(), chestData.getName(), sender.getName(), chestItem.getItemMeta().getDisplayName());
     }
 
     @Override

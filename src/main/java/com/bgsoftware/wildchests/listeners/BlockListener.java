@@ -47,7 +47,7 @@ public final class BlockListener implements Listener {
 
         chest.onPlace(e);
 
-        Locale.CHEST_PLACED.send(e.getPlayer(), chestData.getName());
+        Locale.CHEST_PLACED.send(e.getPlayer(), chestData.getName(), e.getItemInHand().getItemMeta().getDisplayName());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

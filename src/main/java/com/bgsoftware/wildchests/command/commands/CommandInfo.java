@@ -57,7 +57,7 @@ public final class CommandInfo implements ICommand {
         Locale.CHEST_INFO_HEADER.send(sender);
 
         //Sections which applied to all chests
-        Locale.CHEST_INFO_NAME.send(sender, chestData.getName());
+        Locale.CHEST_INFO_NAME.send(sender, chestData.getName(), chestData.getItemStack().getItemMeta().getDisplayName());
         Locale.CHEST_INFO_TYPE.send(sender, chestData.getChestType());
         Locale.CHEST_INFO_SIZE.send(sender, chestData.getDefaultSize());
         Locale.CHEST_INFO_DEFAULT_TITLE.send(sender, chestData.getDefaultTitle());
