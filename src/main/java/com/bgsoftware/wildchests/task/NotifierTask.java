@@ -84,7 +84,7 @@ public final class NotifierTask extends BukkitRunnable {
         }
 
         details.amount += amount;
-        details.amountEarned = BigDecimal.valueOf(_amountEarned);
+        details.amountEarned = details.amountEarned.add(BigDecimal.valueOf(_amountEarned));
         transectionDetails.add(details);
     }
 
