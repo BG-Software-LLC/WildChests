@@ -38,6 +38,8 @@ public interface ChestData {
 
     int getDefaultPagesAmount();
 
+    double getMultiplier();
+
     BigInteger getStorageUnitMaxAmount();
 
     void setDefaultSize(int size);
@@ -53,6 +55,8 @@ public interface ChestData {
     void setPagesData(Map<Integer, InventoryData> pagesData);
 
     void setDefaultPagesAmount(int defaultPagesAmount);
+
+    void setMultiplier(double multiplier);
 
     void setStorageUnitMaxAmount(BigInteger maxAmount);
 

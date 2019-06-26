@@ -65,6 +65,7 @@ prices-provider: 'ShopGUIPlus'
 # pages.<#>.title: Custom title for that page.
 # item.name: Custom name for the chest (STRING)
 # item.lore: Custom lore for the chest (LIST)
+# multiplier: Money multiplier for sell chests.
 
 chests:
   linked_chest:

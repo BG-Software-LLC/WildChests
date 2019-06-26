@@ -29,6 +29,7 @@ public final class WChestData implements ChestData {
     private List<Recipe> recipes;
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
+    private double multiplier;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -44,6 +45,7 @@ public final class WChestData implements ChestData {
         this.recipes = new ArrayList<>();
         this.pagesData = new HashMap<>();
         this.defaultPagesAmount = 1;
+        this.multiplier = 1;
         this.maxAmount = BigInteger.valueOf(-1);
     }
 
@@ -124,6 +126,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public double getMultiplier() {
+        return multiplier;
+    }
+
+    @Override
     public BigInteger getStorageUnitMaxAmount() {
         if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
             throw new UnsupportedOperationException("Cannot get max amount of an unknown storage unit.");
@@ -174,6 +181,11 @@ public final class WChestData implements ChestData {
     @Override
     public void setDefaultPagesAmount(int defaultPagesAmount) {
         this.defaultPagesAmount = defaultPagesAmount;
+    }
+
+    @Override
+    public void setMultiplier(double multiplier) {
+        this.multiplier = Math.max(0, multiplier);
     }
 
     @Override

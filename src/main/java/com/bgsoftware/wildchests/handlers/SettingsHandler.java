@@ -161,6 +161,10 @@ public final class SettingsHandler {
                 chestData.setPagesData(pages);
             }
 
+            if(cfg.contains("chests." + name + ".multiplier")){
+                chestData.setMultiplier(cfg.getDouble("chests." + name + ".multiplier"));
+            }
+
             if(cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT){
                 chestData.setStorageUnitMaxAmount(cfg.isInt("chests." + name + ".max-amount") ?
                         BigInteger.valueOf(cfg.getInt("chests." + name + ".max-amount")) :

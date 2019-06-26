@@ -94,7 +94,7 @@ public final class ChestUtils {
         for(Inventory page : pages)
             itemStacks.addAll(Arrays.asList(page.getContents()));
 
-        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, 1);
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, chest.getData().getMultiplier());
         Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
 
         Map<ItemStack, Integer> sortedItems = getSortedItems(itemStacks.toArray(new ItemStack[0]));
