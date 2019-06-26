@@ -18,6 +18,7 @@ public final class SellChestTaskEvent extends Event implements Cancellable {
     private double multiplier;
 
     public SellChestTaskEvent(Chest chest, List<ItemStack> items, double multiplier){
+        super(true);
         this.chest = chest;
         this.items = items;
         this.multiplier = multiplier;

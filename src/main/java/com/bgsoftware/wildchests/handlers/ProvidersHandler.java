@@ -84,7 +84,8 @@ public final class ProvidersHandler {
             if (!economy.hasAccount(player))
                 economy.createPlayerAccount(player);
 
-            economy.depositPlayer(player, totalPrice.doubleValue());
+            final BigDecimal TOTAL_PRICE = totalPrice;
+            Bukkit.getScheduler().runTask(plugin, () -> economy.depositPlayer(player, TOTAL_PRICE.doubleValue()));
         }
         else{
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
@@ -122,7 +123,8 @@ public final class ProvidersHandler {
             if (!economy.hasAccount(player))
                 economy.createPlayerAccount(player);
 
-            economy.depositPlayer(player, price);
+            final double PRICE = price;
+            Bukkit.getScheduler().runTask(plugin, () -> economy.depositPlayer(player, PRICE));
         }
 
         return price;
