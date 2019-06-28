@@ -197,8 +197,9 @@ public abstract class WChest implements Chest {
         for(int page = 0; page < getPagesAmount(); page++){
             Inventory inventory = getPage(page);
             for(ItemStack itemStack : inventory.getContents())
-                if (itemStack != null && itemStack.getType() != Material.AIR)
-                    ItemUtils.dropItem(loc, itemStack);
+                if (itemStack != null && itemStack.getType() != Material.AIR) {
+                    ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+                }
             inventory.clear();
         }
 

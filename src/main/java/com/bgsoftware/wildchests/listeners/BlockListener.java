@@ -59,8 +59,10 @@ public final class BlockListener implements Listener {
 
         e.setCancelled(true);
 
-        if(e.getPlayer().getGameMode() != GameMode.CREATIVE)
-            ItemUtils.dropItem(chest.getLocation(), chest.getData().getItemStack());
+        if(e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+            ChestData chestData = chest.getData();
+            ItemUtils.dropOrCollect(e.getPlayer(), chestData.getItemStack(), chestData.isAutoCollect(), chest.getLocation());
+        }
 
         chest.onBreak(e);
 

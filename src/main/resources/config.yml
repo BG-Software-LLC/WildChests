@@ -65,7 +65,8 @@ prices-provider: 'ShopGUIPlus'
 # pages.<#>.title: Custom title for that page.
 # item.name: Custom name for the chest (STRING)
 # item.lore: Custom lore for the chest (LIST)
-# multiplier: Money multiplier for sell chests.
+# multiplier: Money multiplier for sell chests. (DOUBLE)
+# auto-collect: Should items get directly into inventory after breaking? (BOOLEAN)
 
 chests:
   linked_chest:

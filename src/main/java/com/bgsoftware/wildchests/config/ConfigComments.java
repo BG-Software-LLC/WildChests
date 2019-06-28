@@ -77,7 +77,8 @@ public final class ConfigComments {
     @Comment("pages.<#>.title: Custom title for that page.")
     @Comment("item.name: Custom name for the chest (STRING)")
     @Comment("item.lore: Custom lore for the chest (LIST)")
-    @Comment("multiplier: Money multiplier for sell chests.")
+    @Comment("multiplier: Money multiplier for sell chests. (BOOLEAN)")
+    @Comment("auto-collect: Should items get directly into inventory after breaking? (BOOLEAN)")
     @Comment("")
     public static String CHESTS = "chests";
 

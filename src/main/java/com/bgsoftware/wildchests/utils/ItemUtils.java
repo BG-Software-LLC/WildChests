@@ -2,10 +2,12 @@ package com.bgsoftware.wildchests.utils;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public final class ItemUtils {
 
@@ -74,6 +76,16 @@ public final class ItemUtils {
             cloned.setAmount(itemStack.getAmount() % itemStack.getMaxStackSize());
             location.getWorld().dropItemNaturally(location, cloned);
         }
+    }
+
+    public static void dropOrCollect(Player player, ItemStack itemStack, boolean collect, Location location){
+        if(collect){
+            Map<Integer, ItemStack> additionalItems = player.getInventory().addItem(itemStack);
+            if(additionalItems.isEmpty())
+                return;
+        }
+
+        dropItem(location, itemStack);
     }
 
 }

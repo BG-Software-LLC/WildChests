@@ -40,6 +40,8 @@ public interface ChestData {
 
     double getMultiplier();
 
+    boolean isAutoCollect();
+
     BigInteger getStorageUnitMaxAmount();
 
     void setDefaultSize(int size);
@@ -57,6 +59,8 @@ public interface ChestData {
     void setDefaultPagesAmount(int defaultPagesAmount);
 
     void setMultiplier(double multiplier);
+
+    void setAutoCollect(boolean autoCollect);
 
     void setStorageUnitMaxAmount(BigInteger maxAmount);
 

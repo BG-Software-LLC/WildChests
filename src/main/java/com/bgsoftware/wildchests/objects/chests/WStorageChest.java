@@ -115,12 +115,12 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         for(int i = 0; i < amountOfMaximums; i++) {
             itemStack.setAmount(Integer.MAX_VALUE);
-            ItemUtils.dropItem(loc, itemStack);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 
         if(reminder > 0){
             itemStack.setAmount(reminder);
-            ItemUtils.dropItem(loc, itemStack);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 
         Inventory page = getPage(0);

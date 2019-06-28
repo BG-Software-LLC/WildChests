@@ -165,6 +165,10 @@ public final class SettingsHandler {
                 chestData.setMultiplier(cfg.getDouble("chests." + name + ".multiplier"));
             }
 
+            if(cfg.contains("chests." + name + ".auto-collect")){
+                chestData.setAutoCollect(cfg.getBoolean("chests." + name + ".auto-collect"));
+            }
+
             if(cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT){
                 chestData.setStorageUnitMaxAmount(cfg.isInt("chests." + name + ".max-amount") ?
                         BigInteger.valueOf(cfg.getInt("chests." + name + ".max-amount")) :

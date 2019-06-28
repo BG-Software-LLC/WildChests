@@ -30,6 +30,7 @@ public final class WChestData implements ChestData {
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
     private double multiplier;
+    private boolean autoCollect;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -131,6 +132,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public boolean isAutoCollect() {
+        return autoCollect;
+    }
+
+    @Override
     public BigInteger getStorageUnitMaxAmount() {
         if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
             throw new UnsupportedOperationException("Cannot get max amount of an unknown storage unit.");
@@ -186,6 +192,11 @@ public final class WChestData implements ChestData {
     @Override
     public void setMultiplier(double multiplier) {
         this.multiplier = Math.max(0, multiplier);
+    }
+
+    @Override
+    public void setAutoCollect(boolean autoCollect) {
+        this.autoCollect = autoCollect;
     }
 
     @Override
