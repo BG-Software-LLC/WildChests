@@ -172,7 +172,8 @@ public final class InventoryListener implements Listener {
                 Locale.EXPAND_FAILED.send(e.getPlayer());
             }
 
-            e.getPlayer().openInventory(chest.getPage(--pageIndex));
+            final int PAGE = --pageIndex;
+            Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().openInventory(chest.getPage(PAGE)));
         }catch(Exception ex){
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(e.getPlayer());
         }

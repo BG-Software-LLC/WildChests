@@ -146,7 +146,13 @@ public final class ProvidersHandler {
     public boolean transactionSuccess(Player player, double money){
         if(!economy.hasAccount(player))
             economy.createPlayerAccount(player);
-        return economy.withdrawPlayer(player, money).transactionSuccess();
+
+        if(economy.getBalance(player) >= money){
+            Bukkit.getScheduler().runTask(plugin, () -> economy.withdrawPlayer(player, money));
+            return true;
+        }
+
+        return false;
     }
 
     public boolean isVaultEnabled(){
