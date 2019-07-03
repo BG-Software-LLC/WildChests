@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -123,6 +124,29 @@ public final class ChestUtils {
             for (Inventory page : pages)
                 page.removeItem(itemStack);
         }
+    }
+
+    public static void trySuctionChest(Item item){
+        if(!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
+            return;
+
+        if(!item.isOnGround()){
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> trySuctionChest(item), 20L);
+            return;
+        }
+
+        List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
+        for (Chest chest : chestList) {
+            if (chest.addItems(item.getItemStack()).isEmpty()) {
+                item.remove();
+                if(chest.getData().isSellMode())
+                    ChestUtils.trySellChest(chest);
+                if(chest.getData().isAutoCrafter())
+                    ChestUtils.tryCraftChest(chest);
+                break;
+            }
+        }
+
     }
 
     private static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
