@@ -79,6 +79,9 @@ public final class ConfigComments {
     @Comment("item.lore: Custom lore for the chest (LIST)")
     @Comment("multiplier: Money multiplier for sell chests. (BOOLEAN)")
     @Comment("auto-collect: Should items get directly into inventory after breaking? (BOOLEAN)")
+    @Comment("auto-suction.range: Should items inside the specified range will get suctioned into the chest? (INTEGER)")
+    @Comment("auto-suction.chunk: Should items inside the chunk will get suctioned into the chest? (BOOLEAN)")
+    @Comment("     If you set it to true, the range will be checked as y-range only.")
     @Comment("")
     public static String CHESTS = "chests";
 
