@@ -42,6 +42,12 @@ public interface ChestData {
 
     boolean isAutoCollect();
 
+    boolean isAutoSuction();
+
+    int getAutoSuctionRange();
+
+    boolean isAutoSuctionChunk();
+
     BigInteger getStorageUnitMaxAmount();
 
     void setDefaultSize(int size);
@@ -61,6 +67,10 @@ public interface ChestData {
     void setMultiplier(double multiplier);
 
     void setAutoCollect(boolean autoCollect);
+
+    void setAutoSuctionRange(int autoSuctionRange);
+
+    void setAutoSuctionChunk(boolean autoSuctionChunk);
 
     void setStorageUnitMaxAmount(BigInteger maxAmount);
 

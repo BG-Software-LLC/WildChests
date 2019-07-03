@@ -31,6 +31,8 @@ public final class WChestData implements ChestData {
     private int defaultPagesAmount;
     private double multiplier;
     private boolean autoCollect;
+    private int autoSuctionRange;
+    private boolean autoSuctionChunk;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -48,6 +50,8 @@ public final class WChestData implements ChestData {
         this.defaultPagesAmount = 1;
         this.multiplier = 1;
         this.maxAmount = BigInteger.valueOf(-1);
+        this.autoSuctionRange = -1;
+        this.autoSuctionChunk = false;
     }
 
     @Override
@@ -137,6 +141,21 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public boolean isAutoSuction() {
+        return autoSuctionRange > 0;
+    }
+
+    @Override
+    public int getAutoSuctionRange() {
+        return Math.max(1, autoSuctionRange);
+    }
+
+    @Override
+    public boolean isAutoSuctionChunk() {
+        return autoSuctionChunk;
+    }
+
+    @Override
     public BigInteger getStorageUnitMaxAmount() {
         if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
             throw new UnsupportedOperationException("Cannot get max amount of an unknown storage unit.");
@@ -197,6 +216,16 @@ public final class WChestData implements ChestData {
     @Override
     public void setAutoCollect(boolean autoCollect) {
         this.autoCollect = autoCollect;
+    }
+
+    @Override
+    public void setAutoSuctionRange(int autoSuctionRange) {
+        this.autoSuctionRange = Math.max(1, autoSuctionRange);
+    }
+
+    @Override
+    public void setAutoSuctionChunk(boolean autoSuctionChunk) {
+        this.autoSuctionChunk = autoSuctionChunk;
     }
 
     @Override

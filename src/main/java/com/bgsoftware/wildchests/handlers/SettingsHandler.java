@@ -169,6 +169,11 @@ public final class SettingsHandler {
                 chestData.setAutoCollect(cfg.getBoolean("chests." + name + ".auto-collect"));
             }
 
+            if(cfg.contains("chests." + name + ".auto-suction")){
+                chestData.setAutoSuctionRange(cfg.getInt("chests." + name + ".auto-suction.range", 1));
+                chestData.setAutoSuctionChunk(cfg.getBoolean("chests." + name + ".auto-suction.chunk", false));
+            }
+
             if(cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT){
                 chestData.setStorageUnitMaxAmount(cfg.isInt("chests." + name + ".max-amount") ?
                         BigInteger.valueOf(cfg.getInt("chests." + name + ".max-amount")) :

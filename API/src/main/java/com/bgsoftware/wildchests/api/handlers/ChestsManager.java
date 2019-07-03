@@ -31,6 +31,8 @@ public interface ChestsManager {
 
     List<Chest> getChests();
 
+    List<Chest> getNearbyChests(Location location);
+
     List<ChestData> getAllChestData();
 
 }

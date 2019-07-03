@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
+import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class ChestsHandler implements ChestsManager {
@@ -122,6 +124,25 @@ public final class ChestsHandler implements ChestsManager {
     @Override
     public List<Chest> getChests() {
         return new ArrayList<>(chests.values());
+    }
+
+    @Override
+    public List<Chest> getNearbyChests(Location location) {
+        return getChests().stream()
+                .filter(chest -> {
+                    ChestData chestData = chest.getData();
+                    if(chestData.isAutoSuctionChunk())
+                        return chest.getLocation().getChunk().equals(location.getChunk()) &&
+                                Math.abs(location.getBlockY() - chest.getLocation().getBlockY()) <= chest.getData().getAutoSuctionRange();
+                    else if(chestData.isAutoSuction()) {
+                        return ItemUtils.isInRange(chest.getLocation(), location, chest.getData().getAutoSuctionRange());
+                    }
+                    return false;
+                }).sorted((c1, c2) -> {
+                    double firstDistance = c1.getLocation().distance(location);
+                    double secondDistance = c2.getLocation().distance(location);
+                    return Double.compare(firstDistance, secondDistance);
+                }).collect(Collectors.toList());
     }
 
     @Override
