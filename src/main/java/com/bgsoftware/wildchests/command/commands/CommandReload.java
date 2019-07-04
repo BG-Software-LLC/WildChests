@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.command.commands;
 
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.command.CommandSender;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -45,13 +46,13 @@ public final class CommandReload implements ICommand {
 
     @Override
     public void perform(WildChestsPlugin plugin, CommandSender sender, String[] args) {
-        new Thread(() -> {
+        Executor.async(() -> {
             SettingsHandler.reload();
             Locale.reload();
             SaveTask.start();
             NotifierTask.start();
             Locale.RELOAD_SUCCESS.send(sender);
-        }).start();
+        });
     }
 
     @Override

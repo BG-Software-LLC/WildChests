@@ -8,6 +8,7 @@ import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.objects.Materials;
 import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.utils.Executor;
 import com.google.common.collect.Maps;
 
 import org.bukkit.Bukkit;
@@ -55,7 +56,7 @@ public final class InventoryListener implements Listener {
     public void onInventoryClickMonitor(InventoryClickEvent e){
         if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getView().getTitle().contains(title))) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
+            Executor.sync(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
     }
 
@@ -63,7 +64,7 @@ public final class InventoryListener implements Listener {
     public void onInventoryCloseMonitor(InventoryCloseEvent e){
         if(latestClickedItem.containsKey(e.getPlayer().getUniqueId())){
             ItemStack clickedItem = latestClickedItem.get(e.getPlayer().getUniqueId());
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Executor.sync(() -> {
                 e.getPlayer().getInventory().removeItem(clickedItem);
                 ((Player) e.getPlayer()).updateInventory();
             }, 1L);
@@ -138,7 +139,7 @@ public final class InventoryListener implements Listener {
 
         e.setCancelled(true);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> chest.onHopperMove(e), 1L);
+        Executor.sync(() -> chest.onHopperMove(e), 1L);
     }
 
     /*
@@ -173,7 +174,7 @@ public final class InventoryListener implements Listener {
             }
 
             final int PAGE = --pageIndex;
-            Bukkit.getScheduler().runTask(plugin, () -> e.getPlayer().openInventory(chest.getPage(PAGE)));
+            Executor.sync(() -> e.getPlayer().openInventory(chest.getPage(PAGE)));
         }catch(Exception ex){
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(e.getPlayer());
         }
@@ -222,7 +223,7 @@ public final class InventoryListener implements Listener {
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
         if (e.getView().getTitle().equals(WChest.guiConfirmTitle)) {
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Executor.sync(() -> {
                 if (buyNewPage.containsKey(e.getPlayer().getUniqueId()))
                     e.getPlayer().openInventory(e.getInventory());
             }, 1L);

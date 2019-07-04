@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
-import org.bukkit.Bukkit;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -123,8 +123,7 @@ public final class WLinkedChest extends WChest implements LinkedChest {
         if (cfg.contains("linked-chest")) {
             //We want to run it on the first tick, after all chests are loaded.
             Location linkedChest = WLocation.of(cfg.getString("linked-chest")).getLocation();
-            Bukkit.getScheduler().runTaskLater(plugin, () ->
-                    linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
+            Executor.sync(() -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
         }
     }
 }

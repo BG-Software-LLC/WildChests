@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.objects.Materials;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -150,7 +151,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
 
         recentlyClicked.add(event.getWhoClicked().getUniqueId());
-        Bukkit.getScheduler().runTask(plugin, () -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
+        Executor.sync(() -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
 
         if(event.getClick().name().contains("SHIFT")){
             if(event.getCurrentItem() == null)
@@ -172,7 +173,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             }
 
             //Add items into storage unit
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Executor.sync(() -> {
                 if(event.getInventory().getItem(2) != null) {
                     boolean hasMaxAmount = maxAmount.compareTo(BigInteger.ZERO) >= 0;
                     BigInteger newAmount = amount.add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount()));
@@ -198,7 +199,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                 return false;
 
             //Take items out of storage unit
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            Executor.sync(() -> {
                 //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
                 BigInteger itemAmount = amount.min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
                 setAmount(amount.subtract(itemAmount));

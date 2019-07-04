@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
+import com.bgsoftware.wildchests.utils.Executor;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -85,12 +86,14 @@ public final class ProvidersHandler {
                 economy.createPlayerAccount(player);
 
             final BigDecimal TOTAL_PRICE = totalPrice;
-            Bukkit.getScheduler().runTask(plugin, () -> economy.depositPlayer(player, TOTAL_PRICE.doubleValue()));
+            Executor.sync(() -> economy.depositPlayer(player, TOTAL_PRICE.doubleValue()));
         }
         else{
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                    .replace("{player-name}", player.getName())
-                    .replace("{price}", String.valueOf(totalPrice)));
+            final BigDecimal TOTAL_PRICE = totalPrice;
+            Executor.sync(() ->
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                            .replace("{player-name}", player.getName())
+                            .replace("{price}", String.valueOf(TOTAL_PRICE))));
         }
 
         return totalPrice.doubleValue();
@@ -124,7 +127,7 @@ public final class ProvidersHandler {
                 economy.createPlayerAccount(player);
 
             final double PRICE = price;
-            Bukkit.getScheduler().runTask(plugin, () -> economy.depositPlayer(player, PRICE));
+            Executor.sync(() -> economy.depositPlayer(player, PRICE));
         }
 
         return price;
@@ -148,7 +151,7 @@ public final class ProvidersHandler {
             economy.createPlayerAccount(player);
 
         if(economy.getBalance(player) >= money){
-            Bukkit.getScheduler().runTask(plugin, () -> economy.withdrawPlayer(player, money));
+            Executor.sync(() -> economy.withdrawPlayer(player, money));
             return true;
         }
 

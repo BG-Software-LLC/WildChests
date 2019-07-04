@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.command.commands;
 
 import com.bgsoftware.wildchests.objects.WLocation;
-import org.bukkit.Bukkit;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -115,7 +115,7 @@ public final class CommandLink implements ICommand {
         }
 
         players.put(player.getUniqueId(), WLocation.of(linkedChest.getLocation()));
-        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> players.remove(player.getUniqueId()), 6000L);
+        Executor.async(() -> players.remove(player.getUniqueId()), 6000L);
         Locale.SELECT_ANOTHER_CHEST.send(player);
     }
 

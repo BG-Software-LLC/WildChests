@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import org.bukkit.Bukkit;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -25,7 +25,7 @@ public final class DataHandler {
 
     public DataHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
-        Bukkit.getScheduler().runTask(plugin, this::loadDatabase);
+        Executor.sync(this::loadDatabase);
     }
 
     public void saveDatabase(){

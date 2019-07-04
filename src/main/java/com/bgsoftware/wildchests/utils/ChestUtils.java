@@ -29,7 +29,7 @@ public final class ChestUtils {
 
     public static void tryCraftChest(Chest chest){
         if(Bukkit.isPrimaryThread()){
-            new Thread(() -> tryCraftChest(chest)).start();
+            Executor.async(() -> tryCraftChest(chest));
             return;
         }
 
@@ -75,7 +75,7 @@ public final class ChestUtils {
         List<ItemStack> toDrop = new ArrayList<>(chest.addItems(toAdd.toArray(new ItemStack[]{})).values());
 
         if(!toDrop.isEmpty()){
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            Executor.sync(() -> {
                 for(ItemStack itemStack : toDrop)
                     ItemUtils.dropItem(chest.getLocation(), itemStack);
             });
@@ -84,7 +84,7 @@ public final class ChestUtils {
 
     public static void trySellChest(Chest chest){
         if(Bukkit.isPrimaryThread()){
-            new Thread(() -> trySellChest(chest)).start();
+            Executor.async(() -> trySellChest(chest));
             return;
         }
 
@@ -112,10 +112,10 @@ public final class ChestUtils {
                 if(plugin.getSettings().sellCommand.isEmpty()) {
                     plugin.getProviders().trySellItem(placer, itemStack, sellChestTaskEvent.getMultiplier());
                 }else{
-                    Bukkit.getScheduler().runTask(plugin, () ->
+                    Executor.sync(() ->
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                                .replace("{player-name}", Bukkit.getPlayer(placer).getName())
-                                .replace("{price}", String.valueOf(price))));
+                            .replace("{player-name}", Bukkit.getPlayer(placer).getName())
+                            .replace("{price}", String.valueOf(price))));
                 }
 
                 NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
@@ -127,11 +127,16 @@ public final class ChestUtils {
     }
 
     public static void trySuctionChest(Item item){
+        if(Bukkit.isPrimaryThread()){
+            Executor.async(() -> trySuctionChest(item));
+            return;
+        }
+
         if(!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
             return;
 
         if(!item.isOnGround()){
-            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () -> trySuctionChest(item), 20L);
+            Executor.async(() -> trySuctionChest(item), 20L);
             return;
         }
 
@@ -146,7 +151,6 @@ public final class ChestUtils {
                 break;
             }
         }
-
     }
 
     private static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){

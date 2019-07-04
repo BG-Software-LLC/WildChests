@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.listeners.ItemsListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.task.SaveTask;
+import com.bgsoftware.wildchests.utils.Executor;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -118,7 +119,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }catch(Exception ex){
             log("Failed to set-up API - disabling plugin...");
             setEnabled(false);
-            Bukkit.getScheduler().runTask(this, () -> getServer().getPluginManager().disablePlugin(this));
+            Executor.sync(() -> getServer().getPluginManager().disablePlugin(this));
             ex.printStackTrace();
         }
     }

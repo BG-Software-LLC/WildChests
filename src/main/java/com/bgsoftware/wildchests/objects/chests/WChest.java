@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.utils.Executor;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -235,7 +236,7 @@ public abstract class WChest implements Chest {
         //Checking if player is moving between pages
         if(movingBetweenPages.contains(event.getPlayer().getUniqueId())) {
             if(event.getPlayer().getGameMode() != GameMode.SPECTATOR)
-                Bukkit.getScheduler().runTaskLater(plugin, () -> plugin.getNMSAdapter().playChestAction(getLocation(), true), 1L);
+                Executor.sync(() -> plugin.getNMSAdapter().playChestAction(getLocation(), true), 1L);
             movingBetweenPages.remove(event.getPlayer().getUniqueId());
             return false;
         }

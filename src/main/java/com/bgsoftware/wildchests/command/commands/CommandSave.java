@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.command.commands;
 
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -42,10 +43,10 @@ public final class CommandSave implements ICommand {
 
     @Override
     public void perform(WildChestsPlugin plugin, CommandSender sender, String[] args) {
-        new Thread(() -> {
+        Executor.async(() -> {
             plugin.getDataHandler().saveDatabase();
             sender.sendMessage(ChatColor.YELLOW + "Successfully saved all cached data.");
-        }).start();
+        });
     }
 
     @Override
