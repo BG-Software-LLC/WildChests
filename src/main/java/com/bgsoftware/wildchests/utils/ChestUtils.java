@@ -127,8 +127,12 @@ public final class ChestUtils {
     }
 
     public static void trySuctionChest(Item item){
+        trySuctionChest(item, 0);
+    }
+
+    private static void trySuctionChest(Item item, int attempts){
         if(Bukkit.isPrimaryThread()){
-            Executor.async(() -> trySuctionChest(item));
+            Executor.async(() -> trySuctionChest(item, attempts));
             return;
         }
 
@@ -136,7 +140,8 @@ public final class ChestUtils {
             return;
 
         if(!item.isOnGround()){
-            Executor.async(() -> trySuctionChest(item), 20L);
+            if(attempts < 10)
+                Executor.async(() -> trySuctionChest(item, attempts + 1), 20L);
             return;
         }
 

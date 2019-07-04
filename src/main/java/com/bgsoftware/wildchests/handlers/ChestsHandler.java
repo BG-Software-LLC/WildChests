@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.utils.ItemUtils;

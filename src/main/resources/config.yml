@@ -5,10 +5,6 @@
 ##                                                     ##
 #########################################################
 
-# How much time should be passed between saves? (in ticks)
-# Set 0 to disable (not recommended. saving is done async, and will not lag your server)
-save-interval: 6000
-
 # How much time should be passed between sell and crafting notifies? (in ticks)
 # Set 0 to disable this feature.
 notifier-interval: 12000
@@ -117,3 +113,12 @@ chests:
     title: 'Storage Unit {0}'
     item:
       name: '&bStorage Unit &7(Place to active)'
+  chunk_collector:
+    chest-mode: CHEST
+    size: 6
+    title: 'Chunk Collector'
+    item:
+      name: '&eChunk Collector &7(Place to active)'
+    auto-suction:
+      range: 5
+      chunk: true

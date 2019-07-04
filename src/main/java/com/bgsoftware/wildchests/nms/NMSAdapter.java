@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.nms;
 
-import com.bgsoftware.wildchests.objects.WInventory;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -22,5 +21,21 @@ public interface NMSAdapter {
     void setDesignItem(ItemStack itemStack);
 
     void setTitle(Inventory bukkitInventory, String title);
+
+    default String serialize(ItemStack itemStack){
+        return "";
+    }
+
+    default String serialize(Inventory[] inventories){
+        return "";
+    }
+
+    default Inventory[] deserialze(String serialized){
+        return new Inventory[0];
+    }
+
+    default ItemStack deserialzeItem(String serialized){
+        return null;
+    }
 
 }

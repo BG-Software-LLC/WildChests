@@ -12,11 +12,6 @@ public final class ConfigComments {
     public static String HEADER = "";
 
     @Comment("")
-    @Comment("How much time should be passed between saves? (in ticks)")
-    @Comment("Set 0 to disable (not recommended. saving is done async, and will not lag your server)")
-    public static String SAVE_INTERVAL = "save-interval";
-
-    @Comment("")
     @Comment("How much time should be passed between sell and crafting notifies? (in ticks)")
     @Comment("Set 0 to disable this feature.")
     public static String NOTIFIER_INTERVAL = "notifier-interval";

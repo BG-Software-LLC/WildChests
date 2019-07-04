@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("WeakerAccess")
 public final class SettingsHandler {
 
-    public final long saveInterval;
     public final long notifyInterval;
     public final boolean chestTask;
     public final boolean confirmGUI;
@@ -47,7 +47,6 @@ public final class SettingsHandler {
 
         cfg.resetYamlFile(plugin, "config.yml");
 
-        saveInterval = cfg.getLong("save-interval", 6000);
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         chestTask = cfg.getBoolean("chest-task", false);
         confirmGUI = cfg.getBoolean("confirm-gui", false);

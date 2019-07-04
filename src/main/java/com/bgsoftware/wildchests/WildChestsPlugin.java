@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests;
 
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.command.CommandsHandler;
+import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
@@ -9,7 +10,6 @@ import com.bgsoftware.wildchests.handlers.SettingsHandler;
 import com.bgsoftware.wildchests.listeners.ItemsListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.task.NotifierTask;
-import com.bgsoftware.wildchests.task.SaveTask;
 import com.bgsoftware.wildchests.utils.Executor;
 import net.milkbowl.vault.economy.Economy;
 
@@ -68,7 +68,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         Locale.reload();
         loadAPI();
-        SaveTask.start();
         NotifierTask.start();
 
         if(!isVaultEnabled()){
@@ -108,7 +107,11 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
         Bukkit.getScheduler().cancelTasks(this);
-        dataHandler.saveDatabase();
+        dataHandler.saveDatabase(false);
+
+        log("Terminating all database threads...");
+        Executor.stop();
+        SQLHelper.close();
     }
 
     private void loadAPI(){

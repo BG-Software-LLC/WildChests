@@ -36,6 +36,8 @@ import com.bgsoftware.wildchests.task.HopperTask;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -356,24 +358,14 @@ public abstract class WChest implements Chest {
         return true;
     }
 
-    public void saveIntoFile(YamlConfiguration cfg){
-        cfg.set("placer", placer.toString());
-        cfg.set("data", getData().getName());
+    public abstract void saveIntoData(boolean async);
 
-        int index = 0;
-        Inventory inventory;
-
-        while((inventory = getPage(index)) != null){
-            cfg.set("inventory." + index, "empty");
-            for(int slot = 0; slot < inventory.getSize(); slot++){
-                ItemStack itemStack = inventory.getItem(slot);
-
-                if(itemStack == null)
-                    continue;
-
-                cfg.set("inventory." + index + "." + slot, itemStack);
-            }
-            index++;
+    public void loadFromData(ResultSet resultSet) throws SQLException {
+        String serialized = resultSet.getString("inventories");
+        if(!serialized.isEmpty()) {
+            Inventory[] inventories = plugin.getNMSAdapter().deserialze(serialized);
+            for (int i = 0; i < inventories.length; i++)
+                setPage(i, inventories[i]);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,6 +13,8 @@ import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.WLocation;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +26,15 @@ public final class WLinkedChest extends WChest implements LinkedChest {
     public WLinkedChest(UUID placer, WLocation location, ChestData chestData){
         super(placer, location, chestData);
         this.linkedChest = null;
+
+        SQLHelper.runIfConditionNotExist(Query.LINKED_CHEST_SELECT.getStatementHolder().setLocation(getLocation()), () ->
+            Query.LINKED_CHEST_INSERT.getStatementHolder()
+                    .setLocation(location)
+                    .setString(placer.toString())
+                    .setString(chestData.getName())
+                    .setString("")
+                    .setLocation(linkedChest)
+                    .execute(true));
     }
 
     @Override
@@ -35,6 +48,11 @@ public final class WLinkedChest extends WChest implements LinkedChest {
         }else{
             linkIntoChest(linkedChest.getLinkedChest());
         }
+        LinkedChest _linkedChest = getLinkedChest();
+        Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder()
+                .setLocation(linkedChest == null ? null : _linkedChest.getLocation())
+                .setLocation(getLocation())
+                .execute(true);
     }
 
     @Override
@@ -85,6 +103,10 @@ public final class WLinkedChest extends WChest implements LinkedChest {
         //We want to unlink all linked chests only if that's the original chest
         if(this.linkedChest == null)
             getAllLinkedChests().forEach(linkedChest -> linkedChest.linkIntoChest(null));
+        //Removing the linked chest from database
+        Query.LINKED_CHEST_DELETE.getStatementHolder()
+                .setLocation(getLocation())
+                .execute(true);
     }
 
     @Override
@@ -111,10 +133,26 @@ public final class WLinkedChest extends WChest implements LinkedChest {
     }
 
     @Override
-    public void saveIntoFile(YamlConfiguration cfg) {
-        super.saveIntoFile(cfg);
-        if(isLinkedIntoChest())
-            cfg.set("linked-chest", WLocation.of(getLinkedChest().getLocation()).toString());
+    public void saveIntoData(boolean async) {
+        Query.LINKED_CHEST_UPDATE_INVENTORY.getStatementHolder()
+                .setInventories(getPages())
+                .setLocation(getLocation())
+                .execute(true);
+        LinkedChest linkedChest = getLinkedChest();
+        Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder()
+                .setLocation(linkedChest == null ? null : linkedChest.getLocation())
+                .setLocation(getLocation())
+                .execute(true);
+    }
+
+    @Override
+    public void loadFromData(ResultSet resultSet) throws SQLException {
+        super.loadFromData(resultSet);
+        String linkedChest = resultSet.getString("linked_chest");
+        if(!linkedChest.isEmpty()){
+            Location linkedChestLocation = WLocation.of(linkedChest).getLocation();
+            Executor.sync(() -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChestLocation)), 1L);
+        }
     }
 
     @Override

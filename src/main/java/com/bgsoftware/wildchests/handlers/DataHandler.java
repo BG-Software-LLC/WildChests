@@ -1,11 +1,13 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.WLocation;
 
@@ -15,56 +17,62 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 
-@SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions", "WeakerAccess"})
+@SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
 public final class DataHandler {
 
     private WildChestsPlugin plugin;
 
     public DataHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
-        Executor.sync(this::loadDatabase);
-    }
-
-    public void saveDatabase(){
-        long startTime = System.currentTimeMillis();
-        List<Chest> chests = plugin.getChestsManager().getChests();
-
-        File dataFolder = new File(plugin.getDataFolder(), "data");
-        if(dataFolder.exists()){
-            for(File file : dataFolder.listFiles())
-                file.delete();
-        }
-
-        for(Chest chest : chests){
+        Executor.sync(() -> {
             try {
-                File file = new File(plugin.getDataFolder(), "data/" + WLocation.of(chest.getLocation()).toString() + ".yml");
+                SQLHelper.init(new File(plugin.getDataFolder(), "database.db"));
+                loadDatabase();
+                loadOldDatabase();
 
-                if (file.exists())
-                    file.delete();
-
-                file.getParentFile().mkdirs();
-                file.createNewFile();
-
-                YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
-
-                ((WChest) chest).saveIntoFile(cfg);
-
-                cfg.save(file);
-            }catch(IOException ex){
-                WildChestsPlugin.log("Couldn't save chest at " + WLocation.of(chest.getLocation()).toString());
+                Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> saveDatabase(true), 6000L, 6000L);
+            }catch(Exception ex){
+                ex.printStackTrace();
+                Executor.sync(() -> Bukkit.getPluginManager().disablePlugin(plugin));
             }
-        }
-
-        WildChestsPlugin.log("Successfully saved database (" + (System.currentTimeMillis() - startTime) + "ms)");
+        });
     }
 
-    public void loadDatabase(){
-        WildChestsPlugin.log("Loading database started...");
-        long startTime = System.currentTimeMillis();
-        int chestsAmount = 0;
+    public void saveDatabase(boolean async){
+        for(Chest chest : plugin.getChestsManager().getChests()){
+            ((WChest) chest).saveIntoData(async);
+        }
+    }
+
+    private void loadDatabase(){
+        //Creating default tables
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
+
+        //Loading all tables
+        SQLHelper.executeQuery("SELECT * FROM chests;", this::loadResultSet);
+        SQLHelper.executeQuery("SELECT * FROM linked_chests;", this::loadResultSet);
+        SQLHelper.executeQuery("SELECT * FROM storage_units;", this::loadResultSet);
+    }
+
+    private void loadResultSet(ResultSet resultSet) throws SQLException{
+        while (resultSet.next()) {
+            UUID placer = UUID.fromString(resultSet.getString("placer"));
+            Location location = WLocation.of(resultSet.getString("location")).getLocation();
+            ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
+
+            WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
+
+            chest.loadFromData(resultSet);
+        }
+    }
+
+    private void loadOldDatabase(){
         File dataFolder = new File(plugin.getDataFolder(), "data");
 
         if(!dataFolder.exists())
@@ -84,7 +92,7 @@ public final class DataHandler {
 
                 chest.loadFromFile(cfg);
 
-                chestsAmount++;
+                chestFile.delete();
             }catch(Exception ex){
                 WildChestsPlugin.log("Looks like the file " + chestFile.getName() + " is corrupted. Creating a backup file...");
                 File backupFile = new File(plugin.getDataFolder(), "data-backup/" + chestFile.getName());
@@ -93,8 +101,8 @@ public final class DataHandler {
             }
         }
 
-        WildChestsPlugin.log(" - Found " + chestsAmount + " chests in files.");
-        WildChestsPlugin.log("Loading database done (Took " + (System.currentTimeMillis() - startTime) + "ms)");
+        if(dataFolder.listFiles().length == 0)
+            dataFolder.delete();
     }
 
     private void copyFiles(File src, File dst){
