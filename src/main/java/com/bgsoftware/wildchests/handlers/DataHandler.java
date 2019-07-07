@@ -6,6 +6,7 @@ import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
@@ -65,10 +66,10 @@ public final class DataHandler {
             UUID placer = UUID.fromString(resultSet.getString("placer"));
             Location location = WLocation.of(resultSet.getString("location")).getLocation();
             ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
-
-            WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
-
-            chest.loadFromData(resultSet);
+            if(location.getBlock().getType() == Material.CHEST) {
+                WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
+                chest.loadFromData(resultSet);
+            }
         }
     }
 
@@ -88,9 +89,10 @@ public final class DataHandler {
                 Location location = WLocation.of(chestFile.getName().replace(".yml", "")).getLocation();
                 ChestData chestData = plugin.getChestsManager().getChestData(cfg.getString("data"));
 
-                WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
-
-                chest.loadFromFile(cfg);
+                if(location.getBlock().getType() == Material.CHEST) {
+                    WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
+                    chest.loadFromFile(cfg);
+                }
 
                 chestFile.delete();
             }catch(Exception ex){
