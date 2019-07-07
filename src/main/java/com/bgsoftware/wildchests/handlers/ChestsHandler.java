@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 
-import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.utils.ItemUtils;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class ChestsHandler implements ChestsManager {
 
+    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private final Set<ChestData> chestsData = new HashSet<>();
     private final Map<WLocation, Chest> chests = new HashMap<>();
 
@@ -66,6 +67,7 @@ public final class ChestsHandler implements ChestsManager {
         }
 
         chests.put(WLocation.of(location), chest);
+        plugin.getNMSAdapter().updateTileEntity(chest);
 
         return chest;
     }

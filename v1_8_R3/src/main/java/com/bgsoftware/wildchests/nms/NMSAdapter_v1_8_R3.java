@@ -1,7 +1,9 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
+import net.minecraft.server.v1_8_R3.Chunk;
 import net.minecraft.server.v1_8_R3.Container;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import net.minecraft.server.v1_8_R3.IInventory;
@@ -10,6 +12,7 @@ import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NBTTagList;
 import net.minecraft.server.v1_8_R3.PacketPlayOutOpenWindow;
+import net.minecraft.server.v1_8_R3.TileEntity;
 import net.minecraft.server.v1_8_R3.TileEntityChest;
 import net.minecraft.server.v1_8_R3.TileEntityHopper;
 import net.minecraft.server.v1_8_R3.World;
@@ -200,6 +203,17 @@ public final class NMSAdapter_v1_8_R3 implements NMSAdapter {
         }
     }
 
+    @Override
+    public void updateTileEntity(Chest chest) {
+        Location loc = chest.getLocation();
+        World world = ((CraftWorld) loc.getWorld()).getHandle();
+        BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
+        TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
+        world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
+        chunk.tileEntities.put(blockPosition, tileEntityWildChest);
+    }
+
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){
         NBTTagList itemsList = new NBTTagList();
         org.bukkit.inventory.ItemStack[] items = inventory.getContents();
@@ -227,6 +241,45 @@ public final class NMSAdapter_v1_8_R3 implements NMSAdapter {
         }
 
         return inventory;
+    }
+
+    private class TileEntityWildChest extends TileEntityChest{
+
+        private TileEntityChest tileEntityChest = new TileEntityChest();
+        private Chest chest;
+
+        TileEntityWildChest(Chest chest, World world, BlockPosition blockPosition){
+            this.chest = chest;
+            this.world = world;
+            updateTile(this, world, blockPosition);
+            updateTile(tileEntityChest, world, blockPosition);
+        }
+
+        @Override
+        public void update() {
+            List<org.bukkit.inventory.ItemStack> bukkitItems = new ArrayList<>();
+            for(ItemStack itemStack : getContents())
+                bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack));
+            chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0]));
+            try{
+                Field items = TileEntityChest.class.getDeclaredField("items");
+                items.setAccessible(true);
+                items.set(this, new ItemStack[27]);
+                items.setAccessible(false);
+            }catch(Exception ignored){}
+            super.update();
+        }
+
+        @Override
+        public void b(NBTTagCompound nbttagcompound) {
+            tileEntityChest.b(nbttagcompound);
+        }
+
+        private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){
+            tileEntity.a(world);
+            tileEntity.a(blockPosition);
+        }
+
     }
 
 }

@@ -29,7 +29,6 @@ import java.util.Set;
 public final class SettingsHandler {
 
     public final long notifyInterval;
-    public final boolean chestTask;
     public final boolean confirmGUI;
     public final String sellCommand;
     public final String pricesProvider;
@@ -48,7 +47,6 @@ public final class SettingsHandler {
         cfg.resetYamlFile(plugin, "config.yml");
 
         notifyInterval = cfg.getLong("notifier-interval", 12000);
-        chestTask = cfg.getBoolean("chest-task", false);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");

@@ -17,11 +17,6 @@ public final class ConfigComments {
     public static String NOTIFIER_INTERVAL = "notifier-interval";
 
     @Comment("")
-    @Comment("Should the chest-task be enabled?")
-    @Comment("Please note: The task runs every second and checks for items in the original chest (May cause lags)")
-    public static String CHEST_TASK = "chest-task";
-
-    @Comment("")
     @Comment("When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.")
     public static String CONFIRM_GUI = "confirm-gui";
 

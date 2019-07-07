@@ -31,7 +31,6 @@ import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.WLocation;
-import com.bgsoftware.wildchests.task.ChestTask;
 import com.bgsoftware.wildchests.task.HopperTask;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.ItemUtils;
@@ -57,7 +56,6 @@ public abstract class WChest implements Chest {
     public static String guiConfirmTitle;
 
     protected final HopperTask hopperTask;
-    private final ChestTask chestTask;
 
     protected final UUID placer;
     protected final WLocation location;
@@ -66,7 +64,6 @@ public abstract class WChest implements Chest {
 
     public WChest(UUID placer, WLocation location, ChestData chestData) {
         this.hopperTask = new HopperTask(location);
-        this.chestTask = new ChestTask(location);
         this.placer = placer;
         this.location = location;
         this.name = chestData.getName();

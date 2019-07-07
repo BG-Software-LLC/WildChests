@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -22,20 +23,14 @@ public interface NMSAdapter {
 
     void setTitle(Inventory bukkitInventory, String title);
 
-    default String serialize(ItemStack itemStack){
-        return "";
-    }
+    String serialize(ItemStack itemStack);
 
-    default String serialize(Inventory[] inventories){
-        return "";
-    }
+    String serialize(Inventory[] inventories);
 
-    default Inventory[] deserialze(String serialized){
-        return new Inventory[0];
-    }
+    Inventory[] deserialze(String serialized);
 
-    default ItemStack deserialzeItem(String serialized){
-        return null;
-    }
+    ItemStack deserialzeItem(String serialized);
+
+    void updateTileEntity(Chest chest);
 
 }
