@@ -72,7 +72,7 @@ public final class ChestUtils {
             }
         }
 
-        List<ItemStack> toDrop = new ArrayList<>(chest.addItems(toAdd.toArray(new ItemStack[]{})).values());
+        List<ItemStack> toDrop = new ArrayList<>(chest.addRawItems(toAdd.toArray(new ItemStack[]{})).values());
 
         if(!toDrop.isEmpty()){
             Executor.sync(() -> {
@@ -149,10 +149,6 @@ public final class ChestUtils {
         for (Chest chest : chestList) {
             if (chest.addItems(item.getItemStack()).isEmpty()) {
                 item.remove();
-                if(chest.getData().isSellMode())
-                    ChestUtils.trySellChest(chest);
-                if(chest.getData().isAutoCrafter())
-                    ChestUtils.tryCraftChest(chest);
                 break;
             }
         }

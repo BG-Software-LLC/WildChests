@@ -46,6 +46,8 @@ public interface Chest {
 
     Map<Integer, ItemStack> addItems(ItemStack... itemStacks);
 
+    Map<Integer, ItemStack> addRawItems(ItemStack... itemStacks);
+
     void removeItem(int amountToRemove, ItemStack itemStack);
 
     boolean onBreak(BlockBreakEvent event);

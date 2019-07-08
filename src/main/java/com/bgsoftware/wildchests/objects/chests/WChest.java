@@ -154,6 +154,17 @@ public abstract class WChest implements Chest {
 
     @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
+        Map<Integer, ItemStack> additionalItems = addRawItems(itemStacks);
+        ChestData chestData = getData();
+        if(chestData.isSellMode())
+            ChestUtils.trySellChest(this);
+        if(chestData.isAutoCrafter())
+            ChestUtils.tryCraftChest(this);
+        return additionalItems;
+    }
+
+    @Override
+    public Map<Integer, ItemStack> addRawItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
         Map<Integer, ItemStack> itemAdditionalItems = new HashMap<>();
 
@@ -301,14 +312,6 @@ public abstract class WChest implements Chest {
         if(addItems(event.getItem()).isEmpty()){
             event.getSource().removeItem(event.getItem());
             ((Hopper) event.getSource().getHolder()).update();
-
-            if (getData().isAutoCrafter()) {
-                ChestUtils.tryCraftChest(this);
-            }
-
-            if (getData().isSellMode()) {
-                ChestUtils.trySellChest(this);
-            }
         }
         return true;
     }
