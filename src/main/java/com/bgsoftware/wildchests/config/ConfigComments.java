@@ -28,6 +28,11 @@ public final class ConfigComments {
     public static String SELL_COMMAND = "sell-command";
 
     @Comment("")
+    @Comment("Should the chest item be dropped on explosions?")
+    @Comment("Set a chance of it to get dropped between 0 and 100.")
+    public static String EXPLODE_DROP_CHANCE = "explode-drop-chance";
+
+    @Comment("")
     @Comment("The plugin checks if ShopGUIPlus or Essentials is installed.")
     @Comment("If both are not installed, it will use this list for the sell-chest")
     @Comment("prices list. If both are installed, ShopGUIPlus's prices will be used.")

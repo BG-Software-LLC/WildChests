@@ -32,6 +32,7 @@ public final class SettingsHandler {
     public final boolean confirmGUI;
     public final String sellCommand;
     public final String pricesProvider;
+    public final int explodeDropChance;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -49,6 +50,7 @@ public final class SettingsHandler {
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
+        explodeDropChance = cfg.getInt("explode-drop-chance", 100);
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
 
         Map<String, Double> prices = new HashMap<>();

@@ -79,7 +79,7 @@ public final class ItemUtils {
     }
 
     public static void dropOrCollect(Player player, ItemStack itemStack, boolean collect, Location location){
-        if(collect){
+        if(collect && player != null){
             Map<Integer, ItemStack> additionalItems = player.getInventory().addItem(itemStack);
             if(additionalItems.isEmpty())
                 return;

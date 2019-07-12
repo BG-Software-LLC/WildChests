@@ -18,6 +18,10 @@ confirm-gui: false
 # Set to '' in order to disable the feature.
 sell-command: ''
 
+# Should the chest item be dropped on explosions?
+# Set a chance of it to get dropped between 0 and 100.
+explode-drop-chance: 100
+
 # The plugin checks if ShopGUIPlus or Essentials is installed.
 # If both are not installed, it will use this list for the sell-chest
 # prices list. If both are installed, ShopGUIPlus's prices will be used.

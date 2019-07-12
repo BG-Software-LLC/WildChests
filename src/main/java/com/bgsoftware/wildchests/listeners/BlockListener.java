@@ -14,6 +14,11 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @SuppressWarnings("unused")
 public final class BlockListener implements Listener {
@@ -68,6 +73,29 @@ public final class BlockListener implements Listener {
 
         chest.remove();
         e.getBlock().setType(Material.AIR);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onChestExplode(EntityExplodeEvent e){
+        List<Block> blockList = new ArrayList<>(e.blockList());
+        for(Block block : blockList) {
+            Chest chest = plugin.getChestsManager().getChest(block.getLocation());
+
+            if (chest == null)
+                continue;
+
+            e.blockList().remove(block);
+
+            if(ThreadLocalRandom.current().nextInt(101) <= plugin.getSettings().explodeDropChance) {
+                ChestData chestData = chest.getData();
+                ItemUtils.dropOrCollect(null, chestData.getItemStack(), false, chest.getLocation());
+            }
+
+            chest.onBreak(new BlockBreakEvent(block, null));
+
+            chest.remove();
+            block.setType(Material.AIR);
+        }
     }
 
 }
