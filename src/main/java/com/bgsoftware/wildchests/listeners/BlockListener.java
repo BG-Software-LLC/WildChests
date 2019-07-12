@@ -86,7 +86,8 @@ public final class BlockListener implements Listener {
 
             e.blockList().remove(block);
 
-            if(ThreadLocalRandom.current().nextInt(101) <= plugin.getSettings().explodeDropChance) {
+            if(plugin.getSettings().explodeDropChance > 0 && (plugin.getSettings().explodeDropChance == 100 ||
+                    ThreadLocalRandom.current().nextInt(101) <= plugin.getSettings().explodeDropChance)) {
                 ChestData chestData = chest.getData();
                 ItemUtils.dropOrCollect(null, chestData.getItemStack(), false, chest.getLocation());
             }
