@@ -38,6 +38,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @SuppressWarnings("unused")
@@ -258,8 +259,8 @@ public final class NMSAdapter_v1_9_R1 implements NMSAdapter {
         @Override
         public void update() {
             List<org.bukkit.inventory.ItemStack> bukkitItems = new ArrayList<>();
-            for(ItemStack itemStack : getContents())
-                bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack));
+            Arrays.stream(getContents()).filter(Objects::nonNull)
+                    .forEach(itemStack -> bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack)));
             chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0]));
             try{
                 Field items = TileEntityChest.class.getDeclaredField("items");

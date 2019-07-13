@@ -27,7 +27,7 @@ public final class ChestUtils {
 
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
-    public static void tryCraftChest(Chest chest){
+    public synchronized static void tryCraftChest(Chest chest){
         if(Bukkit.isPrimaryThread()){
             Executor.async(() -> tryCraftChest(chest));
             return;
@@ -82,7 +82,7 @@ public final class ChestUtils {
         }
     }
 
-    public static void trySellChest(Chest chest){
+    public synchronized static void trySellChest(Chest chest){
         if(Bukkit.isPrimaryThread()){
             Executor.async(() -> trySellChest(chest));
             return;
