@@ -85,8 +85,7 @@ public final class ProvidersHandler {
             if (!economy.hasAccount(player))
                 economy.createPlayerAccount(player);
 
-            final BigDecimal TOTAL_PRICE = totalPrice;
-            Executor.sync(() -> economy.depositPlayer(player, TOTAL_PRICE.doubleValue()));
+            economy.depositPlayer(player, totalPrice.doubleValue());
         }
         else{
             final BigDecimal TOTAL_PRICE = totalPrice;
@@ -125,9 +124,8 @@ public final class ProvidersHandler {
         if(price > 0) {
             if (!economy.hasAccount(player))
                 economy.createPlayerAccount(player);
-
-            final double PRICE = price;
-            Executor.sync(() -> economy.depositPlayer(player, PRICE));
+            
+            economy.depositPlayer(player, price);
         }
 
         return price;
