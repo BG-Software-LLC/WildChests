@@ -55,7 +55,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             return;
         }
 
-        providersHandler = new ProvidersHandler();
+        Executor.sync(() -> providersHandler = new ProvidersHandler());
 
         getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
