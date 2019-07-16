@@ -121,8 +121,11 @@ public final class ChestUtils {
                 NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
             }catch(PlayerNotOnlineException ignored){ }
 
-            for (Inventory page : pages)
-                page.removeItem(itemStack);
+            for (Inventory page : pages) {
+                try {
+                    page.removeItem(itemStack);
+                }catch(Throwable ignored){}
+            }
         }
     }
 
