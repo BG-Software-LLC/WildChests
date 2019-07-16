@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public final class ChestUtils {
 
@@ -93,7 +95,7 @@ public final class ChestUtils {
 
         List<ItemStack> itemStacks = new ArrayList<>();
         for(Inventory page : pages)
-            itemStacks.addAll(Arrays.asList(page.getContents()));
+            itemStacks.addAll(Arrays.stream(page.getContents()).filter(Objects::nonNull).collect(Collectors.toList()));
 
         SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, chest.getData().getMultiplier());
         Bukkit.getPluginManager().callEvent(sellChestTaskEvent);

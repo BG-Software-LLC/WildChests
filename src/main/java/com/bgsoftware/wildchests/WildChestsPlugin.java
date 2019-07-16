@@ -70,12 +70,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         loadAPI();
         NotifierTask.start();
 
-        if(!isVaultEnabled()){
-            log("");
-            log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
-            log("");
-        }
-
         if(Updater.isOutdated()) {
             log("");
             log("A new version is available (v" + Updater.getLatestVersion() + ")!");
@@ -125,20 +119,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             Executor.sync(() -> getServer().getPluginManager().disablePlugin(this));
             ex.printStackTrace();
         }
-    }
-
-    private boolean isVaultEnabled() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null)
-            return false;
-
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-
-        if (rsp == null || rsp.getProvider() == null)
-            return false;
-
-        providersHandler.enableVault();
-
-        return true;
     }
 
     private boolean loadNMSAdapter(){

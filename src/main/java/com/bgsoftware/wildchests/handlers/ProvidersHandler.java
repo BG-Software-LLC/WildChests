@@ -13,6 +13,7 @@ import com.bgsoftware.wildchests.hooks.PricesProvider;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -47,6 +48,12 @@ public final class ProvidersHandler {
             default:
                 pricesProvider = new PricesProvider_Default();
         }
+
+        if(!initVault()){
+            WildChestsPlugin.log("");
+            WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
+            WildChestsPlugin.log("");
+        }
     }
 
     /*
@@ -64,6 +71,20 @@ public final class ProvidersHandler {
     public void enableVault(){
         isVaultEnabled = true;
         economy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
+    }
+
+    private boolean initVault() {
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null)
+            return false;
+
+        RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
+
+        if (rsp == null || rsp.getProvider() == null)
+            return false;
+
+        enableVault();
+
+        return true;
     }
 
     public double tryDepositMoney(Player player){
@@ -148,12 +169,7 @@ public final class ProvidersHandler {
         if(!economy.hasAccount(player))
             economy.createPlayerAccount(player);
 
-        if(economy.getBalance(player) >= money){
-            Executor.sync(() -> economy.withdrawPlayer(player, money));
-            return true;
-        }
-
-        return false;
+        return economy.withdrawPlayer(player, money).transactionSuccess();
     }
 
     public boolean isVaultEnabled(){
