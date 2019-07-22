@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.api.objects.chests;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import org.bukkit.Location;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -60,7 +61,10 @@ public interface Chest {
 
     boolean onInteract(InventoryClickEvent event);
 
+    @Deprecated
     boolean onHopperMove(InventoryMoveItemEvent event);
+
+    boolean onHopperMove(ItemStack itemStack, Hopper hopper);
 
     boolean onHopperItemTake(Inventory hopperInventory);
 

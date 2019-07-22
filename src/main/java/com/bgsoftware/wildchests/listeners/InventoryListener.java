@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -139,7 +140,10 @@ public final class InventoryListener implements Listener {
 
         e.setCancelled(true);
 
-        Executor.sync(() -> chest.onHopperMove(e), 1L);
+        ItemStack itemStack = e.getItem();
+        Hopper hopper = (Hopper) e.getSource().getHolder();
+
+        Executor.async(() -> chest.onHopperMove(itemStack, hopper), 1L);
     }
 
     /*

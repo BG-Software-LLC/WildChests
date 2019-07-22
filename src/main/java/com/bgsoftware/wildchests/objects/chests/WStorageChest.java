@@ -7,6 +7,7 @@ import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -230,8 +231,8 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public boolean onHopperMove(InventoryMoveItemEvent event) {
-        ItemStack item = event.getItem().clone();
+    public boolean onHopperMove(ItemStack _itemStack, Hopper hopper) {
+        ItemStack item = _itemStack.clone();
         ItemStack itemStack = getItemStack();
 
         Inventory page = getPage(0);
@@ -239,16 +240,16 @@ public final class WStorageChest extends WChest implements StorageChest {
             return false;
 
         if(itemStack.getType() == Material.AIR){
-            event.getSource().removeItem(item);
+            hopper.getInventory().removeItem(item);
             setItemStack(item);
             setAmount(item.getAmount());
             updateInventory(page);
             return true;
         }
 
-        else if(event.getItem().isSimilar(itemStack)){
-            event.getSource().removeItem(event.getItem());
-            setAmount(amount.add(BigInteger.valueOf(event.getItem().getAmount())));
+        else if(_itemStack.isSimilar(itemStack)){
+            hopper.getInventory().removeItem(_itemStack);
+            setAmount(amount.add(BigInteger.valueOf(_itemStack.getAmount())));
             updateInventory(page);
             return true;
         }

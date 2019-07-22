@@ -21,6 +21,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -309,9 +310,14 @@ public abstract class WChest implements Chest {
 
     @Override
     public boolean onHopperMove(InventoryMoveItemEvent event) {
-        if(addItems(event.getItem()).isEmpty()){
-            event.getSource().removeItem(event.getItem());
-            ((Hopper) event.getSource().getHolder()).update();
+        return onHopperMove(event.getItem(), (Hopper) event.getSource().getHolder());
+    }
+
+    @Override
+    public boolean onHopperMove(ItemStack itemStack, Hopper hopper) {
+        if(addItems(itemStack).isEmpty()){
+            hopper.getInventory().removeItem(itemStack);
+            hopper.update();
         }
         return true;
     }
