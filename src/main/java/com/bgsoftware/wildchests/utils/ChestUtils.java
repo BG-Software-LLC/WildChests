@@ -106,7 +106,7 @@ public final class ChestUtils {
             itemStack.setAmount(sortedItems.get(itemStack));
 
             try {
-                double price = plugin.getProviders().getPrice(placer, itemStack) * sellChestTaskEvent.getMultiplier();
+                double price = plugin.getProviders().getPrice(placer, itemStack, sellChestTaskEvent.getMultiplier());
 
                 if(price <= 0)
                     continue;

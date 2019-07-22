@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.Pair;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -25,7 +26,7 @@ import java.util.UUID;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler {
 
-    private final Map<UUID, List<ItemStack>> awaitingItems = new HashMap<>();
+    private final Map<UUID, List<Pair<ItemStack, Double>>> awaitingItems = new HashMap<>();
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private boolean isVaultEnabled;
@@ -60,8 +61,8 @@ public final class ProvidersHandler {
      * Hooks' methods
      */
 
-    public double getPrice(Player player, ItemStack itemStack){
-        return pricesProvider.getPrice(player, itemStack);
+    public double getPrice(Player player, ItemStack itemStack, double multiplier){
+        return pricesProvider.getPrice(player, itemStack) * multiplier;
     }
 
     /*
@@ -91,7 +92,7 @@ public final class ProvidersHandler {
         if(!awaitingItems.containsKey(player.getUniqueId()))
             return 0;
 
-        List<ItemStack> items = awaitingItems.get(player.getUniqueId());
+        List<Pair<ItemStack, Double>> pairsList = awaitingItems.get(player.getUniqueId());
         awaitingItems.remove(player.getUniqueId());
 
         if(!isVaultEnabled)
@@ -99,8 +100,8 @@ public final class ProvidersHandler {
 
         BigDecimal totalPrice = BigDecimal.ZERO;
 
-        for(ItemStack itemStack : items)
-            totalPrice = totalPrice.add(BigDecimal.valueOf(getPrice(player, itemStack)));
+        for(Pair<ItemStack, Double> pair : pairsList)
+            totalPrice = totalPrice.add(BigDecimal.valueOf(getPrice(player, pair.getKey(), pair.getValue())));
 
         if(plugin.getSettings().sellCommand.isEmpty()) {
             if (!economy.hasAccount(player))
@@ -119,28 +120,28 @@ public final class ProvidersHandler {
         return totalPrice.doubleValue();
     }
 
-    public double getPrice(UUID placer, ItemStack itemStack) throws PlayerNotOnlineException {
+    public double getPrice(UUID placer, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException {
         double price = 0;
 
-        if(!canSellItem(placer, itemStack))
+        if(!canSellItem(placer, itemStack, multiplier))
             return price;
 
         //If item can be sold, the player is online for sure.
         Player player = Bukkit.getPlayer(placer);
-        return pricesProvider.getPrice(player, itemStack);
+        return pricesProvider.getPrice(player, itemStack) * multiplier;
     }
 
     @SuppressWarnings("UnusedReturnValue")
     public double trySellItem(UUID placer, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException {
         double price = 0;
 
-        if(!canSellItem(placer, itemStack))
+        if(!canSellItem(placer, itemStack, multiplier))
             return price;
 
         //If item can be sold, the player is online for sure.
         Player player = Bukkit.getPlayer(placer);
 
-        price = getPrice(player, itemStack) * multiplier;
+        price = getPrice(player, itemStack, multiplier);
 
         if(price > 0) {
             if (!economy.hasAccount(player))
@@ -153,16 +154,16 @@ public final class ProvidersHandler {
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean canSellItem(UUID playerUUID, ItemStack itemStack) throws PlayerNotOnlineException{
+    public boolean canSellItem(UUID playerUUID, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException{
         if(itemStack == null)
             return false;
         if(Bukkit.getPlayer(playerUUID) == null){
             if(!awaitingItems.containsKey(playerUUID))
                 awaitingItems.put(playerUUID, new ArrayList<>());
-            awaitingItems.get(playerUUID).add(itemStack);
+            awaitingItems.get(playerUUID).add(new Pair<>(itemStack, multiplier));
             throw new PlayerNotOnlineException();
         }
-        return isVaultEnabled && getPrice(Bukkit.getPlayer(playerUUID), itemStack) > 0;
+        return isVaultEnabled && getPrice(Bukkit.getPlayer(playerUUID), itemStack, multiplier) > 0;
     }
 
     public boolean transactionSuccess(Player player, double money){
