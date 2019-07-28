@@ -7,17 +7,16 @@ import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
+import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.listeners.ItemsListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
-import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bgsoftware.wildchests.api.WildChests;
@@ -61,6 +60,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new ItemsListener(this), this);
+        getServer().getPluginManager().registerEvents(new ItemsListener(this), this);
+        getServer().getPluginManager().registerEvents(new ChunksListener(this), this);
 
         CommandsHandler commandsHandler = new CommandsHandler(this);
         getCommand("chests").setExecutor(commandsHandler);
