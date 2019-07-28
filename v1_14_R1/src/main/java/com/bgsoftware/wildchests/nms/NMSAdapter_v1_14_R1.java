@@ -261,6 +261,11 @@ public final class NMSAdapter_v1_14_R1 implements NMSAdapter {
             return tileEntityChest.save(nbttagcompound);
         }
 
+        @Override
+        public NBTTagCompound b() {
+            return save(new NBTTagCompound());
+        }
+
         private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){
             tileEntity.setWorld(world);
             tileEntity.setPosition(blockPosition);

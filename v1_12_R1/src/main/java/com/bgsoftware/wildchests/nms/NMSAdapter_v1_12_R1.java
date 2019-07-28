@@ -243,12 +243,12 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
         return inventory;
     }
 
-    private class TileEntityWildChest extends TileEntityChest{
+    private static class TileEntityWildChest extends TileEntityChest{
 
         private TileEntityChest tileEntityChest = new TileEntityChest();
         private Chest chest;
 
-        TileEntityWildChest(Chest chest, World world, BlockPosition blockPosition){
+        TileEntityWildChest(Chest chest, World world, BlockPosition blockPosition) {
             this.chest = chest;
             this.world = world;
             updateTile(this, world, blockPosition);
@@ -268,6 +268,11 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
         @Override
         public NBTTagCompound save(NBTTagCompound nbttagcompound) {
             return tileEntityChest.save(nbttagcompound);
+        }
+
+        @Override
+        public NBTTagCompound d() {
+            return save(new NBTTagCompound());
         }
 
         private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){
