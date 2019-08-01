@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.task;
 
+import com.bgsoftware.wildchests.utils.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
@@ -48,7 +49,7 @@ public final class NotifierTask extends BukkitRunnable {
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
 
-                Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), totalEarned);
+                Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.format(totalEarned));
             }
         }
         for(UUID uuid : craftings.keySet()){
