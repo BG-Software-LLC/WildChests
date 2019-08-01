@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
+import com.bgsoftware.wildchests.hooks.WildStackerHook;
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -156,13 +157,36 @@ public final class ChestUtils {
             return;
         }
 
+        boolean attemptAgain = false;
+
         List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
         for (Chest chest : chestList) {
-            if (chest.addItems(item.getItemStack()).isEmpty()) {
+            ItemStack itemStack = item.getItemStack();
+
+            if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                itemStack = WildStackerHook.getItemStack(item);
+
+            ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
+
+            if (remainingItem == null) {
                 item.remove();
+                attemptAgain = true;
                 break;
             }
+            else{
+                if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                    WildStackerHook.setRemainings(item, remainingItem.getAmount());
+                else
+                    item.setItemStack(remainingItem);
+            }
         }
+
+        if(attemptAgain)
+            Executor.async(() -> trySuctionChest(item, attempts + 1), 20L);
+    }
+
+    private static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
+        return additionalItems.isEmpty() ? null : new ArrayList<>(additionalItems.values()).get(0);
     }
 
     private static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
