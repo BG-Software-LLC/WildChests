@@ -139,25 +139,16 @@ public final class ChestUtils {
     }
 
     public static void trySuctionChest(Item item){
-        trySuctionChest(item, 0);
-    }
-
-    private static void trySuctionChest(Item item, int attempts){
         if(Bukkit.isPrimaryThread()){
-            Executor.async(() -> trySuctionChest(item, attempts));
+            Executor.async(() -> trySuctionChest(item));
             return;
         }
 
         if(!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
             return;
 
-        if(!item.isOnGround()){
-            if(attempts < 10)
-                Executor.async(() -> trySuctionChest(item, attempts + 1), 20L);
+        if(!item.isOnGround() || !item.isValid())
             return;
-        }
-
-        boolean attemptAgain = false;
 
         List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
         for (Chest chest : chestList) {
@@ -170,7 +161,6 @@ public final class ChestUtils {
 
             if (remainingItem == null) {
                 item.remove();
-                attemptAgain = true;
                 break;
             }
             else{
@@ -180,9 +170,6 @@ public final class ChestUtils {
                     item.setItemStack(remainingItem);
             }
         }
-
-        if(attemptAgain)
-            Executor.async(() -> trySuctionChest(item, attempts + 1), 20L);
     }
 
     private static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){

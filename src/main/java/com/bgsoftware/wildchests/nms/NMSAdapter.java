@@ -3,9 +3,12 @@ package com.bgsoftware.wildchests.nms;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.stream.Stream;
 
 public interface NMSAdapter {
 
@@ -32,5 +35,7 @@ public interface NMSAdapter {
     ItemStack deserialzeItem(String serialized);
 
     void updateTileEntity(Chest chest);
+
+    Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk);
 
 }

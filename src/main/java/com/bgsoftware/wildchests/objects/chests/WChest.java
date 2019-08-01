@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.task.SuctionTask;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -57,6 +58,7 @@ public abstract class WChest implements Chest {
     public static String guiConfirmTitle;
 
     protected final HopperTask hopperTask;
+    protected SuctionTask suctionTask;
 
     protected final UUID placer;
     protected final WLocation location;
@@ -65,6 +67,10 @@ public abstract class WChest implements Chest {
 
     public WChest(UUID placer, WLocation location, ChestData chestData) {
         this.hopperTask = new HopperTask(location);
+
+        if(chestData.isAutoSuction())
+            this.suctionTask = new SuctionTask(location);
+
         this.placer = placer;
         this.location = location;
         this.name = chestData.getName();

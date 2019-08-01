@@ -45,6 +45,8 @@ public final class WLinkedChest extends WChest implements LinkedChest {
         }else if(!linkedChest.isLinkedIntoChest()){
             this.linkedChest = WLocation.of(linkedChest.getLocation());
             hopperTask.stop();
+            if(suctionTask != null)
+                suctionTask.stop();
         }else{
             linkIntoChest(linkedChest.getLinkedChest());
         }

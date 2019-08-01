@@ -1,11 +1,14 @@
 package com.bgsoftware.wildchests.nms;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import net.minecraft.server.v1_14_R1.AxisAlignedBB;
 import net.minecraft.server.v1_14_R1.BlockPosition;
 import net.minecraft.server.v1_14_R1.ChatComponentText;
 import net.minecraft.server.v1_14_R1.Chunk;
 import net.minecraft.server.v1_14_R1.Container;
 import net.minecraft.server.v1_14_R1.Containers;
+import net.minecraft.server.v1_14_R1.Entity;
+import net.minecraft.server.v1_14_R1.EntityItem;
 import net.minecraft.server.v1_14_R1.EntityPlayer;
 import net.minecraft.server.v1_14_R1.IInventory;
 import net.minecraft.server.v1_14_R1.ItemStack;
@@ -20,12 +23,14 @@ import net.minecraft.server.v1_14_R1.World;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_14_R1.CraftChunk;
 import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftContainer;
 import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftInventory;
 import org.bukkit.craftbukkit.v1_14_R1.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_14_R1.util.CraftChatMessage;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,6 +47,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
 public final class NMSAdapter_v1_14_R1 implements NMSAdapter {
@@ -203,6 +210,26 @@ public final class NMSAdapter_v1_14_R1 implements NMSAdapter {
         TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
         chunk.tileEntities.put(blockPosition.immutableCopy(), tileEntityWildChest);
         world.capturedTileEntities.put(blockPosition.immutableCopy(), tileEntityWildChest);
+    }
+
+    @Override
+    public Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk) {
+        World world = ((CraftWorld) location.getWorld()).getHandle();
+        List<Entity> entityList = new ArrayList<>();
+
+        if(onlyChunk){
+            Chunk chunk = ((CraftChunk) location.getChunk()).getHandle();
+            for(int i = 0; i < chunk.entitySlices.length; i++)
+                entityList.addAll(chunk.entitySlices[i]);
+            entityList = entityList.stream().filter(entity -> entity instanceof EntityItem).collect(Collectors.toList());
+        }
+        else {
+            AxisAlignedBB boundingBox = new AxisAlignedBB(location.getX() + range, location.getY() + range, location.getZ() + range,
+                    location.getX() - range, location.getY() - range, location.getZ() - range);
+            entityList = world.getEntities(null, boundingBox, entity -> entity instanceof EntityItem);
+        }
+
+        return entityList.stream().map(entity -> (Item) entity.getBukkitEntity());
     }
 
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){
