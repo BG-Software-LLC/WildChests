@@ -4,11 +4,13 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.task.HopperTask;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Hopper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -97,6 +99,28 @@ public final class BlockListener implements Listener {
             chest.remove();
             block.setType(Material.AIR);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onHopperPlace(BlockPlaceEvent e){
+        if(e.getBlock().getType() != Material.HOPPER)
+            return;
+
+        Chest chest = plugin.getChestsManager().getChest(e.getBlock().getRelative(BlockFace.UP).getLocation());
+
+        if(chest != null)
+            HopperTask.addHopper(chest, (Hopper) e.getBlock().getState());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onHopperBreak(BlockBreakEvent e){
+        if(e.getBlock().getType() != Material.HOPPER)
+            return;
+
+        Chest chest = plugin.getChestsManager().getChest(e.getBlock().getRelative(BlockFace.UP).getLocation());
+
+        if(chest != null)
+            HopperTask.removeHopper(chest);
     }
 
 }
