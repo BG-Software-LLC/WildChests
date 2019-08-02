@@ -22,7 +22,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -183,9 +182,9 @@ public abstract class WChest implements Chest {
                     Inventory inventory = getPage(currentInventory);
                     if(inventory != null) {
                         itemAdditionalItems = inventory.addItem(itemStack);
-                        currentInventory++;
                     }
-                } while (!additionalItems.isEmpty() && currentInventory < getPagesAmount());
+                    currentInventory++;
+                } while (!itemAdditionalItems.isEmpty() && currentInventory < getPagesAmount());
 
                 additionalItems.putAll(itemAdditionalItems);
             }
