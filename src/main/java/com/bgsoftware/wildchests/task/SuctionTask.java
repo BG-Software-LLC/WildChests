@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Item;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 public final class SuctionTask extends BukkitRunnable {
@@ -52,8 +53,15 @@ public final class SuctionTask extends BukkitRunnable {
     }
 
     private Stream<Item> getNearbyItems(Chest chest){
-        ChestData chestData = chest.getData();
-        return plugin.getNMSAdapter().getNearbyItems(chest.getLocation(), chestData.getAutoSuctionRange(), chestData.isAutoSuctionChunk());
+        /* getNearbyItems should be called synced or errors will be thrown.
+        But I can't call it synced - so I am ignoring all the exceptions and returning an empty stream.*/
+        try {
+            ChestData chestData = chest.getData();
+            return plugin.getNMSAdapter().getNearbyItems(chest.getLocation(), chestData.getAutoSuctionRange(), chestData.isAutoSuctionChunk());
+        }catch(Throwable ex){
+            //noinspection RedundantOperationOnEmptyContainer
+            return new ArrayList<Item>().stream();
+        }
     }
 
 }
