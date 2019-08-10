@@ -45,7 +45,7 @@ public final class NotifierTask extends BukkitRunnable {
                 BigDecimal totalEarned = BigDecimal.ZERO;
 
                 for(TransactionDetails item : itemsSold){
-                    Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), item.amountEarned);
+                    Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.format(item.amountEarned));
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
 
