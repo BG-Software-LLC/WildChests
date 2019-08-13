@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +26,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -120,6 +120,33 @@ public final class WStorageChest extends WChest implements StorageChest {
         Query.STORAGE_UNIT_DELETE.getStatementHolder()
                 .setLocation(getLocation())
                 .execute(true);
+    }
+
+    @Override
+    public Map<Integer, ItemStack> addRawItems(ItemStack... itemStacks) {
+        Map<Integer, ItemStack> additionalItems = new HashMap<>();
+
+        ItemStack storageItem = getItemStack();
+
+        for(int i = 0; i < itemStacks.length; i++){
+            ItemStack itemStack = itemStacks[i];
+
+            if(storageItem.getType() == Material.AIR) {
+                setItemStack(itemStack);
+                storageItem = itemStack.clone();
+            }
+
+            if(storageItem.isSimilar(itemStack)) {
+                setAmount(getExactAmount().add(BigInteger.valueOf(itemStack.getAmount())));
+            }
+            else {
+                additionalItems.put(i, itemStack);
+            }
+        }
+
+        updateInventory(getPage(0));
+
+        return additionalItems;
     }
 
     @Override
