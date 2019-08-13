@@ -322,7 +322,7 @@ public abstract class WChest implements Chest {
     public boolean onHopperMove(ItemStack itemStack, Hopper hopper) {
         if(addItems(itemStack).isEmpty()){
             hopper.getInventory().removeItem(itemStack);
-            hopper.update();
+            //hopper.update();
         }
         return true;
     }
