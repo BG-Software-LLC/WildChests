@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.nms;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.key.KeySet;
+import com.bgsoftware.wildchests.utils.ItemUtils;
 import net.minecraft.server.v1_8_R3.AxisAlignedBB;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
@@ -294,9 +295,10 @@ public final class NMSAdapter_v1_8_R3 implements NMSAdapter {
         @Override
         public void update() {
             List<org.bukkit.inventory.ItemStack> bukkitItems = new ArrayList<>();
-            Arrays.stream(getContents()).filter(Objects::nonNull)
+            Arrays.stream(getContents()).filter(itemStack -> !itemStack.getItem().getName().contains("air"))
                     .forEach(itemStack -> bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack)));
-            chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0]));
+            for(org.bukkit.inventory.ItemStack itemStack : chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0])).values())
+                ItemUtils.dropItem(chest.getLocation(), itemStack);
             try{
                 Field items = TileEntityChest.class.getDeclaredField("items");
                 items.setAccessible(true);
