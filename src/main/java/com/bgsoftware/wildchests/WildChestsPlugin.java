@@ -9,10 +9,14 @@ import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
+import com.bgsoftware.wildchests.task.HopperTask;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
 
 import org.bukkit.Bukkit;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Hopper;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -76,6 +80,15 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
 
         log("******** ENABLE DONE ********");
+
+        Executor.sync(() -> {
+            for(Chest chest : chestsManager.getChests()){
+                Block hopperBlock = chest.getLocation().getBlock().getRelative(BlockFace.DOWN);
+                if(hopperBlock.getState() instanceof Hopper)
+                    HopperTask.addHopper(chest, (Hopper) hopperBlock.getState());
+            }
+        }, 20L);
+
     }
 
     @Override
