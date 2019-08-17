@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.key.KeySet;
 import net.minecraft.server.v1_12_R1.AxisAlignedBB;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.ChatComponentText;
@@ -222,7 +223,7 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
     }
 
     @Override
-    public Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk) {
+    public Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk, KeySet blacklisted, KeySet whitelisted) {
         World world = ((CraftWorld) location.getWorld()).getHandle();
         List<Entity> entityList = new ArrayList<>();
 
@@ -238,7 +239,8 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
             entityList = world.getEntities(null, boundingBox, entity -> entity instanceof EntityItem);
         }
 
-        return entityList.stream().map(entity -> (Item) entity.getBukkitEntity());
+        return entityList.stream().map(entity -> (Item) entity.getBukkitEntity())
+                .filter(item -> !blacklisted.contains(item.getItemStack()) && (whitelisted.isEmpty() || whitelisted.contains(item.getItemStack())));
     }
 
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){

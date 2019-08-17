@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.key;
 
+import com.bgsoftware.wildchests.api.key.Key;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 

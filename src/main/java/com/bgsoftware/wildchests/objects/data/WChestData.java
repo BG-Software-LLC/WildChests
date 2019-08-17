@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.data;
 
+import com.bgsoftware.wildchests.api.key.Key;
 import com.google.common.collect.Iterators;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class WChestData implements ChestData {
 
@@ -33,6 +35,7 @@ public final class WChestData implements ChestData {
     private boolean autoCollect;
     private int autoSuctionRange;
     private boolean autoSuctionChunk;
+    private KeySet blacklisted, whitelisted;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -52,6 +55,8 @@ public final class WChestData implements ChestData {
         this.maxAmount = BigInteger.valueOf(-1);
         this.autoSuctionRange = -1;
         this.autoSuctionChunk = false;
+        this.blacklisted = new KeySet();
+        this.whitelisted = new KeySet();
     }
 
     @Override
@@ -156,6 +161,16 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public Set<Key> getBlacklisted() {
+        return blacklisted;
+    }
+
+    @Override
+    public Set<Key> getWhitelisted() {
+        return whitelisted;
+    }
+
+    @Override
     public BigInteger getStorageUnitMaxAmount() {
         if(ChestType.valueOf(chestType) != ChestType.STORAGE_UNIT)
             throw new UnsupportedOperationException("Cannot get max amount of an unknown storage unit.");
@@ -226,6 +241,16 @@ public final class WChestData implements ChestData {
     @Override
     public void setAutoSuctionChunk(boolean autoSuctionChunk) {
         this.autoSuctionChunk = autoSuctionChunk;
+    }
+
+    @Override
+    public void setBlacklisted(Set<Key> blacklisted) {
+        this.blacklisted.addAll(blacklisted);
+    }
+
+    @Override
+    public void setWhitelisted(Set<Key> whitelisted) {
+        this.whitelisted.addAll(whitelisted);
     }
 
     @Override

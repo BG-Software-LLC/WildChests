@@ -77,6 +77,8 @@ public final class ConfigComments {
     @Comment("auto-suction.range: Should items inside the specified range will get suctioned into the chest? (INTEGER)")
     @Comment("auto-suction.chunk: Should items inside the chunk will get suctioned into the chest? (BOOLEAN)")
     @Comment("     If you set it to true, the range will be checked as y-range only.")
+    @Comment("blacklist: A list of items that won't be picked up by the chests (only works for auto-suction for now)")
+    @Comment("whitelist: A list of items that will be picked up by the chests (only works for auto-suction for now)")
     @Comment("")
     public static String CHESTS = "chests";
 

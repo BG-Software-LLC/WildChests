@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.task;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.key.KeySet;
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import org.bukkit.Bukkit;
@@ -57,7 +58,8 @@ public final class SuctionTask extends BukkitRunnable {
         But I can't call it synced - so I am ignoring all the exceptions and returning an empty stream.*/
         try {
             ChestData chestData = chest.getData();
-            return plugin.getNMSAdapter().getNearbyItems(chest.getLocation(), chestData.getAutoSuctionRange(), chestData.isAutoSuctionChunk());
+            return plugin.getNMSAdapter().getNearbyItems(chest.getLocation(), chestData.getAutoSuctionRange(),
+                    chestData.isAutoSuctionChunk(), (KeySet) chestData.getBlacklisted(), (KeySet) chestData.getWhitelisted());
         }catch(Throwable ex){
             //noinspection RedundantOperationOnEmptyContainer
             return new ArrayList<Item>().stream();

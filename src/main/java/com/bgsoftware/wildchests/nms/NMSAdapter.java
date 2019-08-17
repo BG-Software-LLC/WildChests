@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.key.KeySet;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
@@ -36,6 +37,6 @@ public interface NMSAdapter {
 
     void updateTileEntity(Chest chest);
 
-    Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk);
+    Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk, KeySet blacklisted, KeySet whitelisted);
 
 }

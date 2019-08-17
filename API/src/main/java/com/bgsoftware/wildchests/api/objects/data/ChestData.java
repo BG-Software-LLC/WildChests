@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.api.objects.data;
 
+import com.bgsoftware.wildchests.api.key.Key;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import com.bgsoftware.wildchests.api.objects.ChestType;
@@ -8,6 +9,7 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings("unused")
 public interface ChestData {
@@ -48,6 +50,10 @@ public interface ChestData {
 
     boolean isAutoSuctionChunk();
 
+    Set<Key> getBlacklisted();
+
+    Set<Key> getWhitelisted();
+
     BigInteger getStorageUnitMaxAmount();
 
     void setDefaultSize(int size);
@@ -71,6 +77,10 @@ public interface ChestData {
     void setAutoSuctionRange(int autoSuctionRange);
 
     void setAutoSuctionChunk(boolean autoSuctionChunk);
+
+    void setBlacklisted(Set<Key> blacklisted);
+
+    void setWhitelisted(Set<Key> whitelisted);
 
     void setStorageUnitMaxAmount(BigInteger maxAmount);
 

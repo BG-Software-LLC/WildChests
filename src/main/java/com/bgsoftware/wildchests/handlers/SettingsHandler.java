@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.key.KeySet;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -171,6 +172,14 @@ public final class SettingsHandler {
             if(cfg.contains("chests." + name + ".auto-suction")){
                 chestData.setAutoSuctionRange(cfg.getInt("chests." + name + ".auto-suction.range", 1));
                 chestData.setAutoSuctionChunk(cfg.getBoolean("chests." + name + ".auto-suction.chunk", false));
+            }
+
+            if(cfg.contains("chests." + name + ".blacklist")){
+                chestData.setBlacklisted(new KeySet(cfg.getStringList("chests." + name + ".blacklist")));
+            }
+
+            if(cfg.contains("chests." + name + ".whitelist")){
+                chestData.setWhitelisted(new KeySet(cfg.getStringList("chests." + name + ".whitelist")));
             }
 
             if(cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT){
