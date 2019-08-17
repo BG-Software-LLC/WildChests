@@ -39,4 +39,6 @@ public interface NMSAdapter {
 
     Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk, KeySet blacklisted, KeySet whitelisted);
 
+    void spawnSuctionParticle(Location location);
+
 }

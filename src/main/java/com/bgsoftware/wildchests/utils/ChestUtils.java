@@ -160,6 +160,7 @@ public final class ChestUtils {
             ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
 
             if (remainingItem == null) {
+                plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
                 item.remove();
                 break;
             }

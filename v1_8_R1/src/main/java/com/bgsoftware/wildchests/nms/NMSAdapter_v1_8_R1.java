@@ -22,6 +22,7 @@ import net.minecraft.server.v1_8_R1.TileEntityHopper;
 import net.minecraft.server.v1_8_R1.World;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_8_R1.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
@@ -244,6 +245,11 @@ public final class NMSAdapter_v1_8_R1 implements NMSAdapter {
 
         return entityList.stream().map(entity -> (Item) entity.getBukkitEntity())
                 .filter(item -> !blacklisted.contains(item.getItemStack()) && (whitelisted.isEmpty() || whitelisted.contains(item.getItemStack())));
+    }
+
+    @Override
+    public void spawnSuctionParticle(Location location) {
+        location.getWorld().playEffect(location, Effect.CLOUD, 0);
     }
 
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){
