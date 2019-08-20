@@ -40,7 +40,7 @@ public final class DataHandler {
                 ex.printStackTrace();
                 Executor.sync(() -> Bukkit.getPluginManager().disablePlugin(plugin));
             }
-        });
+        }, 2L);
     }
 
     public void saveDatabase(boolean async){
@@ -54,11 +54,21 @@ public final class DataHandler {
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR);");
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
         //Loading all tables
         SQLHelper.executeQuery("SELECT * FROM chests;", this::loadResultSet);
         SQLHelper.executeQuery("SELECT * FROM linked_chests;", this::loadResultSet);
         SQLHelper.executeQuery("SELECT * FROM storage_units;", this::loadResultSet);
+
+        //Load offline payments
+        SQLHelper.executeQuery("SELECT * FROM offline_payment;", resultSet -> {
+            while(resultSet.next()) {
+                UUID uuid = UUID.fromString(resultSet.getString("uuid"));
+                String payment = resultSet.getString("payment");
+                plugin.getProviders().loadAwaitingItems(uuid, payment);
+            }
+        });
     }
 
     private void loadResultSet(ResultSet resultSet) throws SQLException{

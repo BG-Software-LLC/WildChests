@@ -16,7 +16,9 @@ public enum Query {
     STORAGE_UNIT_INSERT("INSERT INTO storage_units VALUES(?, ?, ?, ?, ?, ?);"),
     STORAGE_UNIT_UPDATE_INVENTORY("UPDATE storage_units SET item=?,amount=? WHERE location=?;"),
     STORAGE_UNIT_DELETE("DELETE FROM storage_units WHERE location=?;"),
-    STORAGE_UNIT_SELECT("SELECT * FROM storage_units WHERE location=?;");
+    STORAGE_UNIT_SELECT("SELECT * FROM storage_units WHERE location=?;"),
+
+    OFFLINE_PAYMENT_INSERT("INSERT INTO offline_payment VALUES (?, ?);");
 
     private String query;
 

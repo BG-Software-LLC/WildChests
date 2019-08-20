@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
@@ -55,6 +57,8 @@ public final class ProvidersHandler {
             WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
             WildChestsPlugin.log("");
         }
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> saveAwaitingItems(false), 6000, 6000);
     }
 
     /*
@@ -175,6 +179,39 @@ public final class ProvidersHandler {
 
     public boolean isVaultEnabled(){
         return isVaultEnabled;
+    }
+
+    public void loadAwaitingItems(UUID uuid, String payment){
+        List<Pair<ItemStack, Double>> awaitingItems = new ArrayList<>();
+
+        for(String pair : payment.split(";")) {
+            String[] pairSections = pair.split("=");
+            awaitingItems.add(new Pair<>(plugin.getNMSAdapter().deserialzeItem(pairSections[0]), Double.valueOf(pairSections[1])));
+        }
+
+        this.awaitingItems.put(uuid, awaitingItems);
+    }
+
+    public void saveAwaitingItems(boolean async){
+        if(async && Bukkit.isPrimaryThread()){
+            Executor.async(() -> saveAwaitingItems(false));
+            return;
+        }
+
+        SQLHelper.executeUpdate("DELETE FROM offline_payment;");
+
+        for(Map.Entry<UUID, List<Pair<ItemStack, Double>>> entry : awaitingItems.entrySet()){
+            StringBuilder payment = new StringBuilder();
+
+            for(Pair<ItemStack, Double> pair : entry.getValue()){
+                payment.append(";").append(plugin.getNMSAdapter().serialize(pair.getKey())).append("=").append(pair.getValue());
+            }
+
+            Query.OFFLINE_PAYMENT_INSERT.getStatementHolder()
+                    .setString(entry.getKey() + "")
+                    .setString(payment.substring(1))
+                    .execute(false);
+        }
     }
 
 }

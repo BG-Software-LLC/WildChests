@@ -88,7 +88,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
                     HopperTask.addHopper(chest, (Hopper) hopperBlock.getState());
             }
         }, 20L);
-
     }
 
     @Override
@@ -113,6 +112,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             player.closeInventory();
         Bukkit.getScheduler().cancelTasks(this);
         dataHandler.saveDatabase(false);
+        providersHandler.saveAwaitingItems(false);
 
         log("Terminating all database threads...");
         Executor.stop();
