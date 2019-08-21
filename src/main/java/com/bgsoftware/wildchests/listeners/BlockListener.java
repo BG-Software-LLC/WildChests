@@ -55,6 +55,11 @@ public final class BlockListener implements Listener {
         chest.onPlace(e);
 
         Locale.CHEST_PLACED.send(e.getPlayer(), chestData.getName(), e.getItemInHand().getItemMeta().getDisplayName());
+
+        //Update the hopper below the chest
+        Block hopperBlock = e.getBlockPlaced().getRelative(BlockFace.DOWN);
+        if(hopperBlock.getState() instanceof Hopper)
+            HopperTask.addHopper(chest, (Hopper) hopperBlock.getState());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -75,6 +80,9 @@ public final class BlockListener implements Listener {
 
         chest.remove();
         e.getBlock().setType(Material.AIR);
+
+        //Update the hopper below the chest
+        HopperTask.removeHopper(chest);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
