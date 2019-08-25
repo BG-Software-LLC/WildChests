@@ -47,7 +47,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -283,7 +282,7 @@ public final class NMSAdapter_v1_13_R1 implements NMSAdapter {
         @Override
         public void update() {
             List<org.bukkit.inventory.ItemStack> bukkitItems = new ArrayList<>();
-            getContents().stream().filter(itemStack -> !itemStack.getItem().getName().contains("air"))
+            getContents().stream().filter(itemStack -> itemStack != null && !itemStack.getItem().getName().contains("air"))
                     .forEach(itemStack -> bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack)));
             for(org.bukkit.inventory.ItemStack itemStack : chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0])).values())
                 ItemUtils.dropItem(chest.getLocation(), itemStack);

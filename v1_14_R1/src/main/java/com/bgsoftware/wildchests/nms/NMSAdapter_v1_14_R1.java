@@ -284,7 +284,7 @@ public final class NMSAdapter_v1_14_R1 implements NMSAdapter {
         @Override
         public void update() {
             List<org.bukkit.inventory.ItemStack> bukkitItems = new ArrayList<>();
-            getContents().stream().filter(itemStack -> !itemStack.getItem().getName().contains("air"))
+            getContents().stream().filter(itemStack -> itemStack != null && !itemStack.getItem().getName().contains("air"))
                     .forEach(itemStack -> bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack)));
             for(org.bukkit.inventory.ItemStack itemStack : chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0])).values())
                 ItemUtils.dropItem(chest.getLocation(), itemStack);
