@@ -34,6 +34,7 @@ public final class SettingsHandler {
     public final String sellCommand;
     public final String pricesProvider;
     public final int explodeDropChance;
+    public final boolean invalidWorldDelete;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -53,6 +54,7 @@ public final class SettingsHandler {
         sellCommand = cfg.getString("sell-command", "");
         explodeDropChance = cfg.getInt("explode-drop-chance", 100);
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
+        invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
 
         Map<String, Double> prices = new HashMap<>();
 

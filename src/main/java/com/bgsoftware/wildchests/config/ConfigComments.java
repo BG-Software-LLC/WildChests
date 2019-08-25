@@ -43,6 +43,13 @@ public final class ConfigComments {
     public static String PRICES_PROVIDER = "prices-provider";
 
     @Comment("")
+    @Comment("All settings related to database.")
+    public static String DATABASE = "database";
+
+    @Comment("Automatically delete data from invalid worlds.")
+    public static String DATABASE_INVALID_WORLD = "database.invalid-world-delete";
+
+    @Comment("")
     @Comment("The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and")
     @Comment("you can create and mix between them. You can create chests that stores infinite amount of items, chests that")
     @Comment("are connected to player vaults or factions, linked chests and many more!")

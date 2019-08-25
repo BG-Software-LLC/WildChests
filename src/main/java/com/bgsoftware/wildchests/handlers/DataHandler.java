@@ -57,9 +57,9 @@ public final class DataHandler {
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
         //Loading all tables
-        SQLHelper.executeQuery("SELECT * FROM chests;", this::loadResultSet);
-        SQLHelper.executeQuery("SELECT * FROM linked_chests;", this::loadResultSet);
-        SQLHelper.executeQuery("SELECT * FROM storage_units;", this::loadResultSet);
+        SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
+        SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
+        SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
 
         //Load offline payments
         SQLHelper.executeQuery("SELECT * FROM offline_payment;", resultSet -> {
@@ -71,14 +71,34 @@ public final class DataHandler {
         });
     }
 
-    private void loadResultSet(ResultSet resultSet) throws SQLException{
+    private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException{
         while (resultSet.next()) {
             UUID placer = UUID.fromString(resultSet.getString("placer"));
-            Location location = WLocation.of(resultSet.getString("location")).getLocation();
-            ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
-            if(location.getBlock().getType() == Material.CHEST) {
-                WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
-                chest.loadFromData(resultSet);
+            String stringLocation = resultSet.getString("location");
+            String errorMessage = null;
+
+            try {
+                if (Bukkit.getWorld(stringLocation.split(", ")[0]) == null) {
+                    errorMessage = "Null world.";
+                } else {
+                    Location location = WLocation.of(stringLocation).getLocation();
+                    ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
+                    if (location.getBlock().getType() == Material.CHEST) {
+                        WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
+                        chest.loadFromData(resultSet);
+                    }
+                }
+            }catch(Exception ex){
+                errorMessage = ex.getMessage();
+            }
+
+            if(errorMessage != null) {
+                WildChestsPlugin.log("Couldn't load the location " + stringLocation);
+                WildChestsPlugin.log(errorMessage);
+                if(errorMessage.contains("Null") && plugin.getSettings().invalidWorldDelete){
+                    SQLHelper.executeUpdate("DELETE FROM " + tableName + " WHERE location = '" + stringLocation + "';");
+                    WildChestsPlugin.log("Deleted spawner (" + stringLocation + ") from database.");
+                }
             }
         }
     }
