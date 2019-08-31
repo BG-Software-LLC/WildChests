@@ -48,14 +48,14 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         plugin = this;
         log("******** ENABLE START ********");
 
-        chestsManager = new ChestsHandler();
-        settingsHandler = new SettingsHandler(this);
-        dataHandler = new DataHandler(this);
-
         if(!loadNMSAdapter()){
             setEnabled(false);
             return;
         }
+
+        chestsManager = new ChestsHandler();
+        settingsHandler = new SettingsHandler(this);
+        dataHandler = new DataHandler(this);
 
         Executor.sync(() -> providersHandler = new ProvidersHandler());
 

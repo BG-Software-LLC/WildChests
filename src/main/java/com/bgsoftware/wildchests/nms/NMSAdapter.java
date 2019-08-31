@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.key.KeySet;
 import org.bukkit.Location;
@@ -41,4 +42,5 @@ public interface NMSAdapter {
 
     void spawnSuctionParticle(Location location);
 
+    ItemStack setChestNBT(ItemStack itemStack, ChestType chestType);
 }

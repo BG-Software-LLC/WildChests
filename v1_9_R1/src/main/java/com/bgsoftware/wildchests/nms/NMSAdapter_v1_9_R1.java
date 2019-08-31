@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.key.KeySet;
 import com.bgsoftware.wildchests.utils.ItemUtils;
@@ -248,6 +249,18 @@ public final class NMSAdapter_v1_9_R1 implements NMSAdapter {
     @Override
     public void spawnSuctionParticle(Location location) {
         location.getWorld().spawnParticle(Particle.CLOUD, location, 0);
+    }
+
+    @Override
+    public org.bukkit.inventory.ItemStack setChestNBT(org.bukkit.inventory.ItemStack itemStack, ChestType chestType) {
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound tagCompound = nmsItem.hasTag() ? nmsItem.getTag() : new NBTTagCompound();
+
+        tagCompound.setString("chest-type", chestType.name());
+
+        nmsItem.setTag(tagCompound);
+
+        return CraftItemStack.asBukkitCopy(nmsItem);
     }
 
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){
