@@ -79,7 +79,7 @@ public final class ConfigComments {
     @Comment("pages.<#>.title: Custom title for that page.")
     @Comment("item.name: Custom name for the chest (STRING)")
     @Comment("item.lore: Custom lore for the chest (LIST)")
-    @Comment("multiplier: Money multiplier for sell chests. (BOOLEAN)")
+    @Comment("multiplier: Money multiplier for sell chests. (DOUBLE)")
     @Comment("auto-collect: Should items get directly into inventory after breaking? (BOOLEAN)")
     @Comment("auto-suction.range: Should items inside the specified range will get suctioned into the chest? (INTEGER)")
     @Comment("auto-suction.chunk: Should items inside the chunk will get suctioned into the chest? (BOOLEAN)")
