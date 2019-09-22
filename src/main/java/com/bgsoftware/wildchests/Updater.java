@@ -3,9 +3,9 @@ package com.bgsoftware.wildchests;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 
 @SuppressWarnings("WeakerAccess")
@@ -32,7 +32,7 @@ public final class Updater {
 
     private static void setLatestVersion(){
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL("http://wildseries.xyz/versions.json").openConnection();
+            HttpsURLConnection connection = (HttpsURLConnection) new URL("https://bg-software.com/versions.json").openConnection();
 
             connection.setRequestMethod("GET");
             connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB;     rv:1.9.2.13) Gecko/20101203 Firefox/3.6.13 (.NET CLR 3.5.30729)");
