@@ -30,7 +30,7 @@ public final class NotifierTask extends BukkitRunnable {
     }
 
     public static void start(){
-        if(Bukkit.getScheduler().isCurrentlyRunning(taskID))
+        if(Bukkit.getScheduler().isCurrentlyRunning(taskID) || Bukkit.getScheduler().isQueued(taskID))
             Bukkit.getScheduler().cancelTask(taskID);
         new NotifierTask();
     }
