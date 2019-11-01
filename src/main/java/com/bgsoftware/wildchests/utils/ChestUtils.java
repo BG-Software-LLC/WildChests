@@ -6,7 +6,6 @@ import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -38,7 +37,6 @@ public final class ChestUtils {
 
         synchronized (chest) {
             Inventory[] pages = chest.getPages();
-            Player player = Bukkit.getPlayer(chest.getPlacer());
 
             Iterator<Recipe> recipes = chest.getData().getRecipes();
             List<ItemStack> toAdd = new ArrayList<>();
@@ -72,7 +70,7 @@ public final class ChestUtils {
                     ItemStack result = recipe.getResult().clone();
                     result.setAmount(result.getAmount() * amountOfRecipes);
                     toAdd.add(result);
-                    NotifierTask.addCrafting(player.getUniqueId(), result, result.getAmount());
+                    NotifierTask.addCrafting(chest.getPlacer(), result, result.getAmount());
                 }
             }
 
