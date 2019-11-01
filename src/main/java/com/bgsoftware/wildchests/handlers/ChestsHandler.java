@@ -3,7 +3,7 @@ package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
-import com.bgsoftware.wildchests.utils.ItemUtils;
+import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -134,11 +134,12 @@ public final class ChestsHandler implements ChestsManager {
         return getChests().stream()
                 .filter(chest -> {
                     ChestData chestData = chest.getData();
-                    if(chestData.isAutoSuctionChunk())
-                        return chest.getLocation().getChunk().equals(location.getChunk()) &&
+                    if(chestData.isAutoSuctionChunk()) {
+                        return LocationUtils.isSameChunk(chest.getLocation(), location) &&
                                 Math.abs(location.getBlockY() - chest.getLocation().getBlockY()) <= chest.getData().getAutoSuctionRange();
+                    }
                     else if(chestData.isAutoSuction()) {
-                        return ItemUtils.isInRange(chest.getLocation(), location, chest.getData().getAutoSuctionRange());
+                        return LocationUtils.isInRange(chest.getLocation(), location, chest.getData().getAutoSuctionRange());
                     }
                     return false;
                 }).sorted((c1, c2) -> {
