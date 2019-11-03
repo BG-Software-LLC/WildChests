@@ -52,7 +52,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"unused", "ConstantConditions"})
+@SuppressWarnings("unused")
 public final class NMSAdapter_v1_13_R2 implements NMSAdapter {
 
     @Override
@@ -65,7 +65,8 @@ public final class NMSAdapter_v1_13_R2 implements NMSAdapter {
         World world = ((CraftWorld) location.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
         TileEntityChest tileChest = (TileEntityChest) world.getTileEntity(blockPosition);
-        world.playBlockAction(blockPosition, tileChest.getBlock().getBlock(), 1, open ? 1 : 0);
+        if(tileChest != null)
+            world.playBlockAction(blockPosition, tileChest.getBlock().getBlock(), 1, open ? 1 : 0);
     }
 
     @Override
