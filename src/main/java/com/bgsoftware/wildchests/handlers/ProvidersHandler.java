@@ -20,15 +20,15 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler {
 
-    private final Map<UUID, List<Pair<ItemStack, Double>>> awaitingItems = new HashMap<>();
+    private final Map<UUID, List<Pair<ItemStack, Double>>> awaitingItems = new ConcurrentHashMap<>();
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private boolean isVaultEnabled;
