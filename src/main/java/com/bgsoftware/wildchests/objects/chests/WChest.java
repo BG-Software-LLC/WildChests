@@ -320,10 +320,16 @@ public abstract class WChest implements Chest {
 
     @Override
     public boolean onHopperMove(ItemStack itemStack, Hopper hopper) {
-        if(addItems(itemStack).isEmpty()){
-            hopper.getInventory().removeItem(itemStack);
-            //hopper.update();
+        Map<Integer, ItemStack> additionalItems = addItems(itemStack.clone());
+
+        ItemStack toRemove = itemStack.clone();
+
+        if(additionalItems.containsKey(0)){
+            toRemove.setAmount(toRemove.getAmount() - additionalItems.get(0).getAmount());
         }
+
+        hopper.getInventory().removeItem(toRemove);
+
         return true;
     }
 
