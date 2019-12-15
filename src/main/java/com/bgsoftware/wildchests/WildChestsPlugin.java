@@ -15,6 +15,7 @@ import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Hopper;
@@ -178,8 +179,15 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     }
 
     public static void log(String message){
-        for(String line : message.split("\n"))
-            plugin.getLogger().info(line);
+        message = ChatColor.translateAlternateColorCodes('&', message);
+        boolean colored = message.contains(ChatColor.COLOR_CHAR + "");
+        String lastColor = colored ? ChatColor.getLastColors(message.substring(0, 2)) : "";
+        for(String line : message.split("\n")){
+            if(colored)
+                Bukkit.getConsoleSender().sendMessage(lastColor + "[" + plugin.getDescription().getName() + "] " + line);
+            else
+                plugin.getLogger().info(line);
+        }
     }
 
     public static WildChestsPlugin getPlugin() {
