@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 public final class Executor {
 
     private static ExecutorService dataService = Executors.newFixedThreadPool(3, new ThreadFactoryBuilder().setNameFormat("WildChests DB Thread - #%d").build());
-    private static ExecutorService executorService = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("WildChests Thread - #%d").build());
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     public static void sync(Runnable runnable){
@@ -24,7 +23,7 @@ public final class Executor {
 
     public static void async(Runnable runnable){
         if(Bukkit.isPrimaryThread()){
-            executorService.execute(runnable);
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
         }
         else{
             runnable.run();
