@@ -178,7 +178,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     }
 
     public static void log(String message){
-        plugin.getLogger().info(message);
+        for(String line : message.split("\n"))
+            plugin.getLogger().info(line);
     }
 
     public static WildChestsPlugin getPlugin() {

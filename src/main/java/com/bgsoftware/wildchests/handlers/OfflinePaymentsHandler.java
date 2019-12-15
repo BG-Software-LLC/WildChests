@@ -79,6 +79,10 @@ public final class OfflinePaymentsHandler {
         this.awaitingItems.put(uuid, awaitingItems);
     }
 
+    public Map<UUID, Set<Pair<ItemStack, Double>>> getAwaitingItems(){
+        return awaitingItems;
+    }
+
     public void saveItems(boolean async){
         if(async && Bukkit.isPrimaryThread()){
             Executor.async(() -> saveItems(false));
