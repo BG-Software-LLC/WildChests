@@ -6,6 +6,7 @@
 
     <groupId>com.bgsoftware</groupId>
     <artifactId>wildchests</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <build>
@@ -23,6 +24,8 @@
 
     <modules>
         <module>API</module>
+        <module>v1_13_R2</module>
+        <module>v1_14_R1</module>
     </modules>
 
     <repositories>
