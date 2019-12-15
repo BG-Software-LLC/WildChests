@@ -5,6 +5,7 @@ import com.bgsoftware.wildchests.command.CommandsHandler;
 import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
+import com.bgsoftware.wildchests.handlers.OfflinePaymentsHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
@@ -40,6 +41,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     private SettingsHandler settingsHandler;
     private DataHandler dataHandler;
     private ProvidersHandler providersHandler;
+    private OfflinePaymentsHandler offlinePaymentsHandler;
 
     private NMSAdapter nmsAdapter;
 
@@ -56,6 +58,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         chestsManager = new ChestsHandler();
         settingsHandler = new SettingsHandler(this);
         dataHandler = new DataHandler(this);
+        offlinePaymentsHandler = new OfflinePaymentsHandler(this);
 
         Executor.sync(() -> providersHandler = new ProvidersHandler());
 
@@ -112,7 +115,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
             player.closeInventory();
         Bukkit.getScheduler().cancelTasks(this);
         dataHandler.saveDatabase(false);
-        providersHandler.saveAwaitingItems(false);
+        offlinePaymentsHandler.saveItems(false);
 
         log("Terminating all database threads...");
         Executor.stop();
@@ -164,6 +167,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     public ProvidersHandler getProviders() {
         return providersHandler;
+    }
+
+    public OfflinePaymentsHandler getOfflinePayments() {
+        return offlinePaymentsHandler;
     }
 
     public static String getVersion(){

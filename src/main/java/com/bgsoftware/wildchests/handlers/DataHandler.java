@@ -66,7 +66,7 @@ public final class DataHandler {
             while(resultSet.next()) {
                 UUID uuid = UUID.fromString(resultSet.getString("uuid"));
                 String payment = resultSet.getString("payment");
-                plugin.getProviders().loadAwaitingItems(uuid, payment);
+                plugin.getOfflinePayments().loadItems(uuid, payment);
             }
         });
     }

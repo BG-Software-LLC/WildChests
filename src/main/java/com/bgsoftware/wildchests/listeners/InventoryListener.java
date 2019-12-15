@@ -167,7 +167,7 @@ public final class InventoryListener implements Listener {
                 pageIndex++;
 
             if (e.getMessage().equalsIgnoreCase("confirm")) {
-                if (plugin.getProviders().transactionSuccess(e.getPlayer(), inventoryData.getPrice())) {
+                if (plugin.getProviders().withdrawPlayer(e.getPlayer(), inventoryData.getPrice())) {
                     Locale.EXPAND_PURCHASED.send(e.getPlayer());
                     chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
                 } else {
@@ -204,7 +204,7 @@ public final class InventoryListener implements Listener {
                 pageIndex++;
 
             if(e.getRawSlot() == 4){
-                if (plugin.getProviders().transactionSuccess(player, inventoryData.getPrice())) {
+                if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
                     Locale.EXPAND_PURCHASED.send(player);
                     chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
                 } else {

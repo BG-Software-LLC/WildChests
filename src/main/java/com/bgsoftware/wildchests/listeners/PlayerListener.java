@@ -40,7 +40,7 @@ public final class PlayerListener implements Listener {
         }
 
         Executor.sync(() -> {
-            double moneyEarned = plugin.getProviders().tryDepositMoney(e.getPlayer());
+            double moneyEarned = plugin.getOfflinePayments().tryDepositItems(e.getPlayer());
             if(moneyEarned > 0){
                 Locale.MONEY_EARNED_OFFLINE.send(e.getPlayer(), StringUtils.format(BigDecimal.valueOf(moneyEarned)));
             }
