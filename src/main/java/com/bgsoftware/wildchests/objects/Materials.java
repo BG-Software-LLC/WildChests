@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.objects;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -18,10 +17,19 @@ public enum Materials {
     private String legacyType;
     private byte legacyData;
 
-    private static boolean isLegacy = !Bukkit.getBukkitVersion().contains("1.13") && !Bukkit.getBukkitVersion().contains("1.14");
+    private static boolean isLegacy = isLegacy();
 
     public ItemStack toBukkitItem(){
         return !isLegacy ? new ItemStack(Material.matchMaterial(name())) : new ItemStack(Material.matchMaterial(legacyType), 1, legacyData);
+    }
+
+    private static boolean isLegacy(){
+        try{
+            Material.valueOf("STAINED_GLASS_PANE");
+            return true;
+        }catch(Throwable ignored){
+            return false;
+        }
     }
 
 }
