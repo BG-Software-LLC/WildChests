@@ -155,19 +155,20 @@ public final class ChestUtils {
             if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
                 itemStack = WildStackerHook.getItemStack(item);
 
-            ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
+            try {
+                ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
 
-            if (remainingItem == null) {
-                plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
-                item.remove();
-                break;
-            }
-            else{
-                if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                    WildStackerHook.setRemainings(item, remainingItem.getAmount());
-                else
-                    item.setItemStack(remainingItem);
-            }
+                if (remainingItem == null) {
+                    plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
+                    item.remove();
+                    break;
+                } else {
+                    if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                        WildStackerHook.setRemainings(item, remainingItem.getAmount());
+                    else
+                        item.setItemStack(remainingItem);
+                }
+            }catch(Throwable ignored){}
         }
     }
 
