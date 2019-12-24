@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -65,7 +64,7 @@ public final class OfflinePaymentsHandler {
     }
 
     public void addItem(UUID uuid, ItemStack itemStack, double multiplier){
-        awaitingItems.computeIfAbsent(uuid, set -> new HashSet<>()).add(new Pair<>(itemStack, multiplier));
+        awaitingItems.computeIfAbsent(uuid, set -> Sets.newConcurrentHashSet()).add(new Pair<>(itemStack, multiplier));
     }
 
     public void loadItems(UUID uuid, String payment){
