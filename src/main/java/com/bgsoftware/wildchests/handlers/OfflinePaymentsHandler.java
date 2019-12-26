@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public final class OfflinePaymentsHandler {
 
@@ -26,16 +27,18 @@ public final class OfflinePaymentsHandler {
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> saveItems(false), 6000, 6000);
     }
 
-    public double tryDepositItems(Player player){
-        if(!awaitingItems.containsKey(player.getUniqueId()))
-            return 0;
-
-        boolean removeFromMap = true;
+    public void tryDepositItems(Player player, Consumer<Double> moneyEarned){
+        if(!awaitingItems.containsKey(player.getUniqueId())) {
+            moneyEarned.accept(0D);
+            return;
+        }
 
         Set<Pair<ItemStack, Double>> awaitingItems = this.awaitingItems.get(player.getUniqueId());
 
-        if(!plugin.getProviders().isVaultEnabled())
-            return 0;
+        if(!plugin.getProviders().isVaultEnabled()){
+            moneyEarned.accept(0D);
+            return;
+        }
 
         BigDecimal totalPrice = BigDecimal.ZERO;
 
@@ -43,24 +46,33 @@ public final class OfflinePaymentsHandler {
             totalPrice = totalPrice.add(BigDecimal.valueOf(plugin.getProviders().getPrice(player, pair.getKey(), pair.getValue())));
         }
 
-        if(plugin.getSettings().sellCommand.isEmpty()) {
-            if(!plugin.getProviders().depositPlayer(player, totalPrice.doubleValue())){
-                WildChestsPlugin.log("&cCouldn't deposit offline payment for " + player.getName() + "...");
-                removeFromMap = false;
+        final BigDecimal TOTAL_PRICE = totalPrice;
+
+        Executor.sync(() -> {
+            boolean removeFromMap = true;
+
+            if(plugin.getSettings().sellCommand.isEmpty()) {
+                if(!plugin.getProviders().depositPlayer(player, TOTAL_PRICE.doubleValue())){
+                    WildChestsPlugin.log("&cCouldn't deposit offline payment for " + player.getName() + "...");
+                    removeFromMap = false;
+                }
             }
-        }
-        else{
-            final BigDecimal TOTAL_PRICE = totalPrice;
-            Executor.sync(() ->
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                            .replace("{player-name}", player.getName())
-                            .replace("{price}", String.valueOf(TOTAL_PRICE))));
-        }
+            else{
+                Executor.sync(() ->
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                                .replace("{player-name}", player.getName())
+                                .replace("{price}", String.valueOf(TOTAL_PRICE))));
+            }
 
-        if(removeFromMap)
-            this.awaitingItems.remove(player.getUniqueId());
+            if(removeFromMap) {
+                this.awaitingItems.remove(player.getUniqueId());
+                moneyEarned.accept(TOTAL_PRICE.doubleValue());
+            }
 
-        return totalPrice.doubleValue();
+            else{
+                moneyEarned.accept(0D);
+            }
+        });
     }
 
     public void addItem(UUID uuid, ItemStack itemStack, double multiplier){

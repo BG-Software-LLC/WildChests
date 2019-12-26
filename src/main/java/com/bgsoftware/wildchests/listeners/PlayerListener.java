@@ -39,11 +39,12 @@ public final class PlayerListener implements Listener {
                     ChatColor.GRAY + " A new version is available (v" + Updater.getLatestVersion() + ")!"), 20L);
         }
 
-        Executor.sync(() -> {
-            double moneyEarned = plugin.getOfflinePayments().tryDepositItems(e.getPlayer());
-            if(moneyEarned > 0){
-                Locale.MONEY_EARNED_OFFLINE.send(e.getPlayer(), StringUtils.format(BigDecimal.valueOf(moneyEarned)));
-            }
+        Executor.async(() -> {
+            plugin.getOfflinePayments().tryDepositItems(e.getPlayer(), moneyEarned -> {
+                if(moneyEarned > 0){
+                    Locale.MONEY_EARNED_OFFLINE.send(e.getPlayer(), StringUtils.format(BigDecimal.valueOf(moneyEarned)));
+                }
+            });
         }, 20L);
 
     }
