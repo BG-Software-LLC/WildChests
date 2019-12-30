@@ -1,15 +1,15 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +24,27 @@ public final class OfflinePaymentsHandler {
 
     public OfflinePaymentsHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
+
+        File file = new File(plugin.getDataFolder(), "offline_payments");
+
+        if(file.exists()){
+            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+
+            for(String uuidKey : cfg.getConfigurationSection("").getKeys(false)) {
+                Set<Pair<ItemStack, Double>> awaitingItems = Sets.newConcurrentHashSet();
+
+                UUID uuid = UUID.fromString(uuidKey);
+                String payment = cfg.getString(uuidKey);
+
+                for (String pair : payment.split(";")) {
+                    String[] pairSections = pair.split("=");
+                    awaitingItems.add(new Pair<>(plugin.getNMSAdapter().deserialzeItem(pairSections[0]), Double.valueOf(pairSections[1])));
+                }
+
+                this.awaitingItems.put(uuid, awaitingItems);
+            }
+        }
+
         plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> saveItems(false), 6000, 6000);
     }
 
@@ -90,29 +111,36 @@ public final class OfflinePaymentsHandler {
         this.awaitingItems.put(uuid, awaitingItems);
     }
 
-    public Map<UUID, Set<Pair<ItemStack, Double>>> getAwaitingItems(){
-        return awaitingItems;
-    }
-
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveItems(boolean async){
         if(async && Bukkit.isPrimaryThread()){
             Executor.async(() -> saveItems(false));
             return;
         }
 
-        SQLHelper.executeUpdate("DELETE FROM offline_payment;");
+        File file = new File(plugin.getDataFolder(), "offline_payments");
+        if(file.exists())
+            file.delete();
 
-        for(Map.Entry<UUID, Set<Pair<ItemStack, Double>>> entry : awaitingItems.entrySet()){
-            StringBuilder payment = new StringBuilder();
+        if(!awaitingItems.isEmpty()) {
+            YamlConfiguration cfg = new YamlConfiguration();
 
-            for(Pair<ItemStack, Double> pair : entry.getValue()){
-                payment.append(";").append(plugin.getNMSAdapter().serialize(pair.getKey())).append("=").append(pair.getValue());
+            for (Map.Entry<UUID, Set<Pair<ItemStack, Double>>> entry : awaitingItems.entrySet()) {
+                StringBuilder payment = new StringBuilder();
+
+                for (Pair<ItemStack, Double> pair : entry.getValue()) {
+                    payment.append(";").append(plugin.getNMSAdapter().serialize(pair.getKey())).append("=").append(pair.getValue());
+                }
+
+                cfg.set(entry.getKey() + "", payment.substring(1));
             }
 
-            Query.OFFLINE_PAYMENT_INSERT.getStatementHolder()
-                    .setString(entry.getKey() + "")
-                    .setString(payment.substring(1))
-                    .execute(false);
+            try{
+                file.createNewFile();
+                cfg.save(file);
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
         }
     }
 

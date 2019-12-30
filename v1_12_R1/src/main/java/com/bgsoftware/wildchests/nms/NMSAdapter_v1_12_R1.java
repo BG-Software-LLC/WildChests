@@ -119,7 +119,7 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
                     .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst();
 
             if(optionalClass.isPresent()){
-                Class minecraftInventory = optionalClass.get();
+                Class<?> minecraftInventory = optionalClass.get();
                 Field titleField = minecraftInventory.getDeclaredField("title");
                 titleField.setAccessible(true);
                 titleField.set(inventory, title);
@@ -140,6 +140,9 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
 
         NBTTagCompound tagCompound = new NBTTagCompound();
 
+        int itemAmount = itemStack.getAmount();
+        itemStack.setAmount(1);
+
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 
         if(nmsItem != null)
@@ -151,7 +154,7 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
             return null;
         }
 
-        return new BigInteger(1, outputStream.toByteArray()).toString(32);
+        return new BigInteger(1, outputStream.toByteArray()).toString(32) + "$" + itemAmount;
     }
 
     @Override
@@ -201,12 +204,16 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
 
     @Override
     public org.bukkit.inventory.ItemStack deserialzeItem(String serialized) {
+        int itemsAmount = serialized.contains("$") ? Integer.parseInt(serialized.split("\\$")[1]) : -1;
+        serialized = serialized.split("\\$")[0];
         ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
 
         try {
             NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
 
             ItemStack nmsItem = new ItemStack(nbtTagCompoundRoot);
+            if(itemsAmount > 0)
+                nmsItem.setCount(itemsAmount);
 
             return CraftItemStack.asBukkitCopy(nmsItem);
         }catch(Exception ex){

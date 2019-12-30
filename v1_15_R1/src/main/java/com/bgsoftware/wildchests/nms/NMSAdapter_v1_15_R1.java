@@ -110,7 +110,7 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
                     .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst();
 
             if(optionalClass.isPresent()){
-                Class minecraftInventory = optionalClass.get();
+                Class<?> minecraftInventory = optionalClass.get();
                 Field titleField = minecraftInventory.getDeclaredField("title");
                 titleField.setAccessible(true);
                 titleField.set(inventory, title);
@@ -192,12 +192,16 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
 
     @Override
     public org.bukkit.inventory.ItemStack deserialzeItem(String serialized) {
+        int itemsAmount = serialized.contains("$") ? Integer.parseInt(serialized.split("\\$")[1]) : -1;
+        serialized = serialized.split("\\$")[0];
         ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
 
         try {
             NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
 
             ItemStack nmsItem = ItemStack.a(nbtTagCompoundRoot);
+            if(itemsAmount > 0)
+                nmsItem.setCount(itemsAmount);
 
             return CraftItemStack.asBukkitCopy(nmsItem);
         }catch(Exception ex){
@@ -283,7 +287,7 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
         return inventory;
     }
 
-    private class TileEntityWildChest extends TileEntityChest{
+    private static class TileEntityWildChest extends TileEntityChest{
 
         private TileEntityChest tileEntityChest = new TileEntityChest();
         private Chest chest;

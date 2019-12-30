@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import net.milkbowl.vault.economy.Economy;
 
+import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -137,7 +138,9 @@ public final class ProvidersHandler {
         if(!economy.hasAccount(player))
             economy.createPlayerAccount(player);
 
-        return economy.depositPlayer(player, money).transactionSuccess();
+        EconomyResponse economyResponse = economy.depositPlayer(player, money);
+
+        return economyResponse.transactionSuccess();
     }
 
     public boolean isVaultEnabled(){

@@ -120,7 +120,7 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
                     .filter(clazz -> clazz.getName().contains("MinecraftInventory")).findFirst();
 
             if(optionalClass.isPresent()){
-                Class minecraftInventory = optionalClass.get();
+                Class<?> minecraftInventory = optionalClass.get();
                 Field titleField = minecraftInventory.getDeclaredField("title");
                 titleField.setAccessible(true);
                 titleField.set(inventory, title);
@@ -141,6 +141,9 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
 
         NBTTagCompound tagCompound = new NBTTagCompound();
 
+        int itemAmount = itemStack.getAmount();
+        itemStack.setAmount(1);
+
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 
         if(nmsItem != null)
@@ -152,7 +155,7 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
             return null;
         }
 
-        return new BigInteger(1, outputStream.toByteArray()).toString(32);
+        return new BigInteger(1, outputStream.toByteArray()).toString(32) + "$" + itemAmount;
     }
 
     @Override
@@ -293,7 +296,7 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
         return inventory;
     }
 
-    private class TileEntityWildChest extends TileEntityChest{
+    private static class TileEntityWildChest extends TileEntityChest{
 
         private TileEntityChest tileEntityChest = new TileEntityChest();
         private Chest chest;

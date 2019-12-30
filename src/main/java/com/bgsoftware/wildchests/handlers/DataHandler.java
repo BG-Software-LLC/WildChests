@@ -68,9 +68,9 @@ public final class DataHandler {
                 String payment = resultSet.getString("payment");
                 plugin.getOfflinePayments().loadItems(uuid, payment);
             }
-
-            WildChestsPlugin.log("&eLoaded offline payments:\n" + plugin.getOfflinePayments().getAwaitingItems());
         });
+
+        SQLHelper.executeUpdate("DROP TABLE offline_payment;");
     }
 
     private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException{
