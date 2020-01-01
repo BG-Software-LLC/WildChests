@@ -2,18 +2,20 @@ package com.bgsoftware.wildchests.command.commands;
 
 import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
+import com.bgsoftware.wildchests.Locale;
+import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
+import com.bgsoftware.wildchests.command.ICommand;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import com.bgsoftware.wildchests.Locale;
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
-import com.bgsoftware.wildchests.command.ICommand;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,6 +71,14 @@ public final class CommandLink implements ICommand {
 
         if(targetBlock == null || targetBlock.getType() != Material.CHEST){
             Locale.INVALID_BLOCK_CHEST.send(player);
+            return;
+        }
+
+        LinkedChestInteractEvent linkedChestInteractEvent = new LinkedChestInteractEvent(player, targetBlock);
+        Bukkit.getPluginManager().callEvent(linkedChestInteractEvent);
+
+        if(linkedChestInteractEvent.isCancelled()){
+            Locale.NOT_LINKED_CHEST.send(player);
             return;
         }
 
