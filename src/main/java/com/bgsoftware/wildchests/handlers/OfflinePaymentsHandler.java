@@ -2,8 +2,7 @@ package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.utils.Executor;
-import com.bgsoftware.wildchests.utils.Pair;
-import com.google.common.collect.Sets;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -12,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -20,7 +18,7 @@ import java.util.function.Consumer;
 public final class OfflinePaymentsHandler {
 
     private final WildChestsPlugin plugin;
-    private final Map<UUID, Set<Pair<ItemStack, Double>>> awaitingItems = new ConcurrentHashMap<>();
+    private final Map<UUID, StringBuilder> awaitingItems = new ConcurrentHashMap<>();
 
     public OfflinePaymentsHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
@@ -31,17 +29,9 @@ public final class OfflinePaymentsHandler {
             YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
             for(String uuidKey : cfg.getConfigurationSection("").getKeys(false)) {
-                Set<Pair<ItemStack, Double>> awaitingItems = Sets.newConcurrentHashSet();
-
                 UUID uuid = UUID.fromString(uuidKey);
                 String payment = cfg.getString(uuidKey);
-
-                for (String pair : payment.split(";")) {
-                    String[] pairSections = pair.split("=");
-                    awaitingItems.add(new Pair<>(plugin.getNMSAdapter().deserialzeItem(pairSections[0]), Double.valueOf(pairSections[1])));
-                }
-
-                this.awaitingItems.put(uuid, awaitingItems);
+                this.awaitingItems.put(uuid, new StringBuilder(payment));
             }
         }
 
@@ -54,8 +44,6 @@ public final class OfflinePaymentsHandler {
             return;
         }
 
-        Set<Pair<ItemStack, Double>> awaitingItems = this.awaitingItems.get(player.getUniqueId());
-
         if(!plugin.getProviders().isVaultEnabled()){
             moneyEarned.accept(0D);
             return;
@@ -63,8 +51,19 @@ public final class OfflinePaymentsHandler {
 
         BigDecimal totalPrice = BigDecimal.ZERO;
 
-        for(Pair<ItemStack, Double> pair : awaitingItems) {
-            totalPrice = totalPrice.add(BigDecimal.valueOf(plugin.getProviders().getPrice(player, pair.getKey(), pair.getValue())));
+        String paymentString = this.awaitingItems.remove(player.getUniqueId()).toString();
+
+        for(String payment : paymentString.split(";")){
+            String[] paymentSections = payment.split("=");
+            try {
+                totalPrice = totalPrice.add(BigDecimal.valueOf(plugin.getProviders().getPrice(player,
+                        plugin.getNMSAdapter().deserialzeItem(paymentSections[0]),
+                        Double.parseDouble(paymentSections[1])
+                )));
+            }catch(Exception ex){
+                ex.printStackTrace();
+                this.awaitingItems.computeIfAbsent(player.getUniqueId(), s -> new StringBuilder()).append(";").append(payment);
+            }
         }
 
         final BigDecimal TOTAL_PRICE = totalPrice;
@@ -97,18 +96,11 @@ public final class OfflinePaymentsHandler {
     }
 
     public void addItem(UUID uuid, ItemStack itemStack, double multiplier){
-        awaitingItems.computeIfAbsent(uuid, set -> Sets.newConcurrentHashSet()).add(new Pair<>(itemStack, multiplier));
+        awaitingItems.computeIfAbsent(uuid, s -> new StringBuilder()).append(plugin.getNMSAdapter().serialize(itemStack)).append("=").append(multiplier);
     }
 
     public void loadItems(UUID uuid, String payment){
-        Set<Pair<ItemStack, Double>> awaitingItems = Sets.newConcurrentHashSet();
-
-        for(String pair : payment.split(";")) {
-            String[] pairSections = pair.split("=");
-            awaitingItems.add(new Pair<>(plugin.getNMSAdapter().deserialzeItem(pairSections[0]), Double.valueOf(pairSections[1])));
-        }
-
-        this.awaitingItems.put(uuid, awaitingItems);
+        this.awaitingItems.computeIfAbsent(uuid, s -> new StringBuilder()).append(payment);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -125,14 +117,9 @@ public final class OfflinePaymentsHandler {
         if(!awaitingItems.isEmpty()) {
             YamlConfiguration cfg = new YamlConfiguration();
 
-            for (Map.Entry<UUID, Set<Pair<ItemStack, Double>>> entry : awaitingItems.entrySet()) {
-                StringBuilder payment = new StringBuilder();
-
-                for (Pair<ItemStack, Double> pair : entry.getValue()) {
-                    payment.append(";").append(plugin.getNMSAdapter().serialize(pair.getKey())).append("=").append(pair.getValue());
-                }
-
-                cfg.set(entry.getKey() + "", payment.substring(1));
+            for(Map.Entry<UUID, StringBuilder> entry : awaitingItems.entrySet()){
+                String payment = entry.getValue().toString();
+                cfg.set(entry.getKey() + "", payment.startsWith(";") ? payment.substring(1) : payment);
             }
 
             try{
