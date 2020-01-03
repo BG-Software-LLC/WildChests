@@ -2,20 +2,12 @@ package com.bgsoftware.wildchests.utils;
 
 public final class Pair<K, V> {
 
-    private final K key;
-    private final V value;
+    public K key;
+    public V value;
 
     public Pair(K key, V value){
         this.key = key;
         this.value = value;
-    }
-
-    public K getKey() {
-        return key;
-    }
-
-    public V getValue() {
-        return value;
     }
 
     @Override

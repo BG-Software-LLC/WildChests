@@ -60,7 +60,7 @@ public class StatementHolder {
     }
 
     public StatementHolder setItemStack(ItemStack itemStack){
-        values.put(currentIndex++, plugin.getNMSAdapter().serialize(itemStack));
+        values.put(currentIndex++, plugin.getNMSAdapter().serialize(itemStack.clone()));
         return this;
     }
 

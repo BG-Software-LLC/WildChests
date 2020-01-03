@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +19,7 @@ import java.util.function.Consumer;
 public final class OfflinePaymentsHandler {
 
     private final WildChestsPlugin plugin;
-    private final Map<UUID, StringBuilder> awaitingItems = new ConcurrentHashMap<>();
+    private final Map<UUID, Map<String, Double>> awaitingItems = new ConcurrentHashMap<>();
 
     public OfflinePaymentsHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
@@ -29,9 +30,15 @@ public final class OfflinePaymentsHandler {
             YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
             for(String uuidKey : cfg.getConfigurationSection("").getKeys(false)) {
+                Map<String, Double> paymentMap = new HashMap<>();
                 UUID uuid = UUID.fromString(uuidKey);
-                String payment = cfg.getString(uuidKey);
-                this.awaitingItems.put(uuid, new StringBuilder(payment));
+
+                for(String payment : cfg.getString(uuidKey).split(";")){
+                    String[] paymentSections = payment.split("=");
+                    paymentMap.put(paymentSections[0], Double.parseDouble(paymentSections[1]));
+                }
+
+                this.awaitingItems.put(uuid, paymentMap);
             }
         }
 
@@ -51,18 +58,15 @@ public final class OfflinePaymentsHandler {
 
         BigDecimal totalPrice = BigDecimal.ZERO;
 
-        String paymentString = this.awaitingItems.remove(player.getUniqueId()).toString();
+        Map<String, Double> paymentMap = this.awaitingItems.remove(player.getUniqueId());
 
-        for(String payment : paymentString.split(";")){
-            String[] paymentSections = payment.split("=");
+        for (Map.Entry<String, Double> entry : paymentMap.entrySet()) {
             try {
-                totalPrice = totalPrice.add(BigDecimal.valueOf(plugin.getProviders().getPrice(player,
-                        plugin.getNMSAdapter().deserialzeItem(paymentSections[0]),
-                        Double.parseDouble(paymentSections[1])
-                )));
-            }catch(Exception ex){
+                ItemStack itemStack = plugin.getNMSAdapter().deserialzeItem(entry.getKey());
+                totalPrice = totalPrice.add(BigDecimal.valueOf(plugin.getProviders().getPrice(player, itemStack, entry.getValue())));
+            } catch (Exception ex) {
                 ex.printStackTrace();
-                this.awaitingItems.computeIfAbsent(player.getUniqueId(), s -> new StringBuilder()).append(";").append(payment);
+                this.awaitingItems.computeIfAbsent(player.getUniqueId(), s -> new HashMap<>()).put(entry.getKey(), entry.getValue());
             }
         }
 
@@ -95,12 +99,24 @@ public final class OfflinePaymentsHandler {
         });
     }
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     public void addItem(UUID uuid, ItemStack itemStack, double multiplier){
-        awaitingItems.computeIfAbsent(uuid, s -> new StringBuilder()).append(plugin.getNMSAdapter().serialize(itemStack)).append("=").append(multiplier);
+        String itemSerialized = plugin.getNMSAdapter().serialize(itemStack.clone());
+        Map<String, Double> paymentMap = awaitingItems.computeIfAbsent(uuid, m -> new HashMap<>());
+        synchronized (paymentMap){
+            paymentMap.put(itemSerialized, paymentMap.getOrDefault(itemSerialized, 0D) + (itemStack.getAmount() * multiplier));
+        }
     }
 
     public void loadItems(UUID uuid, String payment){
-        this.awaitingItems.computeIfAbsent(uuid, s -> new StringBuilder()).append(payment);
+        Map<String, Double> paymentMap = new HashMap<>();
+
+        for(String _payment : payment.split(";")){
+            String[] paymentSections = _payment.split("=");
+            paymentMap.put(paymentSections[0], Double.parseDouble(paymentSections[1]));
+        }
+
+        this.awaitingItems.put(uuid, paymentMap);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -117,9 +133,14 @@ public final class OfflinePaymentsHandler {
         if(!awaitingItems.isEmpty()) {
             YamlConfiguration cfg = new YamlConfiguration();
 
-            for(Map.Entry<UUID, StringBuilder> entry : awaitingItems.entrySet()){
-                String payment = entry.getValue().toString();
-                cfg.set(entry.getKey() + "", payment.startsWith(";") ? payment.substring(1) : payment);
+            for(Map.Entry<UUID, Map<String, Double>> entry : awaitingItems.entrySet()){
+                StringBuilder payment = new StringBuilder();
+
+                for(Map.Entry<String, Double> itemEntry : entry.getValue().entrySet()){
+                    payment.append(";").append(itemEntry.getKey()).append("=").append(itemEntry.getValue());
+                }
+
+                cfg.set(entry.getKey() + "", payment.substring(1));
             }
 
             try{

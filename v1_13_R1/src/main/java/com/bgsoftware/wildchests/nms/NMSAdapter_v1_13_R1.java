@@ -131,8 +131,10 @@ public final class NMSAdapter_v1_13_R1 implements NMSAdapter {
 
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 
-        if(nmsItem != null)
+        if(nmsItem != null) {
+            nmsItem.setCount(1);
             nmsItem.save(tagCompound);
+        }
 
         try {
             NBTCompressedStreamTools.a(tagCompound, dataOutput);
@@ -190,16 +192,12 @@ public final class NMSAdapter_v1_13_R1 implements NMSAdapter {
 
     @Override
     public org.bukkit.inventory.ItemStack deserialzeItem(String serialized) {
-        int itemsAmount = serialized.contains("$") ? Integer.parseInt(serialized.split("\\$")[1]) : -1;
-        serialized = serialized.split("\\$")[0];
         ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
 
         try {
             NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
 
             ItemStack nmsItem = ItemStack.a(nbtTagCompoundRoot);
-            if(itemsAmount > 0)
-                nmsItem.setCount(itemsAmount);
 
             return CraftItemStack.asBukkitCopy(nmsItem);
         }catch(Exception ex){
