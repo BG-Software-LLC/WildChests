@@ -1,19 +1,21 @@
 package com.bgsoftware.wildchests.utils;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
+import com.bgsoftware.wildchests.handlers.ProvidersHandler;
+import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.hooks.WildStackerHook;
-import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.task.NotifierTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,27 +106,27 @@ public final class ChestUtils {
 
             Map<ItemStack, Integer> sortedItems = getSortedItems(itemStacks.toArray(new ItemStack[0]));
 
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
+
             for (ItemStack itemStack : sortedItems.keySet()) {
                 itemStack.setAmount(sortedItems.get(itemStack));
 
-                try {
-                    double price = plugin.getProviders().getPrice(placer, itemStack, sellChestTaskEvent.getMultiplier());
+                ProvidersHandler.TransactionResult<Double> transactionResult =
+                        plugin.getProviders().canSellItem(offlinePlayer, itemStack, sellChestTaskEvent.getMultiplier());
 
-                    if (price <= 0)
-                        continue;
+                if (!transactionResult.isSuccess())
+                    continue;
 
-                    if (plugin.getSettings().sellCommand.isEmpty()) {
-                        plugin.getProviders().trySellItem(placer, itemStack, sellChestTaskEvent.getMultiplier());
-                    } else {
-                        Executor.sync(() ->
-                                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                                        .replace("{player-name}", Bukkit.getPlayer(placer).getName())
-                                        .replace("{price}", String.valueOf(price))));
-                    }
-
-                    NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), price);
-                } catch (PlayerNotOnlineException ignored) {
+                if (plugin.getSettings().sellCommand.isEmpty()) {
+                    plugin.getProviders().depositPlayer(offlinePlayer, transactionResult.getData());
+                } else {
+                    Executor.sync(() ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                                    .replace("{player-name}", offlinePlayer.getName())
+                                    .replace("{price}", String.valueOf(transactionResult.getData()))));
                 }
+
+                NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), transactionResult.getData());
 
                 for (Inventory page : pages) {
                     try {

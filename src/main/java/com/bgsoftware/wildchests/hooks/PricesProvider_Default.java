@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.hooks;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
@@ -17,7 +17,7 @@ public final class PricesProvider_Default implements PricesProvider {
     }
 
     @Override
-    public double getPrice(Player player, ItemStack itemStack) {
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         //Checks for 'TYPE' item
         if(prices.containsKey(itemStack.getType().name()))
             return prices.get(itemStack.getType().name()) * itemStack.getAmount();

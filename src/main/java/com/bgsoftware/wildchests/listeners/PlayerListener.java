@@ -1,16 +1,12 @@
 package com.bgsoftware.wildchests.listeners;
 
-import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.Updater;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.utils.Executor;
-import com.bgsoftware.wildchests.utils.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-
-import java.math.BigDecimal;
 
 @SuppressWarnings("unused")
 public final class PlayerListener implements Listener {
@@ -38,15 +34,6 @@ public final class PlayerListener implements Listener {
                 e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "WildChests" +
                     ChatColor.GRAY + " A new version is available (v" + Updater.getLatestVersion() + ")!"), 20L);
         }
-
-        Executor.async(() -> {
-            plugin.getOfflinePayments().tryDepositItems(e.getPlayer(), moneyEarned -> {
-                if(moneyEarned > 0){
-                    Locale.MONEY_EARNED_OFFLINE.send(e.getPlayer(), StringUtils.format(BigDecimal.valueOf(moneyEarned)));
-                }
-            });
-        }, 20L);
-
     }
 
 }

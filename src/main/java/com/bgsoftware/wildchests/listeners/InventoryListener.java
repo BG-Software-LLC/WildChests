@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.listeners;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.objects.Materials;
@@ -14,6 +15,7 @@ import com.google.common.collect.Maps;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -123,6 +125,19 @@ public final class InventoryListener implements Listener {
         }
 
         chest.onInteract(e);
+
+        if(chest instanceof StorageChest && e.getCurrentItem() != null && e.getCurrentItem().hasItemMeta() &&
+                e.getCurrentItem().getItemMeta().hasDisplayName() &&
+                e.getCurrentItem().getItemMeta().getDisplayName().startsWith(ChatColor.RESET + "")){
+            e.setCancelled(true);
+            ItemStack clicked = e.getCurrentItem().clone();
+            Executor.sync(() -> {
+                if(clicked.isSimilar(e.getWhoClicked().getItemOnCursor()))
+                    e.getWhoClicked().setItemOnCursor(new ItemStack(Material.AIR));
+
+                e.getWhoClicked().getInventory().removeItem(clicked);
+            }, 10L);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

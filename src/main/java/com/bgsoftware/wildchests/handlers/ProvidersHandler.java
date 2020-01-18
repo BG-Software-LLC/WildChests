@@ -1,10 +1,9 @@
 package com.bgsoftware.wildchests.handlers;
-
-import com.bgsoftware.wildchests.objects.exceptions.PlayerNotOnlineException;
 import net.milkbowl.vault.economy.Economy;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -16,6 +15,7 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.UUID;
+import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler {
@@ -54,8 +54,8 @@ public final class ProvidersHandler {
      * Hooks' methods
      */
 
-    public double getPrice(Player player, ItemStack itemStack, double multiplier){
-        return pricesProvider.getPrice(player, itemStack) * multiplier;
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
+        return pricesProvider.getPrice(offlinePlayer, itemStack) * multiplier;
     }
 
     /*
@@ -81,70 +81,56 @@ public final class ProvidersHandler {
         return true;
     }
 
-    public double getPrice(UUID placer, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException {
+    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
         double price = 0;
 
-        if(!canSellItem(placer, itemStack, multiplier))
-            return price;
-
-        //If item can be sold, the player is online for sure.
-        Player player = Bukkit.getPlayer(placer);
-        return pricesProvider.getPrice(player, itemStack) * multiplier;
-    }
-
-    @SuppressWarnings("UnusedReturnValue")
-    public double trySellItem(UUID placer, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException {
-        double price = 0;
-
-        if(!canSellItem(placer, itemStack, multiplier))
-            return price;
-
-        //If item can be sold, the player is online for sure.
-        Player player = Bukkit.getPlayer(placer);
-
-        price = getPrice(player, itemStack, multiplier);
-
-        if(price > 0) {
-            if (!economy.hasAccount(player))
-                economy.createPlayerAccount(player);
-            
-            economy.depositPlayer(player, price);
+        if(itemStack != null){
+            price = getPrice(offlinePlayer, itemStack, multiplier);
         }
 
-        return price;
+        return TransactionResult.of(price, _price -> isVaultEnabled && _price > 0);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean canSellItem(UUID playerUUID, ItemStack itemStack, double multiplier) throws PlayerNotOnlineException{
-        if(itemStack == null)
-            return false;
+    public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){
+        if(!economy.hasAccount(offlinePlayer))
+            economy.createPlayerAccount(offlinePlayer);
 
-        if(Bukkit.getPlayer(playerUUID) == null){
-            plugin.getOfflinePayments().addItem(playerUUID, itemStack, multiplier);
-            throw new PlayerNotOnlineException();
-        }
-
-        return isVaultEnabled && getPrice(Bukkit.getPlayer(playerUUID), itemStack, multiplier) > 0;
+        return economy.withdrawPlayer(offlinePlayer, money).transactionSuccess();
     }
 
-    public boolean withdrawPlayer(Player player, double money){
-        if(!economy.hasAccount(player))
-            economy.createPlayerAccount(player);
+    public boolean depositPlayer(OfflinePlayer offlinePlayer, double money){
+        if(!economy.hasAccount(offlinePlayer))
+            economy.createPlayerAccount(offlinePlayer);
 
-        return economy.withdrawPlayer(player, money).transactionSuccess();
-    }
-
-    public boolean depositPlayer(Player player, double money){
-        if(!economy.hasAccount(player))
-            economy.createPlayerAccount(player);
-
-        EconomyResponse economyResponse = economy.depositPlayer(player, money);
-
-        return economyResponse.transactionSuccess();
+        return economy.depositPlayer(offlinePlayer, money).transactionSuccess();
     }
 
     public boolean isVaultEnabled(){
         return isVaultEnabled;
+    }
+
+    public static final class TransactionResult<T>{
+
+        private T data;
+        private Predicate<T> success;
+
+        private TransactionResult(T data, Predicate<T> success){
+            this.data = data;
+            this.success = success;
+        }
+
+        public boolean isSuccess(){
+            return success == null || success.test(data);
+        }
+
+        public T getData(){
+            return data;
+        }
+
+        public static <T> TransactionResult<T> of(T data, Predicate<T> success){
+            return new TransactionResult<>(data, success);
+        }
+
     }
 
 }

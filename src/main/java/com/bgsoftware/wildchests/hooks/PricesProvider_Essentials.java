@@ -3,7 +3,7 @@ package com.bgsoftware.wildchests.hooks;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IEssentials;
 import com.earth2me.essentials.Worth;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
@@ -16,7 +16,7 @@ public final class PricesProvider_Essentials implements PricesProvider {
     }
 
     @Override
-    public double getPrice(Player player, ItemStack itemStack) {
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         Essentials plugin = Essentials.getPlugin(Essentials.class);
         Worth worth = plugin.getWorth();
         BigDecimal price = null;
