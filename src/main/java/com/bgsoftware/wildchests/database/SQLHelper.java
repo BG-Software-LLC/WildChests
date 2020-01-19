@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Consumer;
 
 @SuppressWarnings("WeakerAccess")
 public class SQLHelper {
@@ -61,10 +62,17 @@ public class SQLHelper {
     }
 
     public static void executeQuery(String statement, QueryCallback callback){
+        executeQuery(statement, callback, null);
+    }
+
+    public static void executeQuery(String statement, QueryCallback callback, Consumer<SQLException> onFailure){
         try(PreparedStatement preparedStatement = conn.prepareStatement(statement); ResultSet resultSet = preparedStatement.executeQuery()){
             callback.run(resultSet);
         }catch(SQLException ex){
-            ex.printStackTrace();
+            if(onFailure == null)
+                ex.printStackTrace();
+            else
+                onFailure.accept(ex);
         }
     }
 

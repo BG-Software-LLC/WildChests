@@ -68,7 +68,7 @@ public final class DataHandler {
                 String payment = resultSet.getString("payment");
                 plugin.getOfflinePayments().depositItems(uuid, payment);
             }
-        });
+        }, ex -> { });
 
         SQLHelper.executeUpdate("DROP TABLE offline_payment;");
     }
