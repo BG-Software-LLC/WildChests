@@ -70,7 +70,8 @@ public final class DataHandler {
             }
         }, ex -> { });
 
-        SQLHelper.executeUpdate("DROP TABLE offline_payment;");
+        SQLHelper.executeUpdate("DELETE FROM offline_payment;");
+
     }
 
     private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException{
