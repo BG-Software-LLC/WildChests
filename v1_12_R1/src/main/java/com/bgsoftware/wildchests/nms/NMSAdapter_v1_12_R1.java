@@ -25,6 +25,7 @@ import net.minecraft.server.v1_12_R1.World;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.craftbukkit.v1_12_R1.CraftChunk;
 import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
@@ -142,6 +143,9 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
 
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 
+        if(nmsItem.isEmpty())
+            return "";
+
         if(nmsItem != null) {
             nmsItem.setCount(1);
             nmsItem.save(tagCompound);
@@ -203,6 +207,9 @@ public final class NMSAdapter_v1_12_R1 implements NMSAdapter {
 
     @Override
     public org.bukkit.inventory.ItemStack deserialzeItem(String serialized) {
+        if(serialized.isEmpty())
+            return new org.bukkit.inventory.ItemStack(Material.AIR);
+
         ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
 
         try {
