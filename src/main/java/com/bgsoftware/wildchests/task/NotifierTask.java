@@ -9,18 +9,18 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class NotifierTask extends BukkitRunnable {
 
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
-    private static Map<UUID, Set<TransactionDetails>> amountEarned = new HashMap<>();
-    private static Map<UUID, Set<CraftingDetails>> craftings = new HashMap<>();
+    private static Map<UUID, Set<TransactionDetails>> amountEarned = new ConcurrentHashMap<>();
+    private static Map<UUID, Set<CraftingDetails>> craftings = new ConcurrentHashMap<>();
 
     private static int taskID = -1;
 
