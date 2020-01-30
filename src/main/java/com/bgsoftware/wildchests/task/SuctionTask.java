@@ -41,6 +41,7 @@ public final class SuctionTask extends BukkitRunnable {
     }
 
     public void stop(){
+        cancel();
         Bukkit.getScheduler().cancelTask(taskId);
         taskId = -1;
     }
