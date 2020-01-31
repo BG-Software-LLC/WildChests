@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.task;
 
 import com.bgsoftware.wildchests.utils.StringUtils;
+import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
@@ -73,7 +74,7 @@ public final class NotifierTask extends BukkitRunnable {
 
     public static void addTransaction(UUID player, ItemStack itemStack, int amount, double _amountEarned){
         if(!amountEarned.containsKey(player)) {
-            amountEarned.put(player, new HashSet<>());
+            amountEarned.put(player, Sets.newConcurrentHashSet());
         }
 
         Set<TransactionDetails> transectionDetails = amountEarned.get(player);
