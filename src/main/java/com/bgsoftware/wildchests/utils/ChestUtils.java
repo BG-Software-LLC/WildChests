@@ -45,13 +45,14 @@ public final class ChestUtils {
 
             while (recipes.hasNext()) {
                 Recipe recipe = recipes.next();
-                List<ItemStack> ingredients;
+
+                List<RecipeUtils.RecipeIngredient> ingredients;
 
                 //Get the ingredients for the recipe
                 if (recipe instanceof ShapedRecipe) {
-                    ingredients = getIngredients(new ArrayList<>(((ShapedRecipe) recipe).getIngredientMap().values()));
+                    ingredients = RecipeUtils.getIngredients((ShapedRecipe) recipe);
                 } else if (recipe instanceof ShapelessRecipe) {
-                    ingredients = getIngredients(((ShapelessRecipe) recipe).getIngredientList());
+                    ingredients = RecipeUtils.getIngredients((ShapelessRecipe) recipe);
                 } else continue;
 
                 if (ingredients.isEmpty())
@@ -59,15 +60,17 @@ public final class ChestUtils {
 
                 int amountOfRecipes = Integer.MAX_VALUE;
 
-                for (ItemStack ingredient : ingredients) {
+                for (RecipeUtils.RecipeIngredient ingredient : ingredients) {
                     for (Inventory page : pages) {
-                        amountOfRecipes = Math.min(amountOfRecipes, ItemUtils.countItems(ingredient, page) / ingredient.getAmount());
+                        amountOfRecipes = Math.min(amountOfRecipes, RecipeUtils.countItems(ingredient, page) / ingredient.getAmount());
                     }
                 }
 
                 if (amountOfRecipes > 0) {
-                    for (ItemStack ingredient : ingredients)
-                        chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
+                    for (RecipeUtils.RecipeIngredient recipeIngredient : ingredients) {
+                        for(ItemStack ingredient : recipeIngredient.getIngredients())
+                            chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
+                    }
 
                     ItemStack result = recipe.getResult().clone();
                     result.setAmount(result.getAmount() * amountOfRecipes);
@@ -191,27 +194,6 @@ public final class ChestUtils {
         }
 
         return map;
-    }
-
-    @SuppressWarnings("deprecation")
-    private static List<ItemStack> getIngredients(List<ItemStack> oldList){
-        Map<ItemStack, Integer> counts = new HashMap<>();
-        List<ItemStack> ingredients = new ArrayList<>();
-
-        for(ItemStack itemStack : oldList){
-            if(itemStack != null) {
-                if (itemStack.getData().getData() < 0)
-                    itemStack.setDurability((short) 0);
-                counts.put(itemStack, counts.getOrDefault(itemStack, 0) + itemStack.getAmount());
-            }
-        }
-
-        for(ItemStack ingredient : counts.keySet()){
-            ingredient.setAmount(counts.get(ingredient));
-            ingredients.add(ingredient);
-        }
-
-        return ingredients;
     }
 
 }
