@@ -1,10 +1,8 @@
 package com.bgsoftware.wildchests.handlers;
 import net.milkbowl.vault.economy.Economy;
 
-import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -14,7 +12,6 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-import java.util.UUID;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
@@ -92,17 +89,25 @@ public final class ProvidersHandler {
     }
 
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){
-        if(!economy.hasAccount(offlinePlayer))
-            economy.createPlayerAccount(offlinePlayer);
+        try {
+            if (!economy.hasAccount(offlinePlayer))
+                economy.createPlayerAccount(offlinePlayer);
 
-        return economy.withdrawPlayer(offlinePlayer, money).transactionSuccess();
+            return economy.withdrawPlayer(offlinePlayer, money).transactionSuccess();
+        }catch(Throwable ex){
+            return false;
+        }
     }
 
     public boolean depositPlayer(OfflinePlayer offlinePlayer, double money){
-        if(!economy.hasAccount(offlinePlayer))
-            economy.createPlayerAccount(offlinePlayer);
+        try {
+            if (!economy.hasAccount(offlinePlayer))
+                economy.createPlayerAccount(offlinePlayer);
 
-        return economy.depositPlayer(offlinePlayer, money).transactionSuccess();
+            return economy.depositPlayer(offlinePlayer, money).transactionSuccess();
+        }catch(Throwable ex){
+            return false;
+        }
     }
 
     public boolean isVaultEnabled(){
