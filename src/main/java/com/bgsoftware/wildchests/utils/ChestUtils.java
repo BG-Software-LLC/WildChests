@@ -147,33 +147,36 @@ public final class ChestUtils {
             return;
         }
 
-        if(!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
-            return;
+        synchronized (item) {
+            if (!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
+                return;
 
-        if(!item.isOnGround() || !item.isValid())
-            return;
+            if (!item.isOnGround() || !item.isValid())
+                return;
 
-        List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
-        for (Chest chest : chestList) {
-            ItemStack itemStack = item.getItemStack();
+            List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
+            for (Chest chest : chestList) {
+                ItemStack itemStack = item.getItemStack();
 
-            if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                itemStack = WildStackerHook.getItemStack(item);
+                if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                    itemStack = WildStackerHook.getItemStack(item);
 
-            try {
-                ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
+                try {
+                    ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
 
-                if (remainingItem == null) {
-                    plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
-                    item.remove();
-                    break;
-                } else {
-                    if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                        WildStackerHook.setRemainings(item, remainingItem.getAmount());
-                    else
-                        item.setItemStack(remainingItem);
+                    if (remainingItem == null) {
+                        plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
+                        item.remove();
+                        break;
+                    } else {
+                        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                            WildStackerHook.setRemainings(item, remainingItem.getAmount());
+                        else
+                            item.setItemStack(remainingItem);
+                    }
+                } catch (Throwable ignored) {
                 }
-            }catch(Throwable ignored){}
+            }
         }
     }
 
