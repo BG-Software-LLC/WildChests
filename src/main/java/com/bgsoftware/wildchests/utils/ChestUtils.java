@@ -8,7 +8,6 @@ import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.hooks.WildStackerHook;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
@@ -19,7 +18,6 @@ import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +105,7 @@ public final class ChestUtils {
             SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, chest.getData().getMultiplier());
             Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
 
-            Map<ItemStack, Integer> sortedItems = getSortedItems(itemStacks.toArray(new ItemStack[0]));
+            Map<ItemStack, Integer> sortedItems = ItemUtils.getSortedItems(itemStacks.toArray(new ItemStack[0]));
 
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
 
@@ -182,21 +180,6 @@ public final class ChestUtils {
 
     private static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
         return additionalItems.isEmpty() ? null : new ArrayList<>(additionalItems.values()).get(0);
-    }
-
-    private static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
-        // <ItemStack, TotalAmount>
-        Map<ItemStack, Integer> map = new HashMap<>();
-
-        for(ItemStack itemStack : itemStacks){
-            if(itemStack != null && itemStack.getType() != Material.AIR){
-                ItemStack cloned = itemStack.clone();
-                cloned.setAmount(1);
-                map.put(cloned, map.getOrDefault(cloned, 0) + itemStack.getAmount());
-            }
-        }
-
-        return map;
     }
 
 }

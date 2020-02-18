@@ -17,21 +17,29 @@ import java.util.stream.Collectors;
 public final class RecipeUtils {
 
     public static List<RecipeIngredient> getIngredients(ShapedRecipe shapedRecipe){
+        List<RecipeIngredient> recipeIngredients;
+
         try{
             //noinspection unchecked, JavaReflectionMemberAccess
-            return ((Map<Character, RecipeChoice>) ShapedRecipe.class.getMethod("getChoiceMap").invoke(shapedRecipe)).values().stream().map(RecipeIngredient::of).collect(Collectors.toList());
+            recipeIngredients = ((Map<Character, RecipeChoice>) ShapedRecipe.class.getMethod("getChoiceMap").invoke(shapedRecipe)).values().stream().map(RecipeIngredient::of).collect(Collectors.toList());
         }catch(Exception ignored){
-            return getIngredients(new ArrayList<>(shapedRecipe.getIngredientMap().values()));
+            recipeIngredients = getIngredients(new ArrayList<>(shapedRecipe.getIngredientMap().values()));
         }
+
+        return sortIngredients(recipeIngredients);
     }
 
     public static List<RecipeIngredient> getIngredients(ShapelessRecipe shapelessRecipe){
+        List<RecipeIngredient> recipeIngredients;
+
         try{
             //noinspection unchecked, JavaReflectionMemberAccess
-            return ((List<RecipeChoice>) ShapelessRecipe.class.getMethod("getChoiceList").invoke(shapelessRecipe)).stream().map(RecipeIngredient::of).collect(Collectors.toList());
+            recipeIngredients = ((List<RecipeChoice>) ShapelessRecipe.class.getMethod("getChoiceList").invoke(shapelessRecipe)).stream().map(RecipeIngredient::of).collect(Collectors.toList());
         }catch(Exception ignored){
-            return getIngredients(shapelessRecipe.getIngredientList());
+            recipeIngredients = getIngredients(shapelessRecipe.getIngredientList());
         }
+
+        return sortIngredients(recipeIngredients);
     }
 
     public static int countItems(RecipeIngredient recipeIngredient, Inventory inventory){
@@ -66,15 +74,35 @@ public final class RecipeUtils {
         return ingredients.stream().map(RecipeIngredient::of).collect(Collectors.toList());
     }
 
+    private static List<RecipeIngredient> sortIngredients(List<RecipeIngredient> recipeIngredients){
+        List<RecipeIngredient> recipeIngredientsList = new ArrayList<>(recipeIngredients);
+        List<RecipeIngredient> toRemove = new ArrayList<>();
+
+        for(int i = 0; i < recipeIngredients.size(); i++){
+            RecipeIngredient current = recipeIngredients.get(i);
+            for(int j = i + 1; j < recipeIngredients.size(); j++){
+                RecipeIngredient other = recipeIngredients.get(j);
+                if(current.isSimilar(other)) {
+                    recipeIngredientsList.set(i, current.merge(other));
+                    toRemove.add(other);
+                }
+            }
+        }
+
+        recipeIngredientsList.removeAll(toRemove);
+
+        return recipeIngredientsList;
+    }
+
     public static final class RecipeIngredient implements Predicate<ItemStack> {
 
         private int amount;
         private List<ItemStack> ingredients;
         private Predicate<ItemStack> predicate;
 
-        private RecipeIngredient(int amount, List<ItemStack> ingredients, Predicate<ItemStack> predicate){
-            this.amount = amount;
+        private RecipeIngredient(List<ItemStack> ingredients, Predicate<ItemStack> predicate){
             this.ingredients = ingredients;
+            this.amount = ingredients.get(0).getAmount();
             this.predicate = predicate;
         }
 
@@ -91,17 +119,40 @@ public final class RecipeUtils {
             return ingredients;
         }
 
+        @Override
+        public String toString() {
+            return "RecipeIngredient{ingredients=" + ingredients + ",amount=" + amount + "}";
+        }
+
+        public RecipeIngredient merge(RecipeIngredient other){
+            outer:
+            for(ItemStack current : ingredients){
+                for(ItemStack otherItem : other.ingredients){
+                    if(current.isSimilar(otherItem)){
+                        current.setAmount(current.getAmount() + otherItem.getAmount());
+                        continue outer;
+                    }
+                }
+            }
+            amount += other.getAmount();
+            return this;
+        }
+
+        public boolean isSimilar(RecipeIngredient other){
+            return ingredients.stream().allMatch(other);
+        }
+
         public static RecipeIngredient of(ItemStack itemStack){
-            return new RecipeIngredient(itemStack.getAmount(), Collections.singletonList(itemStack), itemStack::isSimilar);
+            return new RecipeIngredient(Collections.singletonList(itemStack), itemStack::isSimilar);
         }
 
         @SuppressWarnings("deprecation")
         public static RecipeIngredient of(RecipeChoice recipeChoice){
             if(recipeChoice instanceof RecipeChoice.ExactChoice)
-                return new RecipeIngredient(recipeChoice.getItemStack().getAmount(), ((RecipeChoice.ExactChoice) recipeChoice).getChoices(), recipeChoice);
+                return new RecipeIngredient(((RecipeChoice.ExactChoice) recipeChoice).getChoices(), recipeChoice);
             else
-                return new RecipeIngredient(recipeChoice.getItemStack().getAmount(),
-                        ((RecipeChoice.MaterialChoice) recipeChoice).getChoices().stream().map(ItemStack::new).collect(Collectors.toList()), recipeChoice);
+                return new RecipeIngredient(((RecipeChoice.MaterialChoice) recipeChoice).getChoices().stream().map(ItemStack::new)
+                        .collect(Collectors.toList()), recipeChoice);
         }
 
     }

@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.utils;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -87,6 +86,21 @@ public final class ItemUtils {
         }
 
         dropItem(location, itemStack);
+    }
+
+    public static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
+        // <ItemStack, TotalAmount>
+        Map<ItemStack, Integer> map = new HashMap<>();
+
+        for(ItemStack itemStack : itemStacks){
+            if(itemStack != null && itemStack.getType() != Material.AIR){
+                ItemStack cloned = itemStack.clone();
+                cloned.setAmount(1);
+                map.put(cloned, map.getOrDefault(cloned, 0) + itemStack.getAmount());
+            }
+        }
+
+        return map;
     }
 
 }
