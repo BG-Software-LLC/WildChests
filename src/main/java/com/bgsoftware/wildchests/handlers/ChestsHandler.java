@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.utils.LocationUtils;
+import com.google.common.collect.Maps;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +19,6 @@ import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +31,7 @@ public final class ChestsHandler implements ChestsManager {
 
     private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private final Set<ChestData> chestsData = new HashSet<>();
-    private final Map<WLocation, Chest> chests = new HashMap<>();
+    private final Map<WLocation, Chest> chests = Maps.newConcurrentMap();
 
     @Override
     public Chest getChest(Location location) {
