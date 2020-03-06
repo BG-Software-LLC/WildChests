@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.utils.LocationUtils;
@@ -50,7 +51,13 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public Chest addChest(UUID placer, Location location, ChestData chestData){
-        Chest chest;
+        WChest chest = loadChest(placer, location, chestData);
+        plugin.getDataHandler().insertChest(chest);
+        return chest;
+    }
+
+    public WChest loadChest(UUID placer, Location location, ChestData chestData){
+        WChest chest;
 
         switch (chestData.getChestType()){
             case CHEST:

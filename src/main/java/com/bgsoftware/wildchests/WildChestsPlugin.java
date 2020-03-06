@@ -31,6 +31,7 @@ import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.listeners.PlayerListener;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,6 +97,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     @Override
     public void onDisable() {
+        Bukkit.getScheduler().cancelTasks(this);
+
         //Closing all inventories & closing chests
         for(Chest chest : chestsManager.getChests()){
             int index = 0;
@@ -114,7 +117,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
-        Bukkit.getScheduler().cancelTasks(this);
+
         dataHandler.saveDatabase(false);
 
         log("Terminating all database threads...");

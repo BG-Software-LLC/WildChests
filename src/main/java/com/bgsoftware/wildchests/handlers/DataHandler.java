@@ -1,7 +1,12 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
+import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
+import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
+import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
@@ -20,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
@@ -44,9 +50,48 @@ public final class DataHandler {
     }
 
     public void saveDatabase(boolean async){
-        for(Chest chest : plugin.getChestsManager().getChests()){
-            ((WChest) chest).saveIntoData(async);
-        }
+        List<Chest> chestList = plugin.getChestsManager().getChests();
+
+        StatementHolder linkedChestInventoryHolder = Query.LINKED_CHEST_UPDATE_INVENTORY.getStatementHolder();
+        StatementHolder linkedChestTargetHolder = Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder();
+        linkedChestInventoryHolder.prepareBatch();
+        linkedChestTargetHolder.prepareBatch();
+        chestList.stream().filter(chest -> chest instanceof LinkedChest).forEach(chest -> {
+            LinkedChest linkedChest = ((LinkedChest) chest).getLinkedChest();
+            Location chestLocation = chest.getLocation();
+            linkedChestInventoryHolder.setInventories(chest.getPages()).setLocation(chestLocation).addBatch();
+            linkedChestTargetHolder.setLocation(linkedChest == null ? null : linkedChest.getLocation()).setLocation(chestLocation).addBatch();
+        });
+        linkedChestInventoryHolder.execute(async);
+        linkedChestTargetHolder.execute(async);
+
+        StatementHolder regularChestHolder = Query.REGULAR_CHEST_UPDATE_INVENTORY.getStatementHolder();
+        regularChestHolder.prepareBatch();
+        chestList.stream().filter(chest -> chest instanceof RegularChest).forEach(chest ->
+                regularChestHolder.setInventories(chest.getPages()).setLocation(chest.getLocation()).addBatch());
+        regularChestHolder.execute(async);
+
+        StatementHolder storageUnitHolder = Query.STORAGE_UNIT_UPDATE_INVENTORY.getStatementHolder();
+        storageUnitHolder.prepareBatch();
+        chestList.stream().filter(chest -> chest instanceof StorageChest).forEach(chest -> {
+            StorageChest storageChest = (StorageChest) chest;
+            storageUnitHolder.setItemStack(storageChest.getItemStack())
+                    .setString(storageChest.getExactAmount().toString())
+                    .setLocation(storageChest.getLocation())
+                    .addBatch();
+        });
+        storageUnitHolder.execute(async);
+    }
+
+    public void insertChest(WChest chest){
+        Executor.data(() -> {
+            if(SQLHelper.doesConditionExist(chest.getSelectQuery())){
+                chest.executeUpdateQuery(false);
+            }
+            else{
+                chest.executeInsertQuery(false);
+            }
+        });
     }
 
     private void loadDatabase(){
@@ -87,7 +132,7 @@ public final class DataHandler {
                     Location location = WLocation.of(stringLocation).getLocation();
                     ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
                     if (location.getBlock().getType() == Material.CHEST) {
-                        WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
+                        WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
                         chest.loadFromData(resultSet);
                     }
                 }

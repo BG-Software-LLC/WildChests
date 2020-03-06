@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.Materials;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
@@ -47,16 +47,6 @@ public final class WStorageChest extends WChest implements StorageChest {
         defaultInventory.setContents(WStorageChest.defaultInventory);
         setPage(0, defaultInventory);
         maxAmount = chestData.getStorageUnitMaxAmount();
-
-        SQLHelper.runIfConditionNotExist(Query.STORAGE_UNIT_SELECT.getStatementHolder().setLocation(getLocation()), () ->
-            Query.STORAGE_UNIT_INSERT.getStatementHolder()
-                    .setLocation(location)
-                    .setString(placer.toString())
-                    .setString(chestData.getName())
-                    .setItemStack(itemStack)
-                    .setString(amount.toString())
-                    .setString(maxAmount.toString())
-                    .execute(true));
     }
 
     @Override
@@ -315,15 +305,6 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void saveIntoData(boolean async) {
-        Query.STORAGE_UNIT_UPDATE_INVENTORY.getStatementHolder()
-                .setItemStack(getItemStack())
-                .setString(getExactAmount().toString())
-                .setLocation(getLocation())
-                .execute(true);
-    }
-
-    @Override
     public void loadFromData(ResultSet resultSet) throws SQLException {
         setItemStack(plugin.getNMSAdapter().deserialzeItem(resultSet.getString("item")));
         setAmount(new BigInteger(resultSet.getString("amount")));
@@ -342,6 +323,35 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
         if(cfg.contains("max-amount"))
             maxAmount = new BigInteger(cfg.getString("max-amount"));
+    }
+
+    @Override
+    public void executeInsertQuery(boolean async) {
+        Query.STORAGE_UNIT_INSERT.getStatementHolder()
+                .setLocation(location)
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setItemStack(itemStack)
+                .setString(amount.toString())
+                .setString(maxAmount.toString())
+                .execute(async);
+    }
+
+    @Override
+    public void executeUpdateQuery(boolean async) {
+        Query.STORAGE_UNIT_UPDATE.getStatementHolder()
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setItemStack(itemStack)
+                .setString(amount.toString())
+                .setString(maxAmount.toString())
+                .setLocation(location)
+                .execute(async);
+    }
+
+    @Override
+    public StatementHolder getSelectQuery() {
+        return Query.STORAGE_UNIT_SELECT.getStatementHolder().setLocation(location);
     }
 
     private void updateInventory(Inventory inventory){

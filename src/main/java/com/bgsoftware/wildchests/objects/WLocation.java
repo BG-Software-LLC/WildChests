@@ -71,8 +71,8 @@ public final class WLocation {
 
     public static WLocation of(String string){
         if(string.split(", ").length == 4){
-            String sections[] = string.split(", ");
-            return of(new Location(Bukkit.getWorld(sections[0]), Integer.valueOf(sections[1]), Integer.valueOf(sections[2]), Integer.valueOf(sections[3])));
+            String[] sections = string.split(", ");
+            return of(new Location(Bukkit.getWorld(sections[0]), Integer.parseInt(sections[1]), Integer.parseInt(sections[2]), Integer.parseInt(sections[3])));
         }
         throw new IllegalArgumentException("Couldn't convert string '" + string + "' into WLocation.");
     }

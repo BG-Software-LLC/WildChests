@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.task.SuctionTask;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.google.common.collect.Maps;
@@ -375,7 +376,11 @@ public abstract class WChest implements Chest {
         return true;
     }
 
-    public abstract void saveIntoData(boolean async);
+    public abstract void executeInsertQuery(boolean async);
+
+    public abstract void executeUpdateQuery(boolean async);
+
+    public abstract StatementHolder getSelectQuery();
 
     public void loadFromData(ResultSet resultSet) throws SQLException {
         String serialized = resultSet.getString("inventories");

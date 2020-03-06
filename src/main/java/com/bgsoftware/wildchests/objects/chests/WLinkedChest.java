@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -26,15 +26,6 @@ public final class WLinkedChest extends WChest implements LinkedChest {
     public WLinkedChest(UUID placer, WLocation location, ChestData chestData){
         super(placer, location, chestData);
         this.linkedChest = null;
-
-        SQLHelper.runIfConditionNotExist(Query.LINKED_CHEST_SELECT.getStatementHolder().setLocation(getLocation()), () ->
-            Query.LINKED_CHEST_INSERT.getStatementHolder()
-                    .setLocation(location)
-                    .setString(placer.toString())
-                    .setString(chestData.getName())
-                    .setString("")
-                    .setLocation(linkedChest)
-                    .execute(true));
     }
 
     @Override
@@ -135,19 +126,6 @@ public final class WLinkedChest extends WChest implements LinkedChest {
     }
 
     @Override
-    public void saveIntoData(boolean async) {
-        Query.LINKED_CHEST_UPDATE_INVENTORY.getStatementHolder()
-                .setInventories(getPages())
-                .setLocation(getLocation())
-                .execute(true);
-        LinkedChest linkedChest = getLinkedChest();
-        Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder()
-                .setLocation(linkedChest == null ? null : linkedChest.getLocation())
-                .setLocation(getLocation())
-                .execute(true);
-    }
-
-    @Override
     public void loadFromData(ResultSet resultSet) throws SQLException {
         super.loadFromData(resultSet);
         String linkedChest = resultSet.getString("linked_chest");
@@ -166,4 +144,32 @@ public final class WLinkedChest extends WChest implements LinkedChest {
             Executor.sync(() -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
         }
     }
+
+    @Override
+    public void executeInsertQuery(boolean async) {
+        Query.LINKED_CHEST_INSERT.getStatementHolder()
+                .setLocation(location)
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setString("")
+                .setLocation(linkedChest)
+                .execute(async);
+    }
+
+    @Override
+    public void executeUpdateQuery(boolean async) {
+        Query.LINKED_CHEST_UPDATE.getStatementHolder()
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setString("")
+                .setLocation(linkedChest)
+                .setLocation(location)
+                .execute(async);
+    }
+
+    @Override
+    public StatementHolder getSelectQuery() {
+        return Query.LINKED_CHEST_SELECT.getStatementHolder().setLocation(location);
+    }
+
 }

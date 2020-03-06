@@ -1,7 +1,5 @@
 package com.bgsoftware.wildchests.database;
 
-import com.bgsoftware.wildchests.utils.Executor;
-
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -54,13 +52,6 @@ public class SQLHelper {
         return ret;
     }
 
-    public static void runIfConditionNotExist(StatementHolder statementHolder, Runnable runnable){
-        Executor.data(() -> {
-            if(!doesConditionExist(statementHolder))
-                runnable.run();
-        });
-    }
-
     public static void executeQuery(String statement, QueryCallback callback){
         executeQuery(statement, callback, null);
     }
@@ -76,10 +67,20 @@ public class SQLHelper {
         }
     }
 
-    public interface QueryCallback{
+    public static void setAutoCommit(boolean autoCommit){
+        try {
+            conn.setAutoCommit(autoCommit);
+        }catch(SQLException ex){
+            ex.printStackTrace();
+        }
+    }
 
-        void run(ResultSet resultSet) throws SQLException;
-
+    public static void commit(){
+        try {
+            conn.commit();
+        }catch(SQLException ex){
+            ex.printStackTrace();
+        }
     }
 
     public static void close(){
@@ -92,6 +93,12 @@ public class SQLHelper {
 
     public static PreparedStatement buildStatement(String query) throws SQLException{
         return conn.prepareStatement(query);
+    }
+
+    public interface QueryCallback{
+
+        void run(ResultSet resultSet) throws SQLException;
+
     }
 
 }
