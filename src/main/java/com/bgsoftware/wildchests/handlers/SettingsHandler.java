@@ -17,7 +17,6 @@ import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.objects.data.WInventoryData;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,14 +70,7 @@ public final class SettingsHandler {
             }
         }
 
-        try{
-            Field pricesMap = PricesProvider_Default.class.getDeclaredField("prices");
-            pricesMap.setAccessible(true);
-            pricesMap.set(null, prices);
-        } catch (NoSuchFieldException | IllegalAccessException e){
-            e.printStackTrace();
-            return;
-        }
+        PricesProvider_Default.prices = prices;
 
         Set<ChestData> chestsData = new HashSet<>();
 
@@ -194,28 +186,15 @@ public final class SettingsHandler {
             chestsAmount++;
         }
 
-        try{
-            Field dataMap = ChestsHandler.class.getDeclaredField("chestsData");
-            dataMap.setAccessible(true);
-            dataMap.set(plugin.getChestsManager(), chestsData);
-        } catch (NoSuchFieldException | IllegalAccessException e){
-            e.printStackTrace();
-        }
+        plugin.getChestsManager().loadChestsData(chestsData);
 
         WildChestsPlugin.log(" - Found " + chestsAmount + " chests in config.yml.");
         WildChestsPlugin.log("Loading configuration done (Took " + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     public static void reload(){
-        try{
-            WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
-            Field field = WildChestsPlugin.class.getDeclaredField("settingsHandler");
-            field.setAccessible(true);
-            field.set(plugin, new SettingsHandler(plugin));
-            field.setAccessible(false);
-        }catch(Exception ex){
-            ex.printStackTrace();
-        }
+        WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+        plugin.setSettings(new SettingsHandler(plugin));
     }
 
 }

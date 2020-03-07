@@ -163,6 +163,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         return settingsHandler;
     }
 
+    public void setSettings(SettingsHandler settingsHandler){
+        this.settingsHandler = settingsHandler;
+    }
+
     @SuppressWarnings("unused")
     public DataHandler getDataHandler() {
         return dataHandler;

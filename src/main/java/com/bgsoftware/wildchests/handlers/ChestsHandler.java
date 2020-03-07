@@ -79,6 +79,11 @@ public final class ChestsHandler implements ChestsManager {
         return chest;
     }
 
+    public void loadChestsData(Set<ChestData> chestsData){
+        this.chestsData.clear();
+        this.chestsData.addAll(chestsData);
+    }
+
     private boolean isChest(Location location) {
         // If the chunk is not loaded, we wil lreturn true without checking the actual block.
         if(!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
