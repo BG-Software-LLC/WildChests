@@ -15,6 +15,7 @@ import net.minecraft.server.v1_11_R1.EntityPlayer;
 import net.minecraft.server.v1_11_R1.IInventory;
 import net.minecraft.server.v1_11_R1.ItemStack;
 import net.minecraft.server.v1_11_R1.NBTCompressedStreamTools;
+import net.minecraft.server.v1_11_R1.NBTTagByte;
 import net.minecraft.server.v1_11_R1.NBTTagCompound;
 import net.minecraft.server.v1_11_R1.NBTTagList;
 import net.minecraft.server.v1_11_R1.PacketPlayOutOpenWindow;
@@ -273,6 +274,15 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
         return CraftItemStack.asBukkitCopy(nmsItem);
     }
 
+    @Override
+    public org.bukkit.inventory.ItemStack addNBTTag(org.bukkit.inventory.ItemStack itemStack) {
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound tagCompound = nmsItem.hasTag() ? nmsItem.getTag() : new NBTTagCompound();
+        tagCompound.set("WildChests", new NBTTagByte((byte) 1));
+        nmsItem.setTag(tagCompound);
+        return CraftItemStack.asCraftMirror(nmsItem);
+    }
+
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){
         NBTTagList itemsList = new NBTTagList();
         org.bukkit.inventory.ItemStack[] items = inventory.getContents();
@@ -320,7 +330,7 @@ public final class NMSAdapter_v1_11_R1 implements NMSAdapter {
             getContents().stream().filter(itemStack -> itemStack != null && !itemStack.getItem().getName().contains("air"))
                     .forEach(itemStack -> bukkitItems.add(CraftItemStack.asBukkitCopy(itemStack)));
             for(org.bukkit.inventory.ItemStack itemStack : chest.addItems(bukkitItems.toArray(new org.bukkit.inventory.ItemStack[0])).values())
-                ItemUtils.dropItem(chest.getLocation(), itemStack);
+                ItemUtils.dropItem(chest.getLocation(), itemStack, true);
             super.getContents().clear();
             super.update();
         }

@@ -43,4 +43,6 @@ public interface NMSAdapter {
     void spawnSuctionParticle(Location location);
 
     ItemStack setChestNBT(ItemStack itemStack, ChestType chestType);
+
+    ItemStack addNBTTag(ItemStack itemStack);
 }

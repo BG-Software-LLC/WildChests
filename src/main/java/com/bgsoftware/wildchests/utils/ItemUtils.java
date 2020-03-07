@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.utils;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ItemUtils {
+
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     public static void addItem(ItemStack itemStack, Inventory inventory, Location location){
         HashMap<Integer, ItemStack> additionalItems = inventory.addItem(itemStack);
@@ -61,12 +64,24 @@ public final class ItemUtils {
     }
 
     public static void dropItem(Location location, ItemStack itemStack){
+        dropItem(location, itemStack, false);
+    }
+
+    public static void dropItem(Location location, ItemStack itemStack, boolean tag){
         if(itemStack.getMaxStackSize() <= 0)
             return;
 
         int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
 
-        ItemStack cloned = itemStack.clone();
+        ItemStack cloned;
+
+        if(tag){
+            cloned = plugin.getNMSAdapter().addNBTTag(itemStack);
+        }
+        else{
+            cloned = itemStack.clone();
+        }
+
         cloned.setAmount(itemStack.getMaxStackSize());
 
         for(int i = 0; i < amountOfIterates; i++)
@@ -85,7 +100,7 @@ public final class ItemUtils {
                 return;
         }
 
-        dropItem(location, itemStack);
+        dropItem(location, itemStack, false);
     }
 
     public static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
