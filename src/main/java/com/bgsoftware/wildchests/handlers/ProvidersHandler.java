@@ -12,6 +12,8 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
@@ -51,8 +53,13 @@ public final class ProvidersHandler {
      * Hooks' methods
      */
 
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        return pricesProvider.getPrice(offlinePlayer, itemStack) * multiplier;
+    public CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
+        return pricesProvider.getPrice(offlinePlayer, itemStack).thenApply(new Function<Double, Double>() {
+            @Override
+            public Double apply(Double d) {
+                return d * multiplier;
+            }
+        });
     }
 
     /*
@@ -78,14 +85,17 @@ public final class ProvidersHandler {
         return true;
     }
 
-    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        double price = 0;
+    public CompletableFuture<TransactionResult<Double>> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
+        CompletableFuture<TransactionResult<Double>> completableFuture = new CompletableFuture<>();
+        CompletableFuture<Double> price = CompletableFuture.completedFuture(0D);
 
         if(itemStack != null){
             price = getPrice(offlinePlayer, itemStack, multiplier);
         }
 
-        return TransactionResult.of(price, _price -> isVaultEnabled && _price > 0);
+        price.whenComplete((d, e) -> completableFuture.complete(TransactionResult.of(d, _price -> isVaultEnabled && d > 0)));
+
+        return completableFuture;
     }
 
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){

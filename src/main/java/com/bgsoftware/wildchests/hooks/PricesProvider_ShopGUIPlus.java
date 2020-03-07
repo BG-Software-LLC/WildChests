@@ -1,14 +1,17 @@
 package com.bgsoftware.wildchests.hooks;
 
+import com.bgsoftware.wildchests.utils.Executor;
 import net.brcdev.shopgui.ShopGuiPlugin;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 public final class PricesProvider_ShopGUIPlus implements PricesProvider {
 
@@ -20,7 +23,19 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
     }
 
     @Override
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
+    public CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
+        CompletableFuture<Double> completableFuture = new CompletableFuture<>();
+
+        if(Bukkit.isPrimaryThread())
+            getPrice(completableFuture, itemStack);
+        else{
+            Executor.sync(() -> getPrice(completableFuture, itemStack));
+        }
+
+        return completableFuture;
+    }
+
+    private void getPrice(CompletableFuture<Double> completableFuture, ItemStack itemStack){
         double price = 0;
 
         Map<String, Shop> shops = plugin.getShopManager().shops;
@@ -34,6 +49,8 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
                 }
             }
         }
-        return price;
+
+        completableFuture.complete(price);
     }
+
 }

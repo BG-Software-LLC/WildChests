@@ -51,19 +51,19 @@ public final class OfflinePaymentsHandler {
 
             ItemStack itemStack = plugin.getNMSAdapter().deserialzeItem(itemSerialized);
             multiplier *= itemStack.getAmount();
-            double totalAmount = plugin.getProviders().getPrice(offlinePlayer, itemStack, multiplier);
-
-            if(plugin.getSettings().sellCommand.isEmpty()) {
-                if(!plugin.getProviders().depositPlayer(offlinePlayer, totalAmount)){
-                    WildChestsPlugin.log("&cCouldn't deposit offline payment for " + offlinePlayer.getName() + "...");
+            plugin.getProviders().getPrice(offlinePlayer, itemStack, multiplier).whenComplete((totalAmount, e) -> {
+                if(plugin.getSettings().sellCommand.isEmpty()) {
+                    if(!plugin.getProviders().depositPlayer(offlinePlayer, totalAmount)){
+                        WildChestsPlugin.log("&cCouldn't deposit offline payment for " + offlinePlayer.getName() + "...");
+                    }
                 }
-            }
-            else{
-                Executor.sync(() ->
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                                .replace("{player-name}", offlinePlayer.getName())
-                                .replace("{price}", String.valueOf(totalAmount))));
-            }
+                else{
+                    Executor.sync(() ->
+                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                                    .replace("{player-name}", offlinePlayer.getName())
+                                    .replace("{price}", String.valueOf(totalAmount))));
+                }
+            });
         }
     }
 

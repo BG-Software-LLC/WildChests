@@ -4,27 +4,28 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class PricesProvider_Default implements PricesProvider {
 
-    private static Map<String, Double> prices = new HashMap<>();
+    private static Map<String, Double> prices = new ConcurrentHashMap<>();
 
     public PricesProvider_Default(){
         WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
     }
 
     @Override
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
+    public CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         //Checks for 'TYPE' item
         if(prices.containsKey(itemStack.getType().name()))
-            return prices.get(itemStack.getType().name()) * itemStack.getAmount();
+            return CompletableFuture.completedFuture(prices.get(itemStack.getType().name()) * itemStack.getAmount());
         //Checks for 'TYPE:DATA' item
         if(prices.containsKey(itemStack.getType().name() + ":" + itemStack.getDurability()))
-            return prices.get(itemStack.getType().name() + ":" + itemStack.getDurability()) * itemStack.getAmount();
+            return CompletableFuture.completedFuture(prices.get(itemStack.getType().name() + ":" + itemStack.getDurability()) * itemStack.getAmount());
         //Couldn't find a price for this item
-        return -1;
+        return CompletableFuture.completedFuture(-1D);
     }
 }

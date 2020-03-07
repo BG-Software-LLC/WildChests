@@ -18,11 +18,14 @@ import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public final class ChestUtils {
@@ -109,11 +112,23 @@ public final class ChestUtils {
 
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
 
+            Set<Pair<ItemStack, CompletableFuture<ProvidersHandler.TransactionResult<Double>>>> completableFutures = new HashSet<>();
+
             for (ItemStack itemStack : sortedItems.keySet()) {
                 itemStack.setAmount(sortedItems.get(itemStack));
 
-                ProvidersHandler.TransactionResult<Double> transactionResult =
-                        plugin.getProviders().canSellItem(offlinePlayer, itemStack, sellChestTaskEvent.getMultiplier());
+                completableFutures.add(new Pair<>(itemStack, plugin.getProviders().canSellItem(offlinePlayer, itemStack, sellChestTaskEvent.getMultiplier())));
+            }
+
+            for(Pair<ItemStack, CompletableFuture<ProvidersHandler.TransactionResult<Double>>> pair : completableFutures){
+                ProvidersHandler.TransactionResult<Double> transactionResult;
+
+                try{
+                    transactionResult = pair.value.get();
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                    continue;
+                }
 
                 if (!transactionResult.isSuccess())
                     continue;
@@ -127,11 +142,11 @@ public final class ChestUtils {
                                     .replace("{price}", String.valueOf(transactionResult.getData()))));
                 }
 
-                NotifierTask.addTransaction(placer, itemStack, itemStack.getAmount(), transactionResult.getData());
+                NotifierTask.addTransaction(placer, pair.key, pair.key.getAmount(), transactionResult.getData());
 
                 for (Inventory page : pages) {
                     try {
-                        page.removeItem(itemStack);
+                        page.removeItem(pair.key);
                     } catch (Throwable ignored) {
                     }
                 }

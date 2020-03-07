@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.math.BigDecimal;
+import java.util.concurrent.CompletableFuture;
 
 public final class PricesProvider_Essentials implements PricesProvider {
 
@@ -16,7 +17,7 @@ public final class PricesProvider_Essentials implements PricesProvider {
     }
 
     @Override
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
+    public CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         Essentials plugin = Essentials.getPlugin(Essentials.class);
         Worth worth = plugin.getWorth();
         BigDecimal price = null;
@@ -28,6 +29,6 @@ public final class PricesProvider_Essentials implements PricesProvider {
                         .invoke(worth, plugin, itemStack);
             }catch(Exception ignored){}
         }
-        return price == null ? -1 : price.doubleValue() * itemStack.getAmount();
+        return CompletableFuture.completedFuture(price == null ? -1 : price.doubleValue() * itemStack.getAmount());
     }
 }
