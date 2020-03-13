@@ -13,7 +13,7 @@ public enum Query {
     LINKED_CHEST_UPDATE_INVENTORY("UPDATE linked_chests SET inventories=? WHERE location=?;"),
     LINKED_CHEST_UPDATE_TARGET("UPDATE linked_chests SET linked_chest=? WHERE location=?;"),
     LINKED_CHEST_DELETE("DELETE FROM linked_chests WHERE location=?;"),
-    LINKED_CHEST_SELECT("DELETE FROM linked_chests WHERE location=?;"),
+    LINKED_CHEST_SELECT("SELECT * FROM linked_chests WHERE location=?;"),
 
     STORAGE_UNIT_INSERT("INSERT INTO storage_units VALUES(?, ?, ?, ?, ?, ?);"),
     STORAGE_UNIT_UPDATE("UPDATE storage_units SET placer=?,chest_data=?,item=?,amount=?,max_amount=? WHERE location=?;"),
