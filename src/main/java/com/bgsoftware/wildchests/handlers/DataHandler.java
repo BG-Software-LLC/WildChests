@@ -53,16 +53,20 @@ public final class DataHandler {
         List<Chest> chestList = plugin.getChestsManager().getChests();
 
         StatementHolder linkedChestInventoryHolder = Query.LINKED_CHEST_UPDATE_INVENTORY.getStatementHolder();
-        StatementHolder linkedChestTargetHolder = Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder();
         linkedChestInventoryHolder.prepareBatch();
+        chestList.stream().filter(chest -> chest instanceof LinkedChest).forEach(chest -> {
+            Location chestLocation = chest.getLocation();
+            linkedChestInventoryHolder.setInventories(chest.getPages()).setLocation(chestLocation).addBatch();
+        });
+        linkedChestInventoryHolder.execute(async);
+
+        StatementHolder linkedChestTargetHolder = Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder();
         linkedChestTargetHolder.prepareBatch();
         chestList.stream().filter(chest -> chest instanceof LinkedChest).forEach(chest -> {
             LinkedChest linkedChest = ((LinkedChest) chest).getLinkedChest();
             Location chestLocation = chest.getLocation();
-            linkedChestInventoryHolder.setInventories(chest.getPages()).setLocation(chestLocation).addBatch();
             linkedChestTargetHolder.setLocation(linkedChest == null ? null : linkedChest.getLocation()).setLocation(chestLocation).addBatch();
         });
-        linkedChestInventoryHolder.execute(async);
         linkedChestTargetHolder.execute(async);
 
         StatementHolder regularChestHolder = Query.REGULAR_CHEST_UPDATE_INVENTORY.getStatementHolder();
