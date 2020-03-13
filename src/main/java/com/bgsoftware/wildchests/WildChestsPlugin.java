@@ -31,7 +31,6 @@ import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.listeners.PlayerListener;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
