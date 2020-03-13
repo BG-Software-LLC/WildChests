@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class PricesProvider_Default implements PricesProvider {
 
-    private static Map<String, Double> prices = new ConcurrentHashMap<>();
+    public static Map<String, Double> prices = new ConcurrentHashMap<>();
 
     public PricesProvider_Default(){
         WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
