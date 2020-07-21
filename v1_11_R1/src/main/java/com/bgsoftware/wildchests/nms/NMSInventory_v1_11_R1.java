@@ -24,6 +24,7 @@ import net.minecraft.server.v1_11_R1.EntityHuman;
 import net.minecraft.server.v1_11_R1.EntityItem;
 import net.minecraft.server.v1_11_R1.EntityPlayer;
 import net.minecraft.server.v1_11_R1.EnumDirection;
+import net.minecraft.server.v1_11_R1.EnumParticle;
 import net.minecraft.server.v1_11_R1.IChatBaseComponent;
 import net.minecraft.server.v1_11_R1.IInventory;
 import net.minecraft.server.v1_11_R1.IWorldInventory;
@@ -288,42 +289,55 @@ public final class NMSInventory_v1_11_R1 implements NMSInventory {
         @Override
         public void F_() {
             super.F_();
-            if(--currentCooldown < 0){
-                currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
+            ChestData chestData = chest.getData();
 
-                if(suctionItems != null) {
-                    ChestData chestData = chest.getData();
+            {
+                double x = position.getX() + world.random.nextFloat();
+                double y = position.getY() + world.random.nextFloat();
+                double z = position.getZ() + world.random.nextFloat();
+                for(String particle : chestData.getChestParticles()) {
+                    try {
+                        ((WorldServer) world).sendParticles(null, EnumParticle.valueOf(particle),
+                                false, x, y, z, 0, 0.0, 0.0, 0.0, 1.0);
+                    }catch (Exception ignored){}
+                }
+            }
 
-                    for (Entity entity : world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>)
-                            entity -> suctionPredicate.test((EntityItem) entity, chestData))) {
-                        EntityItem entityItem = (EntityItem) entity;
-                        org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
-                        Item item = (Item) entityItem.getBukkitEntity();
+            if(--currentCooldown >= 0)
+                return;
 
-                        if (WildStackerHook.isEnabled())
-                            itemStack.setAmount(WildStackerHook.getItemAmount(item));
+            currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
-                        org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+            if(suctionItems != null) {
+                for (Entity entity : world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>)
+                        entity -> suctionPredicate.test((EntityItem) entity, chestData))) {
+                    EntityItem entityItem = (EntityItem) entity;
+                    org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
+                    Item item = (Item) entityItem.getBukkitEntity();
 
-                        if (remainingItem == null) {
-                            ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), false,
-                                    entityItem.locX, entityItem.locY, entityItem.locZ, 0, 0.0, 0.0, 0.0, 1.0);
-                            entityItem.die();
-                        } else if (WildStackerHook.isEnabled()) {
-                            WildStackerHook.setRemainings(item, remainingItem.getAmount());
-                        } else {
-                            item.setItemStack(remainingItem);
-                        }
+                    if (WildStackerHook.isEnabled())
+                        itemStack.setAmount(WildStackerHook.getItemAmount(item));
+
+                    org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+
+                    if (remainingItem == null) {
+                        ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), false,
+                                entityItem.locX, entityItem.locY, entityItem.locZ, 0, 0.0, 0.0, 0.0, 1.0);
+                        entityItem.die();
+                    } else if (WildStackerHook.isEnabled()) {
+                        WildStackerHook.setRemainings(item, remainingItem.getAmount());
+                    } else {
+                        item.setItemStack(remainingItem);
                     }
                 }
+            }
 
-                if(autoCraftMode){
-                    ChestUtils.tryCraftChest(chest);
-                }
+            if(autoCraftMode){
+                ChestUtils.tryCraftChest(chest);
+            }
 
-                if (autoSellMode){
-                    ChestUtils.trySellChest(chest);
-                }
+            if (autoSellMode){
+                ChestUtils.trySellChest(chest);
             }
         }
 

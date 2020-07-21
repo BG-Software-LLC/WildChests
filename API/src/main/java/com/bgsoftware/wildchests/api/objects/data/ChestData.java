@@ -56,6 +56,8 @@ public interface ChestData {
 
     BigInteger getStorageUnitMaxAmount();
 
+    List<String> getChestParticles();
+
     void setDefaultSize(int size);
 
     void setDefaultTitle(String title);
@@ -83,5 +85,7 @@ public interface ChestData {
     void setWhitelisted(Set<Key> whitelisted);
 
     void setStorageUnitMaxAmount(BigInteger maxAmount);
+
+    void setParticles(List<String> particles);
 
 }

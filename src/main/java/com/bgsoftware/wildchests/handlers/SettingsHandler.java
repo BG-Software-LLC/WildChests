@@ -182,6 +182,10 @@ public final class SettingsHandler {
                         new BigInteger(cfg.getString("chests." + name + ".max-amount")));
             }
 
+            if(cfg.contains("chests." + name + ".particles")){
+                chestData.setParticles(cfg.getStringList("chests." + name + ".particles"));
+            }
+
             chestsData.put(name.toLowerCase(), chestData);
             chestsAmount++;
         }

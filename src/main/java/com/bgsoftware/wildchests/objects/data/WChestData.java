@@ -12,6 +12,8 @@ import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.key.KeySet;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +38,7 @@ public final class WChestData implements ChestData {
     private int autoSuctionRange;
     private boolean autoSuctionChunk;
     private final KeySet blacklisted, whitelisted;
+    private List<String> particles;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -57,6 +60,7 @@ public final class WChestData implements ChestData {
         this.autoSuctionChunk = false;
         this.blacklisted = new KeySet();
         this.whitelisted = new KeySet();
+        this.particles = Collections.unmodifiableList(new ArrayList<>());
     }
 
     @Override
@@ -183,6 +187,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public List<String> getChestParticles() {
+        return particles;
+    }
+
+    @Override
     public void setDefaultSize(int size) {
         this.defaultSize = size;
     }
@@ -260,6 +269,11 @@ public final class WChestData implements ChestData {
             throw new UnsupportedOperationException("Cannot set max amount of an unknown storage unit.");
 
         this.maxAmount = maxAmount;
+    }
+
+    @Override
+    public void setParticles(List<String> particles) {
+        this.particles = Collections.unmodifiableList(particles);
     }
 
     @Override

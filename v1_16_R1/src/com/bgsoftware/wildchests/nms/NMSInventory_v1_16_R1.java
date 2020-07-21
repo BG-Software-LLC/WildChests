@@ -268,40 +268,54 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
         @Override
         public void tick() {
             super.tick();
-            if(--currentCooldown < 0){
-                currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
+            ChestData chestData = chest.getData();
+            assert world != null;
 
-                if(suctionItems != null) {
-                    ChestData chestData = chest.getData();
+            {
+                double x = position.getX() + world.random.nextFloat();
+                double y = position.getY() + world.random.nextFloat();
+                double z = position.getZ() + world.random.nextFloat();
+                for(String particle : chestData.getChestParticles()) {
+                    try {
+                        ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.valueOf(particle)),
+                                x, y, z, 0, 0.0, 0.0, 0.0, 1.0, false);
+                    }catch (Exception ignored){}
+                }
+            }
 
-                    for (EntityItem entityItem : world.a(EntityItem.class, suctionItems, entityItem -> suctionPredicate.test(entityItem, chestData))) {
-                        org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
-                        Item item = (Item) entityItem.getBukkitEntity();
+            if(--currentCooldown >= 0)
+                return;
 
-                        if (WildStackerHook.isEnabled())
-                            itemStack.setAmount(WildStackerHook.getItemAmount(item));
+            currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
-                        org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+            if(suctionItems != null) {
+                for (EntityItem entityItem : world.a(EntityItem.class, suctionItems, entityItem -> suctionPredicate.test(entityItem, chestData))) {
+                    org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
+                    Item item = (Item) entityItem.getBukkitEntity();
 
-                        if (remainingItem == null) {
-                            ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),
-                                    entityItem.locZ(), 0, 0.0, 0.0, 0.0, 1.0, false);
-                            entityItem.die();
-                        } else if (WildStackerHook.isEnabled()) {
-                            WildStackerHook.setRemainings(item, remainingItem.getAmount());
-                        } else {
-                            item.setItemStack(remainingItem);
-                        }
+                    if (WildStackerHook.isEnabled())
+                        itemStack.setAmount(WildStackerHook.getItemAmount(item));
+
+                    org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+
+                    if (remainingItem == null) {
+                        ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),
+                                entityItem.locZ(), 0, 0.0, 0.0, 0.0, 1.0, false);
+                        entityItem.die();
+                    } else if (WildStackerHook.isEnabled()) {
+                        WildStackerHook.setRemainings(item, remainingItem.getAmount());
+                    } else {
+                        item.setItemStack(remainingItem);
                     }
                 }
+            }
 
-                if(autoCraftMode){
-                    ChestUtils.tryCraftChest(chest);
-                }
+            if(autoCraftMode){
+                ChestUtils.tryCraftChest(chest);
+            }
 
-                if (autoSellMode){
-                    ChestUtils.trySellChest(chest);
-                }
+            if (autoSellMode){
+                ChestUtils.trySellChest(chest);
             }
         }
 
