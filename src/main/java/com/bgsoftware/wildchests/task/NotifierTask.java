@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.task;
 
+import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.StringUtils;
 import com.google.common.collect.Sets;
 import org.bukkit.Bukkit;
@@ -18,10 +19,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class NotifierTask extends BukkitRunnable {
 
-    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
-    private static Map<UUID, Set<TransactionDetails>> amountEarned = new ConcurrentHashMap<>();
-    private static Map<UUID, Set<CraftingDetails>> craftings = new ConcurrentHashMap<>();
+    private static final Map<UUID, Set<TransactionDetails>> amountEarned = new ConcurrentHashMap<>();
+    private static final Map<UUID, Set<CraftingDetails>> craftings = new ConcurrentHashMap<>();
 
     private static int taskID = -1;
 
@@ -73,6 +74,11 @@ public final class NotifierTask extends BukkitRunnable {
     }
 
     public static void addTransaction(UUID player, ItemStack itemStack, int amount, double _amountEarned){
+        if(Bukkit.isPrimaryThread()){
+            Executor.async(() -> addTransaction(player, itemStack, amount, _amountEarned));
+            return;
+        }
+
         if(!amountEarned.containsKey(player)) {
             amountEarned.put(player, Sets.newConcurrentHashSet());
         }

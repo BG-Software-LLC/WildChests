@@ -1,4 +1,5 @@
 package com.bgsoftware.wildchests.handlers;
+import com.bgsoftware.wildchests.utils.Pair;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
@@ -12,19 +13,21 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler {
 
-    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private boolean isVaultEnabled;
     private Economy economy;
 
     private final PricesProvider pricesProvider;
+    private final Map<UUID, Pair<Long, Double>> pendingTransactions = new HashMap<>();
 
     public ProvidersHandler(){
         switch (plugin.getSettings().pricesProvider.toUpperCase()){
@@ -53,13 +56,8 @@ public final class ProvidersHandler {
      * Hooks' methods
      */
 
-    public CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        return pricesProvider.getPrice(offlinePlayer, itemStack).thenApply(new Function<Double, Double>() {
-            @Override
-            public Double apply(Double d) {
-                return d * multiplier;
-            }
-        });
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
+        return pricesProvider.getPrice(offlinePlayer, itemStack) * multiplier;
     }
 
     /*
@@ -85,17 +83,9 @@ public final class ProvidersHandler {
         return true;
     }
 
-    public CompletableFuture<TransactionResult<Double>> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        CompletableFuture<TransactionResult<Double>> completableFuture = new CompletableFuture<>();
-        CompletableFuture<Double> price = CompletableFuture.completedFuture(0D);
-
-        if(itemStack != null){
-            price = getPrice(offlinePlayer, itemStack, multiplier);
-        }
-
-        price.whenComplete((d, e) -> completableFuture.complete(TransactionResult.of(d, _price -> isVaultEnabled && d > 0)));
-
-        return completableFuture;
+    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
+        double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack, multiplier);
+        return TransactionResult.of(price, _price -> isVaultEnabled && price > 0);
     }
 
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){
@@ -111,10 +101,24 @@ public final class ProvidersHandler {
 
     public boolean depositPlayer(OfflinePlayer offlinePlayer, double money){
         try {
+            Pair<Long, Double> pendingTransaction = pendingTransactions.computeIfAbsent(offlinePlayer.getUniqueId(), p -> new Pair<>(0L, 0D));
+            long currentTime = System.currentTimeMillis();
+            if(currentTime - pendingTransaction.key <= 5000){
+                pendingTransaction.value += money;
+                return true;
+            }
+
             if (!economy.hasAccount(offlinePlayer))
                 economy.createPlayerAccount(offlinePlayer);
 
-            return economy.depositPlayer(offlinePlayer, money).transactionSuccess();
+            money += pendingTransaction.value;
+
+            pendingTransaction.key = currentTime;
+            pendingTransaction.value = 0D;
+
+            economy.depositPlayer(offlinePlayer, money);
+
+            return true;
         }catch(Throwable ex){
             return false;
         }
@@ -124,10 +128,19 @@ public final class ProvidersHandler {
         return isVaultEnabled;
     }
 
+    public void depositAllPending(){
+        for(Map.Entry<UUID, Pair<Long, Double>> entry : pendingTransactions.entrySet()){
+            entry.getValue().key = 0L;
+            depositPlayer(Bukkit.getOfflinePlayer(entry.getKey()), 0);
+        }
+
+        pendingTransactions.clear();
+    }
+
     public static final class TransactionResult<T>{
 
-        private T data;
-        private Predicate<T> success;
+        private final T data;
+        private final Predicate<T> success;
 
         private TransactionResult(T data, Predicate<T> success){
             this.data = data;

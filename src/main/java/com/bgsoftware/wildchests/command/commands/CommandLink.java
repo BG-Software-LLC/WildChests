@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.command.commands;
 
-import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
 import com.bgsoftware.wildchests.Locale;
@@ -8,8 +7,10 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.command.ICommand;
 
+import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -26,7 +27,7 @@ import java.util.UUID;
 
 public final class CommandLink implements ICommand {
 
-    private Map<UUID, WLocation> players = new HashMap<>();
+    private final Map<UUID, Location> players = new HashMap<>();
 
     @Override
     public String getLabel() {
@@ -90,7 +91,7 @@ public final class CommandLink implements ICommand {
         }
 
         if(players.containsKey(player.getUniqueId())){
-            LinkedChest originalChest = plugin.getChestsManager().getLinkedChest(players.get(player.getUniqueId()).getLocation());
+            LinkedChest originalChest = plugin.getChestsManager().getLinkedChest(players.get(player.getUniqueId()));
             players.remove(player.getUniqueId());
 
 
@@ -114,7 +115,7 @@ public final class CommandLink implements ICommand {
 
             originalChest.linkIntoChest(linkedChest);
 
-            Locale.LINKED_SUCCEED.send(player, WLocation.of(originalChest.getLocation()));
+            Locale.LINKED_SUCCEED.send(player, LocationUtils.toString(originalChest.getLocation()));
 
             if(!toMove.isEmpty()){
                 linkedChest.addItems(toMove.toArray(new ItemStack[]{}));
@@ -124,7 +125,7 @@ public final class CommandLink implements ICommand {
             return;
         }
 
-        players.put(player.getUniqueId(), WLocation.of(linkedChest.getLocation()));
+        players.put(player.getUniqueId(), linkedChest.getLocation());
         Executor.async(() -> players.remove(player.getUniqueId()), 6000L);
         Locale.SELECT_ANOTHER_CHEST.send(player);
     }

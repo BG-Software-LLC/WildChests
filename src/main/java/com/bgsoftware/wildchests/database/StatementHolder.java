@@ -1,8 +1,8 @@
 package com.bgsoftware.wildchests.database;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -17,7 +17,7 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 public class StatementHolder {
 
-    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private final List<Map<Integer, Object>> batches = new ArrayList<>();
     private boolean batchStatus = false;
@@ -51,11 +51,7 @@ public class StatementHolder {
     }
 
     public StatementHolder setLocation(Location loc){
-        return setLocation(loc == null ? null : WLocation.of(loc));
-    }
-
-    public StatementHolder setLocation(WLocation loc){
-        values.put(currentIndex++, loc == null ? "" : loc.toString());
+        values.put(currentIndex++, loc == null ? "" : LocationUtils.toString(loc));
         return this;
     }
 
@@ -74,8 +70,6 @@ public class StatementHolder {
     }
 
     public void addBatch(){
-        if(batches.isEmpty())
-            SQLHelper.setAutoCommit(false);
         batches.add(new HashMap<>(values));
         values.clear();
         currentIndex = 1;
@@ -95,32 +89,34 @@ public class StatementHolder {
             return;
         }
 
-        String errorQuery = query;
-        try(PreparedStatement preparedStatement = SQLHelper.buildStatement(query)){
-            if(!batches.isEmpty()){
-                for (Map<Integer, Object> values : batches) {
+        synchronized (SQLHelper.getMutex()) {
+            String errorQuery = query;
+            try (PreparedStatement preparedStatement = SQLHelper.buildStatement(query)) {
+                if (!batches.isEmpty()) {
+                    SQLHelper.setAutoCommit(false);
+                    for (Map<Integer, Object> values : batches) {
+                        for (Map.Entry<Integer, Object> entry : values.entrySet()) {
+                            preparedStatement.setObject(entry.getKey(), entry.getValue());
+                            errorQuery = errorQuery.replaceFirst("\\?", entry.getValue() + "");
+                        }
+                        preparedStatement.addBatch();
+                    }
+                    preparedStatement.executeBatch();
+                    SQLHelper.commit();
+                    SQLHelper.setAutoCommit(true);
+                } else if (!batchStatus) {
                     for (Map.Entry<Integer, Object> entry : values.entrySet()) {
                         preparedStatement.setObject(entry.getKey(), entry.getValue());
                         errorQuery = errorQuery.replaceFirst("\\?", entry.getValue() + "");
                     }
-                    preparedStatement.addBatch();
+                    preparedStatement.executeUpdate();
                 }
-                preparedStatement.executeBatch();
-                SQLHelper.commit();
-                SQLHelper.setAutoCommit(true);
+            } catch (SQLException ex) {
+                WildChestsPlugin.log("Failed to execute query " + errorQuery);
+                ex.printStackTrace();
+            } finally {
+                batchStatus = false;
             }
-            else if(!batchStatus){
-                for (Map.Entry<Integer, Object> entry : values.entrySet()) {
-                    preparedStatement.setObject(entry.getKey(), entry.getValue());
-                    errorQuery = errorQuery.replaceFirst("\\?", entry.getValue() + "");
-                }
-                preparedStatement.executeUpdate();
-            }
-
-            batchStatus = false;
-        }catch(SQLException ex){
-            WildChestsPlugin.log("Failed to execute query " + errorQuery);
-            ex.printStackTrace();
         }
     }
 

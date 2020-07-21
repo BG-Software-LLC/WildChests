@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("WeakerAccess")
 public class SQLHelper {
 
+    private static final Object mutex = new Object();
     private static Connection conn;
 
     private SQLHelper(){}
@@ -30,6 +31,10 @@ public class SQLHelper {
         Class.forName("org.sqlite.JDBC");
         String sqlURL = "jdbc:sqlite:" + file.getAbsolutePath().replace("\\", "/");
         conn = DriverManager.getConnection(sqlURL);
+    }
+
+    public static Object getMutex(){
+        return mutex;
     }
 
     public static void executeUpdate(String statement){

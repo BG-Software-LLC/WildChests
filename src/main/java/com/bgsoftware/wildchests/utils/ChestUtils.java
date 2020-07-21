@@ -4,196 +4,109 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
+import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.task.NotifierTask;
-import com.bgsoftware.wildchests.hooks.WildStackerHook;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 public final class ChestUtils {
 
-    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    public static final short DEFAULT_COOLDOWN = 20;
 
     public static void tryCraftChest(Chest chest){
-        if(Bukkit.isPrimaryThread()){
-            Executor.async(() -> tryCraftChest(chest));
-            return;
+        Inventory[] pages = chest.getPages();
+
+        Iterator<Map.Entry<Recipe, List<RecipeUtils.RecipeIngredient>>> recipes = ((WChestData) chest.getData()).getRecipeIngredients();
+        List<ItemStack> toAdd = new ArrayList<>();
+
+        while (recipes.hasNext()) {
+            Map.Entry<Recipe, List<RecipeUtils.RecipeIngredient>> recipe = recipes.next();
+
+            if (recipe.getValue().isEmpty())
+                continue;
+
+            int amountOfRecipes = Integer.MAX_VALUE;
+
+            for (RecipeUtils.RecipeIngredient ingredient : recipe.getValue()) {
+                for (Inventory page : pages) {
+                    amountOfRecipes = Math.min(amountOfRecipes, RecipeUtils.countItems(ingredient, page) / ingredient.getAmount());
+                }
+            }
+
+            if (amountOfRecipes > 0) {
+                for (RecipeUtils.RecipeIngredient recipeIngredient : recipe.getValue()) {
+                    for(ItemStack ingredient : recipeIngredient.getIngredients())
+                        chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
+                }
+
+                ItemStack result = recipe.getKey().getResult().clone();
+                result.setAmount(result.getAmount() * amountOfRecipes);
+                toAdd.add(result);
+                NotifierTask.addCrafting(chest.getPlacer(), result, result.getAmount());
+            }
         }
 
-        synchronized (chest) {
-            Inventory[] pages = chest.getPages();
+        List<ItemStack> toDrop = new ArrayList<>(chest.addItems(toAdd.toArray(new ItemStack[]{})).values());
 
-            Iterator<Recipe> recipes = chest.getData().getRecipes();
-            List<ItemStack> toAdd = new ArrayList<>();
-
-            while (recipes.hasNext()) {
-                Recipe recipe = recipes.next();
-
-                List<RecipeUtils.RecipeIngredient> ingredients;
-
-                //Get the ingredients for the recipe
-                if (recipe instanceof ShapedRecipe) {
-                    ingredients = RecipeUtils.getIngredients((ShapedRecipe) recipe);
-                } else if (recipe instanceof ShapelessRecipe) {
-                    ingredients = RecipeUtils.getIngredients((ShapelessRecipe) recipe);
-                } else continue;
-
-                if (ingredients.isEmpty())
-                    continue;
-
-                int amountOfRecipes = Integer.MAX_VALUE;
-
-                for (RecipeUtils.RecipeIngredient ingredient : ingredients) {
-                    for (Inventory page : pages) {
-                        amountOfRecipes = Math.min(amountOfRecipes, RecipeUtils.countItems(ingredient, page) / ingredient.getAmount());
-                    }
-                }
-
-                if (amountOfRecipes > 0) {
-                    for (RecipeUtils.RecipeIngredient recipeIngredient : ingredients) {
-                        for(ItemStack ingredient : recipeIngredient.getIngredients())
-                            chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
-                    }
-
-                    ItemStack result = recipe.getResult().clone();
-                    result.setAmount(result.getAmount() * amountOfRecipes);
-                    toAdd.add(result);
-                    NotifierTask.addCrafting(chest.getPlacer(), result, result.getAmount());
-                }
-            }
-
-            List<ItemStack> toDrop = new ArrayList<>(chest.addRawItems(toAdd.toArray(new ItemStack[]{})).values());
-
-            if (!toDrop.isEmpty()) {
-                Executor.sync(() -> {
-                    for (ItemStack itemStack : toDrop)
-                        ItemUtils.dropItem(chest.getLocation(), itemStack);
-                });
-            }
+        if (!toDrop.isEmpty()) {
+            for (ItemStack itemStack : toDrop)
+                ItemUtils.dropItem(chest.getLocation(), itemStack);
         }
     }
 
     public static void trySellChest(Chest chest){
-        if(Bukkit.isPrimaryThread()){
-            Executor.async(() -> trySellChest(chest));
-            return;
-        }
-
-        synchronized (chest) {
-            Inventory[] pages = chest.getPages();
-            UUID placer = chest.getPlacer();
-
-            List<ItemStack> itemStacks = new ArrayList<>();
-            for (Inventory page : pages)
-                itemStacks.addAll(Arrays.stream(page.getContents()).filter(Objects::nonNull).collect(Collectors.toList()));
-
-            SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, itemStacks, chest.getData().getMultiplier());
-            Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
-
-            Map<ItemStack, Integer> sortedItems = ItemUtils.getSortedItems(itemStacks.toArray(new ItemStack[0]));
-
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
-
-            Set<Pair<ItemStack, CompletableFuture<ProvidersHandler.TransactionResult<Double>>>> completableFutures = new HashSet<>();
-
-            for (ItemStack itemStack : sortedItems.keySet()) {
-                itemStack.setAmount(sortedItems.get(itemStack));
-
-                completableFutures.add(new Pair<>(itemStack, plugin.getProviders().canSellItem(offlinePlayer, itemStack, sellChestTaskEvent.getMultiplier())));
+        Arrays.stream(chest.getPages()).forEach(inventory -> {
+            for(int i = 0; i < inventory.getSize(); i++){
+                if(trySellItem(chest, inventory.getItem(i)))
+                    inventory.setItem(i, new ItemStack(Material.AIR));
             }
-
-            for(Pair<ItemStack, CompletableFuture<ProvidersHandler.TransactionResult<Double>>> pair : completableFutures){
-                ProvidersHandler.TransactionResult<Double> transactionResult;
-
-                try{
-                    transactionResult = pair.value.get();
-                }catch(Exception ex){
-                    ex.printStackTrace();
-                    continue;
-                }
-
-                if (!transactionResult.isSuccess())
-                    continue;
-
-                if (plugin.getSettings().sellCommand.isEmpty()) {
-                    plugin.getProviders().depositPlayer(offlinePlayer, transactionResult.getData());
-                } else {
-                    Executor.sync(() ->
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                                    .replace("{player-name}", offlinePlayer.getName())
-                                    .replace("{price}", String.valueOf(transactionResult.getData()))));
-                }
-
-                NotifierTask.addTransaction(placer, pair.key, pair.key.getAmount(), transactionResult.getData());
-
-                for (Inventory page : pages) {
-                    try {
-                        page.removeItem(pair.key);
-                    } catch (Throwable ignored) {
-                    }
-                }
-            }
-        }
+        });
     }
 
-    public static void trySuctionChest(Item item){
-        if(Bukkit.isPrimaryThread()){
-            Executor.async(() -> trySuctionChest(item));
-            return;
+    public static boolean trySellItem(Chest chest, ItemStack toSell){
+        if(toSell == null || toSell.getType() == Material.AIR)
+            return false;
+
+        UUID placer = chest.getPlacer();
+
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chest.getData().getMultiplier());
+        Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
+
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
+
+        ProvidersHandler.TransactionResult<Double> transactionResult =
+                plugin.getProviders().canSellItem(offlinePlayer, toSell, sellChestTaskEvent.getMultiplier());
+
+        if (!transactionResult.isSuccess())
+            return false;
+
+        if (plugin.getSettings().sellCommand.isEmpty()) {
+            plugin.getProviders().depositPlayer(offlinePlayer, transactionResult.getData());
+        } else {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
+                    .replace("{player-name}", offlinePlayer.getName())
+                    .replace("{price}", String.valueOf(transactionResult.getData())));
         }
 
-        synchronized (item) {
-            if (!item.isValid() || item.isDead() || item.getLocation().getBlockY() < 0)
-                return;
+        NotifierTask.addTransaction(placer, toSell, toSell.getAmount(), transactionResult.getData());
 
-            if (!item.isOnGround() || !item.isValid())
-                return;
-
-            List<Chest> chestList = plugin.getChestsManager().getNearbyChests(item.getLocation());
-            for (Chest chest : chestList) {
-                ItemStack itemStack = item.getItemStack();
-
-                if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                    itemStack = WildStackerHook.getItemStack(item);
-
-                try {
-                    ItemStack remainingItem = getRemainingItem(chest.addItems(itemStack));
-
-                    if (remainingItem == null) {
-                        plugin.getNMSAdapter().spawnSuctionParticle(item.getLocation());
-                        item.remove();
-                        break;
-                    } else {
-                        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                            WildStackerHook.setRemainings(item, remainingItem.getAmount());
-                        else
-                            item.setItemStack(remainingItem);
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }
+        return true;
     }
 
-    private static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
+    public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
         return additionalItems.isEmpty() ? null : new ArrayList<>(additionalItems.values()).get(0);
     }
 

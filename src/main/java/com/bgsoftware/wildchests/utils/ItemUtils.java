@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.hooks.WildStackerHook;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -64,23 +65,17 @@ public final class ItemUtils {
     }
 
     public static void dropItem(Location location, ItemStack itemStack){
-        dropItem(location, itemStack, false);
-    }
-
-    public static void dropItem(Location location, ItemStack itemStack, boolean tag){
         if(itemStack.getMaxStackSize() <= 0)
             return;
 
+        if(plugin.getSettings().wildStackerHook && WildStackerHook.isEnabled()){
+            WildStackerHook.dropItem(location, itemStack, itemStack.getAmount());
+            return;
+        }
+
         int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
 
-        ItemStack cloned;
-
-        if(tag){
-            cloned = plugin.getNMSAdapter().addNBTTag(itemStack);
-        }
-        else{
-            cloned = itemStack.clone();
-        }
+        ItemStack cloned = itemStack.clone();
 
         cloned.setAmount(itemStack.getMaxStackSize());
 
@@ -100,7 +95,7 @@ public final class ItemUtils {
                 return;
         }
 
-        dropItem(location, itemStack, false);
+        dropItem(location, itemStack);
     }
 
     public static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){

@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.objects.data;
 
 import com.bgsoftware.wildchests.api.key.Key;
+import com.bgsoftware.wildchests.utils.RecipeUtils;
 import com.google.common.collect.Iterators;
 import org.bukkit.Bukkit;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +12,6 @@ import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.key.KeySet;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -28,14 +28,14 @@ public final class WChestData implements ChestData {
     private String defaultTitle;
     private boolean sellMode;
     private boolean hopperFilter;
-    private List<Recipe> recipes;
+    private final Map<Recipe, List<RecipeUtils.RecipeIngredient>> recipes;
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
     private double multiplier;
     private boolean autoCollect;
     private int autoSuctionRange;
     private boolean autoSuctionChunk;
-    private KeySet blacklisted, whitelisted;
+    private final KeySet blacklisted, whitelisted;
 
     //Storage Units only!
     private BigInteger maxAmount;
@@ -48,7 +48,7 @@ public final class WChestData implements ChestData {
         this.defaultTitle = "Chest";
         this.sellMode = false;
         this.hopperFilter = false;
-        this.recipes = new ArrayList<>();
+        this.recipes = new HashMap<>();
         this.pagesData = new HashMap<>();
         this.defaultPagesAmount = 1;
         this.multiplier = 1;
@@ -108,7 +108,11 @@ public final class WChestData implements ChestData {
 
     @Override
     public Iterator<Recipe> getRecipes() {
-        return Iterators.unmodifiableIterator(recipes.iterator());
+        return Iterators.unmodifiableIterator(recipes.keySet().iterator());
+    }
+
+    public Iterator<Map.Entry<Recipe, List<RecipeUtils.RecipeIngredient>>> getRecipeIngredients(){
+        return Iterators.unmodifiableIterator(recipes.entrySet().iterator());
     }
 
     @Override
@@ -200,17 +204,14 @@ public final class WChestData implements ChestData {
 
     @Override
     public void setAutoCrafter(List<String> recipes) {
-        KeySet recipesSet = new KeySet(recipes);
-        List<Recipe> recipesToAdd = new ArrayList<>();
         Iterator<Recipe> bukkitRecipes = Bukkit.recipeIterator();
+        KeySet recipesSet = new KeySet(recipes);
 
         while(bukkitRecipes.hasNext()){
             Recipe recipe = bukkitRecipes.next();
             if(recipesSet.contains(recipe.getResult()))
-                recipesToAdd.add(recipe);
+                this.recipes.put(recipe, RecipeUtils.getIngredients(recipe));
         }
-
-        this.recipes.addAll(recipesToAdd);
     }
 
     @Override

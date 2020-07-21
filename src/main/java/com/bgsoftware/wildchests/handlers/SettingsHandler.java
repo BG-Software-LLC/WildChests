@@ -20,10 +20,8 @@ import java.io.File;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("WeakerAccess")
 public final class SettingsHandler {
@@ -34,6 +32,7 @@ public final class SettingsHandler {
     public final String pricesProvider;
     public final int explodeDropChance;
     public final boolean invalidWorldDelete;
+    public final boolean wildStackerHook;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -54,6 +53,7 @@ public final class SettingsHandler {
         explodeDropChance = cfg.getInt("explode-drop-chance", 100);
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
+        wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);
 
         Map<String, Double> prices = new HashMap<>();
 
@@ -72,7 +72,7 @@ public final class SettingsHandler {
 
         PricesProvider_Default.prices = prices;
 
-        Set<ChestData> chestsData = new HashSet<>();
+        Map<String, ChestData> chestsData = new HashMap<>();
 
         for(String name : cfg.getConfigurationSection("chests").getKeys(false)){
             ChestType chestType;
@@ -182,7 +182,7 @@ public final class SettingsHandler {
                         new BigInteger(cfg.getString("chests." + name + ".max-amount")));
             }
 
-            chestsData.add(chestData);
+            chestsData.put(name.toLowerCase(), chestData);
             chestsAmount++;
         }
 

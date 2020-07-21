@@ -8,6 +8,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface PricesProvider {
 
-    CompletableFuture<Double> getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack);
+    double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack);
 
 }

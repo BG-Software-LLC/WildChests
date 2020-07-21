@@ -37,6 +37,11 @@ database:
   # Automatically delete data from invalid worlds.
   invalid-world-delete: false
 
+# All settings related to hooks
+hooks:
+  # Should items dropped by the plugin get directly stacked by WildStacker?
+  wildstacker: true
+
 # The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and
 # you can create and mix between them. You can create chests that stores infinite amount of items, chests that
 # are connected to player vaults or factions, linked chests and many more!

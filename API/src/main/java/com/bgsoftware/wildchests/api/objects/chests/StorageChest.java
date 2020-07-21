@@ -10,15 +10,16 @@ public interface StorageChest extends RegularChest, Chest {
 
     void setItemStack(ItemStack itemStack);
 
-    @Deprecated
-    int getAmount();
+    BigInteger getAmount();
 
-    BigInteger getExactAmount();
-
-    void setAmount(int amount);
+    default BigInteger getExactAmount(){
+        return getAmount();
+    }
 
     void setAmount(BigInteger amount);
 
     BigInteger getMaxAmount();
+
+    void setMaxAmount(BigInteger maxAmount);
 
 }

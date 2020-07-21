@@ -3,13 +3,10 @@ package com.bgsoftware.wildchests.api.objects.chests;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import org.bukkit.Location;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +29,7 @@ public interface Chest {
 
     Inventory[] getPages();
 
-    void setPage(int page, Inventory inventory);
+    Inventory setPage(int page, int size, String title);
 
     void openPage(Player player, int page);
 
@@ -46,13 +43,9 @@ public interface Chest {
 
     Map<Integer, ItemStack> addItems(ItemStack... itemStacks);
 
-    Map<Integer, ItemStack> addRawItems(ItemStack... itemStacks);
-
     void removeItem(int amountToRemove, ItemStack itemStack);
 
     boolean onBreak(BlockBreakEvent event);
-
-    boolean onPlace(BlockPlaceEvent event);
 
     boolean onOpen(PlayerInteractEvent event);
 
@@ -60,11 +53,22 @@ public interface Chest {
 
     boolean onInteract(InventoryClickEvent event);
 
-    @Deprecated
-    boolean onHopperMove(InventoryMoveItemEvent event);
+    /**
+     *
+     */
 
-    boolean onHopperMove(ItemStack itemStack, Hopper hopper);
+    ItemStack[] getContents();
 
-    boolean onHopperItemTake(Inventory hopperInventory);
+    boolean canTakeItemThroughFace(int slot, ItemStack itemStack);
+
+    int[] getSlotsForFace();
+
+    boolean canPlaceItemThroughFace(ItemStack itemStack);
+
+    ItemStack getItem(int i);
+
+    void setItem(int i, ItemStack itemStack);
+
+    void update();
 
 }

@@ -4,13 +4,11 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.task.HopperTask;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Hopper;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -37,11 +35,17 @@ public final class BlockListener implements Listener {
         if (e.getBlockPlaced().getType() != Material.CHEST && e.getBlockPlaced().getType() != Material.TRAPPED_CHEST)
             return;
 
+        boolean hasNearbyChest = false;
+
         for(BlockFace blockFace : blockFaces){
             Block block = e.getBlockPlaced().getRelative(blockFace);
-            if (plugin.getChestsManager().getChest(block.getLocation()) != null) {
-                e.setCancelled(true);
-                return;
+            Material blockMaterial = block.getType();
+            if(blockMaterial == Material.CHEST || blockMaterial == Material.TRAPPED_CHEST) {
+                hasNearbyChest = true;
+                if (plugin.getChestsManager().getChest(block.getLocation()) != null) {
+                    e.setCancelled(true);
+                    return;
+                }
             }
         }
 
@@ -50,16 +54,16 @@ public final class BlockListener implements Listener {
         if(chestData == null)
             return;
 
+        if(hasNearbyChest){
+            e.setCancelled(true);
+            return;
+        }
+
         Chest chest = plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
 
-        chest.onPlace(e);
+        //chest.onPlace(e);
 
         Locale.CHEST_PLACED.send(e.getPlayer(), chestData.getName(), e.getItemInHand().getItemMeta().getDisplayName());
-
-        //Update the hopper below the chest
-        Block hopperBlock = e.getBlockPlaced().getRelative(BlockFace.DOWN);
-        if(hopperBlock.getState() instanceof Hopper)
-            HopperTask.addHopper(chest, (Hopper) hopperBlock.getState());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -80,9 +84,6 @@ public final class BlockListener implements Listener {
 
         chest.remove();
         e.getBlock().setType(Material.AIR);
-
-        //Update the hopper below the chest
-        HopperTask.removeHopper(chest);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -107,28 +108,6 @@ public final class BlockListener implements Listener {
             chest.remove();
             block.setType(Material.AIR);
         }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onHopperPlace(BlockPlaceEvent e){
-        if(e.getBlock().getType() != Material.HOPPER)
-            return;
-
-        Chest chest = plugin.getChestsManager().getChest(e.getBlock().getRelative(BlockFace.UP).getLocation());
-
-        if(chest != null)
-            HopperTask.addHopper(chest, (Hopper) e.getBlock().getState());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onHopperBreak(BlockBreakEvent e){
-        if(e.getBlock().getType() != Material.HOPPER)
-            return;
-
-        Chest chest = plugin.getChestsManager().getChest(e.getBlock().getRelative(BlockFace.UP).getLocation());
-
-        if(chest != null)
-            HopperTask.removeHopper(chest);
     }
 
 }

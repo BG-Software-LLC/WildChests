@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.utils;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -16,7 +17,23 @@ import java.util.stream.Collectors;
 
 public final class RecipeUtils {
 
-    public static List<RecipeIngredient> getIngredients(ShapedRecipe shapedRecipe){
+    public static List<RecipeIngredient> getIngredients(Recipe recipe){
+        return recipe instanceof ShapedRecipe ? getIngredients((ShapedRecipe) recipe) :
+                recipe instanceof ShapelessRecipe ? getIngredients((ShapelessRecipe) recipe) : new ArrayList<>();
+    }
+
+    public static int countItems(RecipeIngredient recipeIngredient, Inventory inventory){
+        int amount = 0;
+
+        for(ItemStack itemStack : inventory.getContents()){
+            if(itemStack != null && recipeIngredient.test(itemStack))
+                amount += itemStack.getAmount();
+        }
+
+        return amount;
+    }
+
+    private static List<RecipeIngredient> getIngredients(ShapedRecipe shapedRecipe){
         List<RecipeIngredient> recipeIngredients;
 
         try{
@@ -29,7 +46,7 @@ public final class RecipeUtils {
         return sortIngredients(recipeIngredients);
     }
 
-    public static List<RecipeIngredient> getIngredients(ShapelessRecipe shapelessRecipe){
+    private static List<RecipeIngredient> getIngredients(ShapelessRecipe shapelessRecipe){
         List<RecipeIngredient> recipeIngredients;
 
         try{
@@ -40,17 +57,6 @@ public final class RecipeUtils {
         }
 
         return sortIngredients(recipeIngredients);
-    }
-
-    public static int countItems(RecipeIngredient recipeIngredient, Inventory inventory){
-        int amount = 0;
-
-        for(ItemStack itemStack : inventory.getContents()){
-            if(itemStack != null && recipeIngredient.test(itemStack))
-                amount += itemStack.getAmount();
-        }
-
-        return amount;
     }
 
     @SuppressWarnings("deprecation")
@@ -97,8 +103,8 @@ public final class RecipeUtils {
     public static final class RecipeIngredient implements Predicate<ItemStack> {
 
         private int amount;
-        private List<ItemStack> ingredients;
-        private Predicate<ItemStack> predicate;
+        private final List<ItemStack> ingredients;
+        private final Predicate<ItemStack> predicate;
 
         private RecipeIngredient(List<ItemStack> ingredients, Predicate<ItemStack> predicate){
             this.ingredients = ingredients;

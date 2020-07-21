@@ -6,21 +6,18 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.List;
-
 public final class SellChestTaskEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
 
     private final Chest chest;
-    private final List<ItemStack> items;
+    private final ItemStack item;
     private boolean cancelled = false;
     private double multiplier;
 
-    public SellChestTaskEvent(Chest chest, List<ItemStack> items, double multiplier){
-        super(true);
+    public SellChestTaskEvent(Chest chest, ItemStack item, double multiplier){
         this.chest = chest;
-        this.items = items;
+        this.item = item;
         this.multiplier = multiplier;
     }
 
@@ -28,8 +25,8 @@ public final class SellChestTaskEvent extends Event implements Cancellable {
         return chest;
     }
 
-    public List<ItemStack> getItems() {
-        return items;
+    public ItemStack getItem() {
+        return item;
     }
 
     public double getMultiplier() {

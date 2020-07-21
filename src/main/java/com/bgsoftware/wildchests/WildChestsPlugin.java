@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests;
 
+import com.bgsoftware.wildchests.api.WildChests;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.command.CommandsHandler;
 import com.bgsoftware.wildchests.database.SQLHelper;
@@ -8,27 +10,21 @@ import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.OfflinePaymentsHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
+import com.bgsoftware.wildchests.listeners.BlockListener;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
+import com.bgsoftware.wildchests.listeners.PlayerListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
-import com.bgsoftware.wildchests.task.HopperTask;
+import com.bgsoftware.wildchests.nms.NMSInventory;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.bgsoftware.wildchests.api.WildChests;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.listeners.BlockListener;
-import com.bgsoftware.wildchests.listeners.InventoryListener;
-import com.bgsoftware.wildchests.listeners.PlayerListener;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -45,6 +41,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     private OfflinePaymentsHandler offlinePaymentsHandler;
 
     private NMSAdapter nmsAdapter;
+    private NMSInventory nmsInventory;
 
     @Override
     public void onEnable() {
@@ -63,10 +60,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         Executor.sync(() -> providersHandler = new ProvidersHandler());
 
-        getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
-        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new ChunksListener(this), this);
+        getServer().getPluginManager().registerEvents(new InventoryListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 
         CommandsHandler commandsHandler = new CommandsHandler(this);
         getCommand("chests").setExecutor(commandsHandler);
@@ -84,14 +81,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
 
         log("******** ENABLE DONE ********");
-
-        Executor.sync(() -> {
-            for(Chest chest : chestsManager.getChests()){
-                Block hopperBlock = chest.getLocation().getBlock().getRelative(BlockFace.DOWN);
-                if(hopperBlock.getState() instanceof Hopper)
-                    HopperTask.addHopper(chest, (Hopper) hopperBlock.getState());
-            }
-        }, 20L);
     }
 
     @Override
@@ -100,20 +89,18 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         //Closing all inventories & closing chests
         for(Chest chest : chestsManager.getChests()){
-            int index = 0;
-            Inventory inventory;
             boolean needClose = false;
-            while((inventory = chest.getPage(index)) != null){
+            for(Inventory inventory : chest.getPages()){
                 List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
                 for(HumanEntity humanEntity : viewers){
                     humanEntity.closeInventory();
                     needClose = true;
                 }
-                index++;
             }
             if(needClose)
                 nmsAdapter.playChestAction(chest.getLocation(), false);
         }
+
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
 
@@ -141,6 +128,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         String version = getServer().getClass().getPackage().getName().split("\\.")[3];
         try {
             nmsAdapter = (NMSAdapter) Class.forName("com.bgsoftware.wildchests.nms.NMSAdapter_" + version).newInstance();
+            nmsInventory = (NMSInventory) Class.forName("com.bgsoftware.wildchests.nms.NMSInventory_" + version).newInstance();
             return true;
         } catch (Exception ex){
             log("Error while loading adapter - unknown adapter " + version + "... Please contact @Ome_R");
@@ -150,6 +138,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     public NMSAdapter getNMSAdapter() {
         return nmsAdapter;
+    }
+
+    public NMSInventory getNMSInventory() {
+        return nmsInventory;
     }
 
     @Override
@@ -177,10 +169,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     public OfflinePaymentsHandler getOfflinePayments() {
         return offlinePaymentsHandler;
-    }
-
-    public static String getVersion(){
-        return plugin.getNMSAdapter().getVersion();
     }
 
     public static void log(String message){

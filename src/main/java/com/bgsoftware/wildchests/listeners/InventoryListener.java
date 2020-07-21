@@ -3,11 +3,10 @@ package com.bgsoftware.wildchests.listeners;
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
+import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.Materials;
-import com.bgsoftware.wildchests.objects.WInventory;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
@@ -15,8 +14,6 @@ import com.google.common.collect.Maps;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,10 +21,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -53,8 +50,8 @@ public final class InventoryListener implements Listener {
      * by shift clicking and closing the inventory in the same time.
      */
 
-    private Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
-    private String[] inventoryTitles = new String[] {"Expand Confirmation", };
+    private final Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
+    private final String[] inventoryTitles = new String[] {"Expand Confirmation", };
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
@@ -90,12 +87,7 @@ public final class InventoryListener implements Listener {
         if(chest == null)
             return;
 
-        e.setCancelled(true);
-
-        if(!chest.onOpen(e))
-            return;
-
-        chest.openPage(e.getPlayer(), 0);
+        chest.onOpen(e);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -108,65 +100,26 @@ public final class InventoryListener implements Listener {
             return;
         }
 
-        if(!chest.onClose(e))
-            return;
-
-        chest.closePage((Player) e.getPlayer());
+        chest.onClose(e);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestInteract(InventoryClickEvent e){
-        Chest chest = WChest.viewers.get(e.getWhoClicked().getUniqueId());
+        Inventory clickedInventory = e.getView().getTopInventory();
 
-        //Making sure it's still a valid chest
-        if(chest == null) {
-            WChest.viewers.remove(e.getWhoClicked().getUniqueId());
+        if(!(clickedInventory instanceof CraftWildInventory))
             return;
-        }
+
+        Chest chest = ((CraftWildInventory) clickedInventory).getOwner();
 
         chest.onInteract(e);
-
-        if(chest instanceof StorageChest && e.getCurrentItem() != null && e.getCurrentItem().hasItemMeta() &&
-                e.getCurrentItem().getItemMeta().hasDisplayName() &&
-                e.getCurrentItem().getItemMeta().getDisplayName().startsWith(ChatColor.RESET + "")){
-            e.setCancelled(true);
-            ItemStack clicked = e.getCurrentItem().clone();
-            Executor.sync(() -> {
-                if(clicked.isSimilar(e.getWhoClicked().getItemOnCursor()))
-                    e.getWhoClicked().setItemOnCursor(new ItemStack(Material.AIR));
-
-                e.getWhoClicked().getInventory().removeItem(clicked);
-            }, 10L);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onHopperMove(InventoryMoveItemEvent e){
-        if(e.getSource().getType() != InventoryType.HOPPER || e.getDestination().getType() != InventoryType.CHEST)
-            return;
-
-        if(!(e.getDestination().getHolder() instanceof org.bukkit.block.Chest))
-            return;
-
-        org.bukkit.block.Chest bukkitChest = (org.bukkit.block.Chest) e.getDestination().getHolder();
-        Chest chest = plugin.getChestsManager().getChest(bukkitChest.getLocation());
-
-        if(chest == null)
-            return;
-
-        e.setCancelled(true);
-
-        ItemStack itemStack = e.getItem();
-        Hopper hopper = (Hopper) e.getSource().getHolder();
-
-        Executor.async(() -> chest.onHopperMove(itemStack, hopper), 1L);
     }
 
     /*
      *  Upgrade Events
      */
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPlayerBuyConfirm(AsyncPlayerChatEvent e){
         if(!buyNewPage.containsKey(e.getPlayer().getUniqueId()))
             return;
@@ -185,7 +138,7 @@ public final class InventoryListener implements Listener {
             if (e.getMessage().equalsIgnoreCase("confirm")) {
                 if (plugin.getProviders().withdrawPlayer(e.getPlayer(), inventoryData.getPrice())) {
                     Locale.EXPAND_PURCHASED.send(e.getPlayer());
-                    chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
+                    chest.setPage(pageIndex++, chestData.getDefaultSize(), inventoryData.getTitle());
                 } else {
                     Locale.EXPAND_FAILED.send(e.getPlayer());
                 }
@@ -194,7 +147,7 @@ public final class InventoryListener implements Listener {
             }
 
             final int PAGE = --pageIndex;
-            Executor.sync(() -> e.getPlayer().openInventory(chest.getPage(PAGE)));
+            Executor.sync(() -> chest.openPage(e.getPlayer(), PAGE));
         }catch(Exception ex){
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(e.getPlayer());
         }
@@ -222,7 +175,7 @@ public final class InventoryListener implements Listener {
             if(e.getRawSlot() == 4){
                 if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
                     Locale.EXPAND_PURCHASED.send(player);
-                    chest.setPage(pageIndex++, WInventory.of(chestData.getDefaultSize(), inventoryData.getTitle()).getInventory());
+                    chest.setPage(pageIndex++, chestData.getDefaultSize(), inventoryData.getTitle());
                 } else {
                     Locale.EXPAND_FAILED.send(player);
                 }

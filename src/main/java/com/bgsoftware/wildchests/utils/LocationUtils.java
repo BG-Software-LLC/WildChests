@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 public final class LocationUtils {
@@ -12,6 +13,25 @@ public final class LocationUtils {
 
     public static boolean isSameChunk(Location loc1, Location loc2){
         return loc1.getBlockX() >> 4 == loc2.getBlockX() >> 4 && loc1.getBlockZ() >> 4 == loc2.getBlockZ() >> 4;
+    }
+
+    public static Location fromString(String str){
+        String[] sections = str.split(", ");
+
+        if(sections.length == 4){
+            return new Location(
+                    Bukkit.getWorld(sections[0]),
+                    Integer.parseInt(sections[1]),
+                    Integer.parseInt(sections[2]),
+                    Integer.parseInt(sections[3])
+            );
+        }
+
+        throw new IllegalArgumentException("Couldn't convert string '" + str + "' into a location.");
+    }
+
+    public static String toString(Location location){
+        return location.getWorld().getName() + ", " + location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ();
     }
 
 }

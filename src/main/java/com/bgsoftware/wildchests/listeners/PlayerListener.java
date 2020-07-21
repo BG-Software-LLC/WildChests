@@ -11,7 +11,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 @SuppressWarnings("unused")
 public final class PlayerListener implements Listener {
 
-    private WildChestsPlugin plugin;
+    private final WildChestsPlugin plugin;
 
     public PlayerListener(WildChestsPlugin plugin){
         this.plugin = plugin;

@@ -2,93 +2,99 @@ package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
-import com.bgsoftware.wildchests.objects.Materials;
-import com.bgsoftware.wildchests.utils.Executor;
-import org.bukkit.Bukkit;
+import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
+import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.objects.WInventory;
-import com.bgsoftware.wildchests.objects.WLocation;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 
 import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
 
-    private static ItemStack[] defaultInventory;
-
-    static {
-        initDefaultInventory();
-    }
+    private final CraftWildInventory inventory;
 
     private ItemStack itemStack = new ItemStack(Material.AIR);
     private BigInteger amount = BigInteger.ZERO, maxAmount;
+    private final WildItemStack<?, ?>[] contents = new WildItemStack[5];
 
-    public WStorageChest(UUID placer, WLocation location, ChestData chestData) {
+    public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
-        Inventory defaultInventory = Bukkit.createInventory(null, InventoryType.HOPPER);
-        defaultInventory.setContents(WStorageChest.defaultInventory);
-        setPage(0, defaultInventory);
         maxAmount = chestData.getStorageUnitMaxAmount();
+        inventory = plugin.getNMSInventory().createInventory(this, 5, chestData.getTitle(1), 0);
+        Arrays.fill(contents, WildItemStack.AIR);
+        setItemStack(null);
+    }
+
+    @Override
+    public WildItemStack<?, ?>[] getWildContents() {
+        return contents;
+    }
+
+    @Override
+    public Inventory getPage(int page) {
+        inventory.setTitle(getData().getTitle(1).replace("{0}", amount + ""));
+        return inventory;
+    }
+
+    @Override
+    public Inventory[] getPages() {
+        return new Inventory[] { getPage(0) };
+    }
+
+    @Override
+    public Inventory setPage(int page, int size, String title) {
+        throw new UnsupportedOperationException("You cannot change StorageUnit's page.");
+    }
+
+    @Override
+    public int getPagesAmount() {
+        return 1;
+    }
+
+    @Override
+    public int getPageIndex(Inventory inventory) {
+        return 0;
     }
 
     @Override
     public ItemStack getItemStack() {
-        if(amount.compareTo(BigInteger.ZERO) < 1) setItemStack(null);
-        return itemStack.clone();
+        if(amount.compareTo(BigInteger.ZERO) < 1)
+            setItemStack(null);
+
+        return itemStack;
     }
 
     @Override
     public void setItemStack(ItemStack itemStack) {
-        this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack.clone();
-        ItemStack designItem = this.itemStack.getType() == Material.AIR ? Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem() : this.itemStack.clone();
-        plugin.getNMSAdapter().setDesignItem(designItem);
-        Inventory page = getPage(0);
-        if(page != null) {
-            page.setItem(0, designItem);
-            page.setItem(1, designItem);
-            page.setItem(3, designItem);
-            page.setItem(4, designItem);
-        }
+        this.itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
+        plugin.getNMSInventory().createDesignItem(inventory, this.itemStack);
     }
 
     @Override
-    @Deprecated
-    public int getAmount() {
-        return amount.intValue();
-    }
-
-    @Override
-    public BigInteger getExactAmount() {
+    public BigInteger getAmount() {
         return amount;
-    }
-
-    @Override
-    public void setAmount(int amount) {
-        setAmount(BigInteger.valueOf(amount));
     }
 
     @Override
     public void setAmount(BigInteger amount) {
         this.amount = amount.max(BigInteger.ZERO);
-        if(amount.compareTo(BigInteger.ZERO) == 0) setItemStack(new ItemStack(Material.AIR));
+        if(amount.compareTo(BigInteger.ZERO) == 0)
+            setItemStack(null);
     }
 
     @Override
@@ -97,11 +103,78 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public Inventory getPage(int page) {
-        if(page != 0) return null;
-        WInventory pageInv = pages.get(0);
-        pageInv.setTitle(getData().getTitle( 1).replace("{0}", this.amount + ""));
-        return pageInv.getInventory();
+    public void setMaxAmount(BigInteger maxAmount) {
+        this.maxAmount = maxAmount;
+    }
+
+    @Override
+    public int[] getSlotsForFace() {
+        /* I am using IWorldInventory so I can force hoppers to check specific slots.
+           The slots that I want the hoppers to check are -1, -2, and 2.
+                Slot -1: Will always return air, which is used when hoppers moving items into the chest.
+                (so they add the item to the chest instead of changing the item's count)
+                Slot -2: Will return the chest's item, but with a count of one.
+                (so hoppers that pulling items will set the item in the chest to air instead of changing count)
+                Slot 2: Will return the chest's item, but with the correct amount.
+                (Default getItem method, but using slot 2 so it will count as a valid slot in canTakeItemThroughFace)
+        */
+        return new int[] { -1, -2, 2 };
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(ItemStack itemStack) {
+        return this.itemStack.getType() == Material.AIR || itemStack.isSimilar(this.itemStack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack itemStack) {
+        return slot < 0 || slot == 2;
+    }
+
+    @Override
+    public WildItemStack<?, ?> getWildItem(int i) {
+        if(i == -1){
+            return WildItemStack.AIR.cloneItemStack();
+        }
+        else {
+            ItemStack clonedItem = itemStack.clone();
+            clonedItem.setAmount(1);
+            return WildItemStack.of(clonedItem);
+        }
+    }
+
+    @Override
+    public void setItem(int i, WildItemStack<?, ?> itemStack) {
+        if(itemStack == null || itemStack.getCraftItemStack().getType() == Material.AIR){
+            if(amount.compareTo(BigInteger.ONE) == 0){
+                setItemStack(null);
+                setAmount(BigInteger.ZERO);
+            }
+            else {
+                setAmount(amount.subtract(BigInteger.ONE));
+            }
+        }
+        else{
+            if(this.itemStack.getType() == Material.AIR) {
+                setItemStack(itemStack.getCraftItemStack().clone());
+            }
+
+            else if(!itemStack.getCraftItemStack().isSimilar(this.itemStack)){
+                ItemUtils.dropItem(getLocation(), itemStack.getCraftItemStack());
+                return;
+            }
+
+            setAmount(amount.add(BigInteger.valueOf(itemStack.getCraftItemStack().getAmount())));
+        }
+
+        update();
+    }
+
+    @Override
+    public void update() {
+        tileEntityContainer.getTransaction().stream()
+                .filter(viewer -> viewer instanceof Player)
+                .forEach(viewer -> openPage((Player) viewer, 0));
     }
 
     @Override
@@ -113,7 +186,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public Map<Integer, ItemStack> addRawItems(ItemStack... itemStacks) {
+    public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
 
         ItemStack storageItem = getItemStack();
@@ -127,7 +200,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             }
 
             if(storageItem.isSimilar(itemStack)) {
-                setAmount(getExactAmount().add(BigInteger.valueOf(itemStack.getAmount())));
+                setAmount(getAmount().add(BigInteger.valueOf(itemStack.getAmount())));
             }
             else {
                 additionalItems.put(i, itemStack);
@@ -145,7 +218,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         ItemStack itemStack = getItemStack();
 
-        BigInteger[] divideAndRemainder = amount.divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
+        BigInteger[] divideAndRemainder = getAmount().divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
         int amountOfMaximums = divideAndRemainder[0].intValue();
         int reminder = divideAndRemainder[1].intValue();
 
@@ -166,149 +239,153 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
-    private Set<UUID> recentlyClicked = new HashSet<>();
-
     @Override
     public boolean onInteract(InventoryClickEvent event) {
-        ItemStack cursor = event.getCursor();
+        Player clickedPlayer = (Player) event.getWhoClicked();
+        ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor();
+        ItemStack clickedItem = event.getCurrentItem() == null ? new ItemStack(Material.AIR) : event.getCurrentItem();
 
-        if(event.getRawSlot() >= 5 && !event.getClick().name().contains("SHIFT"))
-            return false;
-
-        if(event.getRawSlot() < 5 && event.getRawSlot() != 2){
+        if(event.getRawSlot() != 2 && event.getRawSlot() < 5){
             event.setCancelled(true);
             return false;
         }
 
-        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())) {
+        if(clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT") && !clickedItem.isSimilar(this.itemStack)){
             event.setCancelled(true);
             return false;
         }
 
-        recentlyClicked.add(event.getWhoClicked().getUniqueId());
-        Executor.sync(() -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
+        if(event.getRawSlot() == 2){
+            if(cursor.getType() != Material.AIR){
+                if(this.itemStack.getType() != Material.AIR && !cursor.isSimilar(this.itemStack)) {
+                    event.setCancelled(true);
+                    return false;
+                }
 
-        if(event.getClick().name().contains("SHIFT")){
-            if(event.getCurrentItem() == null)
-                return false;
-            cursor = event.getCurrentItem();
-            event.setCurrentItem(new ItemStack(Material.AIR));
-            event.getInventory().setItem(2, cursor);
-            event.setCancelled(true);
-        }
+                BigInteger currentAmount = getAmount();
+                BigInteger newAmount = currentAmount.add(BigInteger.valueOf(cursor.getAmount()));
+                BigInteger maxAmount = getMaxAmount();
+                int toAdd = cursor.getAmount();
 
-        ItemStack chestItem = getItemStack();
+                if(maxAmount.compareTo(BigInteger.ZERO) > 0 && newAmount.compareTo(maxAmount) > 0){
+                    toAdd = maxAmount.subtract(currentAmount).intValue();
+                }
 
-        if(cursor != null && cursor.getType() != Material.AIR) {
-            if (chestItem.getType() == Material.AIR) {
-                setItemStack(cursor);
-            }else if (!cursor.isSimilar(chestItem)) {
-                event.setCancelled(true);
-                return false;
+                if(toAdd != cursor.getAmount()){
+                    setAmount(maxAmount);
+                    ItemStack cursorItem = this.itemStack.clone();
+                    cursorItem.setAmount(toAdd);
+                    clickedPlayer.setItemOnCursor(cursorItem);
+                    updateInventory(getPage(0));
+                    event.setCancelled(true);
+                }
             }
 
-            //Add items into storage unit
-            Executor.sync(() -> {
-                if(event.getInventory().getItem(2) != null) {
-                    boolean hasMaxAmount = maxAmount.compareTo(BigInteger.ZERO) >= 0;
-                    BigInteger newAmount = amount.add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount()));
-                    BigInteger reminder = newAmount.subtract(maxAmount);
-                    if(hasMaxAmount)
-                        newAmount = newAmount.min(maxAmount);
-                    setAmount(newAmount);
+            else{
+                ItemStack newCursor = this.itemStack.clone();
 
-                    //Less than 0
-                    if(hasMaxAmount && reminder.compareTo(BigInteger.ZERO) > 0) {
-                        ItemStack itemStack = event.getInventory().getItem(2).clone();
-                        itemStack.setAmount(reminder.intValue());
-                        event.getWhoClicked().setItemOnCursor(itemStack);
-                    }
+                if(newCursor.getType() == Material.AIR)
+                    return false;
 
-                    event.getInventory().setItem(2, new ItemStack(Material.AIR));
-                    updateInventory(event.getInventory());
-                }
-            }, 1L);
-        }
-        else{
-            if(event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR)
-                return false;
+                int newAmount = getAmount().min(BigInteger.valueOf(this.itemStack.getMaxStackSize())).intValue();
 
-            //Take items out of storage unit
-            Executor.sync(() -> {
-                //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
-                BigInteger itemAmount = amount.min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
-                setAmount(amount.subtract(itemAmount));
-                chestItem.setAmount(itemAmount.intValue());
-                updateInventory(event.getInventory());
-                event.getWhoClicked().setItemOnCursor(chestItem);
-            }, 1L);
+                newCursor.setAmount(newAmount);
+
+                setAmount(getAmount().subtract(BigInteger.valueOf(newAmount)));
+
+                clickedPlayer.setItemOnCursor(newCursor);
+                updateInventory(getPage(0));
+            }
+
         }
 
         return true;
     }
 
-    @Override
-    public boolean onHopperMove(ItemStack _itemStack, Hopper hopper) {
-        ItemStack item = _itemStack.clone();
-        ItemStack itemStack = getItemStack();
-
-        Inventory page = getPage(0);
-        if(page == null)
-            return false;
-
-        if(itemStack.getType() == Material.AIR){
-            hopper.getInventory().removeItem(item);
-            setItemStack(item);
-            setAmount(item.getAmount());
-            updateInventory(page);
-            return true;
-        }
-
-        else if(_itemStack.isSimilar(itemStack)){
-            hopper.getInventory().removeItem(_itemStack);
-            setAmount(amount.add(BigInteger.valueOf(_itemStack.getAmount())));
-            updateInventory(page);
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean onHopperItemTake(Inventory hopperInventory) {
-        ItemStack itemStack = getItemStack();
-        Inventory page = getPage(0);
-
-        if(page == null)
-            return false;
-
-        int hopperAmount = plugin.getNMSAdapter().getHopperAmount(location.getWorld());
-
-        int amount = Math.min(ItemUtils.getSpaceLeft(hopperInventory, itemStack), hopperAmount);
-
-        if(amount == 0)
-            return false;
-
-        int itemAmount = this.amount.min(BigInteger.valueOf(itemStack.getMaxStackSize())).intValue();
-        amount = Math.min(amount, itemAmount);
-
-        itemStack.setAmount(amount);
-
-        HashMap<Integer, ItemStack> additionalItems = hopperInventory.addItem(itemStack);
-
-        if(additionalItems.isEmpty()) {
-            setAmount(this.amount.subtract(BigInteger.valueOf(amount)));
-            updateInventory(page);
-        }
-
-        return true;
-    }
+    //    @Override
+//    public boolean onInteract(InventoryClickEvent event) {
+//        ItemStack cursor = event.getCursor();
+//
+//        if(event.getRawSlot() >= 5 && !event.getClick().name().contains("SHIFT"))
+//            return false;
+//
+//        if(event.getRawSlot() < 5 && event.getRawSlot() != 2){
+//            event.setCancelled(true);
+//            return false;
+//        }
+//
+//        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())) {
+//            event.setCancelled(true);
+//            return false;
+//        }
+//
+//        recentlyClicked.add(event.getWhoClicked().getUniqueId());
+//        Executor.sync(() -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
+//
+//        if(event.getClick().name().contains("SHIFT")){
+//            if(event.getCurrentItem() == null)
+//                return false;
+//            cursor = event.getCurrentItem();
+//            event.setCurrentItem(new ItemStack(Material.AIR));
+//            event.getInventory().setItem(2, cursor);
+//            event.setCancelled(true);
+//        }
+//
+//        ItemStack chestItem = getItemStack();
+//
+//        if(cursor != null && cursor.getType() != Material.AIR) {
+//            if (chestItem.getType() == Material.AIR) {
+//                setItemStack(cursor);
+//            }else if (!cursor.isSimilar(chestItem)) {
+//                event.setCancelled(true);
+//                return false;
+//            }
+//
+//            //Add items into storage unit
+//            Executor.sync(() -> {
+//                if(event.getInventory().getItem(2) != null) {
+//                    boolean hasMaxAmount = getMaxAmount().compareTo(BigInteger.ZERO) >= 0;
+//                    BigInteger newAmount = getAmount().add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount()));
+//                    BigInteger reminder = newAmount.subtract(getMaxAmount());
+//                    if(hasMaxAmount)
+//                        newAmount = newAmount.min(getMaxAmount());
+//                    setAmount(newAmount);
+//
+//                    //Less than 0
+//                    if(hasMaxAmount && reminder.compareTo(BigInteger.ZERO) > 0) {
+//                        ItemStack itemStack = event.getInventory().getItem(2).clone();
+//                        itemStack.setAmount(reminder.intValue());
+//                        event.getWhoClicked().setItemOnCursor(itemStack);
+//                    }
+//
+//                    event.getInventory().setItem(2, new ItemStack(Material.AIR));
+//                    updateInventory(event.getInventory());
+//                }
+//            }, 1L);
+//        }
+//        else{
+//            if(event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR)
+//                return false;
+//
+//            //Take items out of storage unit
+//            Executor.sync(() -> {
+//                //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
+//                BigInteger itemAmount = getAmount().min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
+//                setAmount(getAmount().subtract(itemAmount));
+//                chestItem.setAmount(itemAmount.intValue());
+//                updateInventory(event.getInventory());
+//                event.getWhoClicked().setItemOnCursor(chestItem);
+//            }, 1L);
+//        }
+//
+//        return true;
+//    }
 
     @Override
     public void loadFromData(ResultSet resultSet) throws SQLException {
         setItemStack(plugin.getNMSAdapter().deserialzeItem(resultSet.getString("item")));
         setAmount(new BigInteger(resultSet.getString("amount")));
-        maxAmount = new BigInteger(resultSet.getString("max_amount"));
+        setMaxAmount(new BigInteger(resultSet.getString("max_amount")));
     }
 
     @Override
@@ -317,12 +394,12 @@ public final class WStorageChest extends WChest implements StorageChest {
             setItemStack(cfg.getItemStack("item"));
         if(cfg.contains("amount")) {
             if(cfg.isInt("amount"))
-                setAmount(cfg.getInt("amount"));
+                setAmount(BigInteger.valueOf(cfg.getInt("amount")));
             else if(cfg.isString("amount"))
                 setAmount(new BigInteger(cfg.getString("amount")));
         }
         if(cfg.contains("max-amount"))
-            maxAmount = new BigInteger(cfg.getString("max-amount"));
+            setMaxAmount(new BigInteger(cfg.getString("max-amount")));
     }
 
     @Override
@@ -331,9 +408,9 @@ public final class WStorageChest extends WChest implements StorageChest {
                 .setLocation(location)
                 .setString(placer.toString())
                 .setString(getData().getName())
-                .setItemStack(itemStack)
-                .setString(amount.toString())
-                .setString(maxAmount.toString())
+                .setItemStack(getItemStack())
+                .setString(getAmount().toString())
+                .setString(getMaxAmount().toString())
                 .execute(async);
     }
 
@@ -342,9 +419,9 @@ public final class WStorageChest extends WChest implements StorageChest {
         Query.STORAGE_UNIT_UPDATE.getStatementHolder()
                 .setString(placer.toString())
                 .setString(getData().getName())
-                .setItemStack(itemStack)
-                .setString(amount.toString())
-                .setString(maxAmount.toString())
+                .setItemStack(getItemStack())
+                .setString(getAmount().toString())
+                .setString(getMaxAmount().toString())
                 .setLocation(location)
                 .execute(async);
     }
@@ -357,16 +434,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private void updateInventory(Inventory inventory){
         inventory.getViewers().stream()
                 .filter(viewer -> viewer instanceof Player)
-                .forEach(viewer -> plugin.getNMSAdapter().refreshHopperInventory((Player) viewer, getPage(0)));
-    }
-
-    private static void initDefaultInventory(){
-        Inventory defaultInventory = Bukkit.createInventory(null, InventoryType.HOPPER);
-        defaultInventory.setItem(0, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
-        defaultInventory.setItem(1, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
-        defaultInventory.setItem(3, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
-        defaultInventory.setItem(4, Materials.BLACK_STAINED_GLASS_PANE.toBukkitItem());
-        WStorageChest.defaultInventory = defaultInventory.getContents();
+                .forEach(viewer -> openPage((Player) viewer, 0));
     }
 
 }

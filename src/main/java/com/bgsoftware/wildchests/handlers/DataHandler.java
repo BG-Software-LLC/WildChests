@@ -9,13 +9,13 @@ import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.objects.WLocation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,7 +31,7 @@ import java.util.UUID;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
 public final class DataHandler {
 
-    private WildChestsPlugin plugin;
+    private final WildChestsPlugin plugin;
 
     public DataHandler(WildChestsPlugin plugin){
         this.plugin = plugin;
@@ -80,7 +80,7 @@ public final class DataHandler {
         chestList.stream().filter(chest -> chest instanceof StorageChest).forEach(chest -> {
             StorageChest storageChest = (StorageChest) chest;
             storageUnitHolder.setItemStack(storageChest.getItemStack())
-                    .setString(storageChest.getExactAmount().toString())
+                    .setString(storageChest.getAmount().toString())
                     .setLocation(storageChest.getLocation())
                     .addBatch();
         });
@@ -133,7 +133,7 @@ public final class DataHandler {
                 if (Bukkit.getWorld(stringLocation.split(", ")[0]) == null) {
                     errorMessage = "Null world.";
                 } else {
-                    Location location = WLocation.of(stringLocation).getLocation();
+                    Location location = LocationUtils.fromString(stringLocation);
                     ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
                     if (location.getBlock().getType() == Material.CHEST) {
                         WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
@@ -168,7 +168,7 @@ public final class DataHandler {
                 cfg = YamlConfiguration.loadConfiguration(chestFile);
 
                 UUID placer = UUID.fromString(cfg.getString("placer"));
-                Location location = WLocation.of(chestFile.getName().replace(".yml", "")).getLocation();
+                Location location = LocationUtils.fromString(chestFile.getName().replace(".yml", ""));
                 ChestData chestData = plugin.getChestsManager().getChestData(cfg.getString("data"));
 
                 if(location.getBlock().getType() == Material.CHEST) {
