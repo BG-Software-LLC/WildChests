@@ -78,6 +78,7 @@ hooks:
 #      If you set it to true, the range will be checked as y-range only.
 # blacklist: A list of items that won't be picked up by the chests (only works for auto-suction for now)
 # whitelist: A list of items that will be picked up by the chests (only works for auto-suction for now)
+# particles: A list of particles that will be shown to the chest.
 
 chests:
   linked_chest:
