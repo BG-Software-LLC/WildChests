@@ -1,4 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
+import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
+import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
 import net.milkbowl.vault.economy.Economy;
 
@@ -21,35 +23,38 @@ import java.util.function.Predicate;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler {
 
-    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
-
     private boolean isVaultEnabled;
     private Economy economy;
 
-    private final PricesProvider pricesProvider;
     private final Map<UUID, Pair<Long, Double>> pendingTransactions = new HashMap<>();
+    private PricesProvider pricesProvider = new PricesProvider_Default();
 
-    public ProvidersHandler(){
-        switch (plugin.getSettings().pricesProvider.toUpperCase()){
-            case "SHOPGUIPLUS":
-                if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-                    pricesProvider = new PricesProvider_ShopGUIPlus();
-                    break;
-                }
-            case "ESSENTIALS":
-                if(Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
-                    pricesProvider = new PricesProvider_Essentials();
-                    break;
-                }
-            default:
-                pricesProvider = new PricesProvider_Default();
-        }
+    public ProvidersHandler(WildChestsPlugin plugin){
+        Executor.sync(() -> {
+            switch (plugin.getSettings().pricesProvider.toUpperCase()){
+                case "SHOPGUIPLUS":
+                    if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+                        pricesProvider = new PricesProvider_ShopGUIPlus();
+                        break;
+                    }
+                case "ESSENTIALS":
+                    if(Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
+                        pricesProvider = new PricesProvider_Essentials();
+                        break;
+                    }
+                default:
+                    WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
+            }
 
-        if(!initVault()){
-            WildChestsPlugin.log("");
-            WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
-            WildChestsPlugin.log("");
-        }
+            if(!initVault()){
+                WildChestsPlugin.log("");
+                WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
+                WildChestsPlugin.log("");
+            }
+
+            if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
+                SuperiorSkyblockHook.register(plugin);
+        });
     }
 
     /*

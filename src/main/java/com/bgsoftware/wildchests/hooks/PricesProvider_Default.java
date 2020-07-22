@@ -2,7 +2,6 @@ package com.bgsoftware.wildchests.hooks;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
-import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -11,10 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class PricesProvider_Default implements PricesProvider {
 
     public static Map<String, Double> prices = new ConcurrentHashMap<>();
-
-    public PricesProvider_Default(){
-        WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
-    }
 
     @Override
     public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {

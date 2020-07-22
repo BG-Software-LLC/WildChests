@@ -57,8 +57,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         settingsHandler = new SettingsHandler(this);
         dataHandler = new DataHandler(this);
         offlinePaymentsHandler = new OfflinePaymentsHandler(this);
-
-        Executor.sync(() -> providersHandler = new ProvidersHandler());
+        providersHandler = new ProvidersHandler(this);
 
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
         getServer().getPluginManager().registerEvents(new ChunksListener(this), this);
