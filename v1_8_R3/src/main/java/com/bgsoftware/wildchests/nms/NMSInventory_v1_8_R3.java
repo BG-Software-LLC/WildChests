@@ -28,6 +28,7 @@ import net.minecraft.server.v1_8_R3.EnumDirection;
 import net.minecraft.server.v1_8_R3.EnumParticle;
 import net.minecraft.server.v1_8_R3.IChatBaseComponent;
 import net.minecraft.server.v1_8_R3.IInventory;
+import net.minecraft.server.v1_8_R3.IUpdatePlayerListBox;
 import net.minecraft.server.v1_8_R3.IWorldInventory;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import net.minecraft.server.v1_8_R3.NBTTagByte;
@@ -135,7 +136,7 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
         return (TileEntityWildChest) world.getTileEntity(blockPosition);
     }
 
-    private static class TileEntityWildChest extends TileEntityChest implements IWorldInventory, TileEntityContainer {
+    private static class TileEntityWildChest extends TileEntityChest implements IWorldInventory, TileEntityContainer, IUpdatePlayerListBox {
 
         private static final BiPredicate<EntityItem, ChestData> suctionPredicate = (entityItem, chestData) -> {
             Key itemKey = Key.of(CraftItemStack.asCraftMirror(entityItem.getItemStack()));
