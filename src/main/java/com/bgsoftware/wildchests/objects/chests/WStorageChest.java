@@ -32,6 +32,8 @@ public final class WStorageChest extends WChest implements StorageChest {
     private BigInteger amount = BigInteger.ZERO, maxAmount;
     private final WildItemStack<?, ?>[] contents = new WildItemStack[5];
 
+    private boolean broken = false;
+
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
         maxAmount = chestData.getStorageUnitMaxAmount();
@@ -133,7 +135,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public WildItemStack<?, ?> getWildItem(int i) {
-        if(i == -1){
+        if(i == -1 || broken){
             return WildItemStack.AIR.cloneItemStack();
         }
         else {
@@ -214,6 +216,8 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public boolean onBreak(BlockBreakEvent event) {
+        broken = true;
+
         Location loc = getLocation();
 
         ItemStack itemStack = getItemStack();
