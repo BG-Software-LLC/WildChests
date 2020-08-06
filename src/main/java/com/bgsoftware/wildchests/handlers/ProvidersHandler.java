@@ -1,4 +1,5 @@
 package com.bgsoftware.wildchests.handlers;
+import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
@@ -35,6 +36,11 @@ public final class ProvidersHandler {
                 case "SHOPGUIPLUS":
                     if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
                         pricesProvider = new PricesProvider_ShopGUIPlus();
+                        break;
+                    }
+                case "QUANTUMSHOP":
+                    if(Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
+                        pricesProvider = new PricesProvider_QuantumShop();
                         break;
                     }
                 case "ESSENTIALS":

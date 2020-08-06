@@ -22,15 +22,14 @@ sell-command: ''
 # Set a chance of it to get dropped between 0 and 100.
 explode-drop-chance: 100
 
-# The plugin checks if ShopGUIPlus or Essentials is installed.
-# If both are not installed, it will use this list for the sell-chest
-# prices list. If both are installed, ShopGUIPlus's prices will be used.
+# What prices provider should the plugin use? (ShopGUIPlus, QuantumShop, Essentials, WildChests)
+prices-provider: 'ShopGUIPlus'
+
+# Built-in prices list.
+# Use the "ID:PRICE" or "ID:DATA:PRICE" formats.
 prices-list:
 - 'STONE:5' #Each stone will cost $5
 - 'LOG:0:5' #Only oak logs will cost $5
-
-# What prices provider should the plugin use? (ShopGUIPlus, Essentials, WildChests)
-prices-provider: 'ShopGUIPlus'
 
 # All settings related to database.
 database:
