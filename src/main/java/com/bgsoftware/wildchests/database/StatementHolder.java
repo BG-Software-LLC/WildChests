@@ -56,7 +56,7 @@ public class StatementHolder {
     }
 
     public StatementHolder setInventories(Inventory[] inventories){
-        values.put(currentIndex++, plugin.getNMSAdapter().serialize(inventories));
+        values.put(currentIndex++, inventories == null ? "" : plugin.getNMSAdapter().serialize(inventories));
         return this;
     }
 

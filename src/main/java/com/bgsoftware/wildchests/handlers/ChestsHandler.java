@@ -107,20 +107,7 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public List<LinkedChest> getAllLinkedChests(LinkedChest linkedChest) {
-        List<LinkedChest> linkedChests = new ArrayList<>();
-
-        LinkedChest originalLinkedChest = linkedChest.isLinkedIntoChest() ? linkedChest.getLinkedChest() : linkedChest;
-
-        for (Chest chest : chestsByLocations.values()) {
-            if (chest instanceof LinkedChest) {
-                LinkedChest targetChest = (LinkedChest) chest;
-                if (targetChest.equals(originalLinkedChest) ||
-                        (targetChest.isLinkedIntoChest() && targetChest.getLinkedChest().equals(originalLinkedChest)))
-                    linkedChests.add(targetChest);
-            }
-        }
-
-        return linkedChests;
+        return linkedChest.getAllLinkedChests();
     }
 
     @Override

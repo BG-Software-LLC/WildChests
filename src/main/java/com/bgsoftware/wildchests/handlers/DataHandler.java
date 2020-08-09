@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressWarnings({"ResultOfMethodCallIgnored", "ConstantConditions"})
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public final class DataHandler {
 
     private final WildChestsPlugin plugin;
@@ -56,7 +56,10 @@ public final class DataHandler {
         linkedChestInventoryHolder.prepareBatch();
         chestList.stream().filter(chest -> chest instanceof LinkedChest).forEach(chest -> {
             Location chestLocation = chest.getLocation();
-            linkedChestInventoryHolder.setInventories(chest.getPages()).setLocation(chestLocation).addBatch();
+            linkedChestInventoryHolder
+                    .setInventories(((LinkedChest) chest).isLinkedIntoChest() ? null : chest.getPages())
+                    .setLocation(chestLocation)
+                    .addBatch();
         });
         linkedChestInventoryHolder.execute(async);
 

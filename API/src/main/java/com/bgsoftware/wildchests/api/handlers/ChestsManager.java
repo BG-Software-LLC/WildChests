@@ -23,6 +23,7 @@ public interface ChestsManager {
 
     void removeChest(Chest chest);
 
+    @Deprecated
     List<LinkedChest> getAllLinkedChests(LinkedChest linkedChest);
 
     ChestData getChestData(String name);
