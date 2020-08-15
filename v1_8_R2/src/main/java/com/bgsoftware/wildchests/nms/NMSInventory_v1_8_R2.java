@@ -423,6 +423,8 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
 
     private static class WildInventory implements IInventory {
 
+        private static final WildItemStack<ItemStack, CraftItemStack> AIR = new WildItemStack<>(null, CraftItemStack.asCraftMirror(null));
+
         private final WildItemStack<ItemStack, CraftItemStack>[] items;
         private final Chest chest;
         private final int index;
@@ -449,7 +451,7 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
         }
 
         public WildItemStack<ItemStack, CraftItemStack> getWildItem(int i) {
-            return this.items[i];
+            return this.items[i] == null ? AIR : this.items[i];
         }
 
         public ItemStack splitStack(int slot, int amount) {
