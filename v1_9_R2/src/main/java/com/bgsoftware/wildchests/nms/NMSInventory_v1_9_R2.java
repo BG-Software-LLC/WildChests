@@ -12,6 +12,7 @@ import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.google.common.base.Predicate;
 import net.minecraft.server.v1_9_R2.AxisAlignedBB;
+import net.minecraft.server.v1_9_R2.Block;
 import net.minecraft.server.v1_9_R2.BlockPosition;
 import net.minecraft.server.v1_9_R2.Blocks;
 import net.minecraft.server.v1_9_R2.ChatComponentText;
@@ -298,6 +299,15 @@ public final class NMSInventory_v1_9_R2 implements NMSInventory {
 
             if(--currentCooldown >= 0)
                 return;
+
+            Block currentBlock = world.getType(position).getBlock();
+
+            if(currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST){
+                world.getChunkAtWorldCoords(position).tileEntities.remove(position);
+                world.capturedTileEntities.remove(position);
+                world.tileEntityListTick.remove(this);
+                return;
+            }
 
             currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 

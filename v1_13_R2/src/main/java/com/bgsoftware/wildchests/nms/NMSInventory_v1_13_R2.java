@@ -301,6 +301,15 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
             if(--currentCooldown >= 0)
                 return;
 
+            Block currentBlock = world.getType(position).getBlock();
+
+            if(currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST){
+                world.getChunkAtWorldCoords(position).tileEntities.remove(position);
+                world.capturedTileEntities.remove(position);
+                world.tileEntityListTick.remove(this);
+                return;
+            }
+
             currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
             if(suctionItems != null) {

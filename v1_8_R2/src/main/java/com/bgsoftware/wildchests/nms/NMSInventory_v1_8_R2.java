@@ -73,6 +73,7 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
 
         chunk.tileEntities.put(blockPosition, tileEntityWildChest);
         world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
+        world.tileEntityList.add(tileEntityWildChest);
     }
 
     @Override
@@ -292,6 +293,15 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
 
             if(--currentCooldown >= 0)
                 return;
+
+            Block currentBlock = world.getType(position).getBlock();
+
+            if(currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST){
+                world.getChunkAtWorldCoords(position).tileEntities.remove(position);
+                world.capturedTileEntities.remove(position);
+                world.tileEntityList.remove(this);
+                return;
+            }
 
             currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
