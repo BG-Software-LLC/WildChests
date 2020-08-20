@@ -1,19 +1,24 @@
 package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
+import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
+import net.brcdev.shopgui.ShopGuiPlusApi;
+import net.brcdev.shopgui.player.PlayerData;
+import net.brcdev.shopgui.shop.Shop;
+import net.brcdev.shopgui.shop.ShopItem;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.hooks.PricesProvider;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
-import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import java.util.HashMap;
@@ -35,7 +40,12 @@ public final class ProvidersHandler {
             switch (plugin.getSettings().pricesProvider.toUpperCase()){
                 case "SHOPGUIPLUS":
                     if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-                        pricesProvider = new PricesProvider_ShopGUIPlus();
+                        try {
+                            ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
+                            pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
+                        }catch (Throwable ex){
+                            pricesProvider = new PricesProvider_ShopGUIPlus();
+                        }
                         break;
                     }
                 case "QUANTUMSHOP":
