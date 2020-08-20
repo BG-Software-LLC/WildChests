@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.config.CommentedConfiguration;
 import com.bgsoftware.wildchests.key.KeySet;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -10,8 +11,6 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
-import com.bgsoftware.wildchests.config.CommentedConfiguration;
-import com.bgsoftware.wildchests.config.ConfigComments;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.objects.data.WInventoryData;
@@ -43,9 +42,8 @@ public final class SettingsHandler {
         if(!file.exists())
             plugin.saveResource("config.yml", false);
 
-        CommentedConfiguration cfg = new CommentedConfiguration(ConfigComments.class, file);
-
-        cfg.resetYamlFile(plugin, "config.yml");
+        CommentedConfiguration cfg = CommentedConfiguration.loadConfiguration(file);
+        cfg.syncWithConfig(file, plugin.getResource("config.yml"), "chests");
 
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         confirmGUI = cfg.getBoolean("confirm-gui", false);

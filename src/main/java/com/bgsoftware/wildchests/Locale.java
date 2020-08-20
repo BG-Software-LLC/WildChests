@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests;
 
 import com.bgsoftware.wildchests.config.CommentedConfiguration;
-import com.bgsoftware.wildchests.config.LangComments;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
@@ -86,18 +85,17 @@ public final class Locale {
         this.message = message;
     }
 
-    public static void reload(){
+    public static void reload(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading messages started...");
         long startTime = System.currentTimeMillis();
         int messagesAmount = 0;
-        File file = new File(WildChestsPlugin.getPlugin().getDataFolder(), "lang.yml");
+        File file = new File(plugin.getDataFolder(), "lang.yml");
 
         if(!file.exists())
             WildChestsPlugin.getPlugin().saveResource("lang.yml", false);
 
-        CommentedConfiguration cfg = new CommentedConfiguration(LangComments.class, file);
-
-        cfg.resetYamlFile(WildChestsPlugin.getPlugin(), "lang.yml");
+        CommentedConfiguration cfg = CommentedConfiguration.loadConfiguration(file);
+        cfg.syncWithConfig(file, plugin.getResource("lang.yml"));
 
         for(String identifier : localeMap.keySet()){
             localeMap.get(identifier).setMessage(ChatColor.translateAlternateColorCodes('&', cfg.getString(identifier, "")));

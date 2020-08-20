@@ -47,7 +47,7 @@ public final class CommandReload implements ICommand {
     public void perform(WildChestsPlugin plugin, CommandSender sender, String[] args) {
         Executor.async(() -> {
             SettingsHandler.reload();
-            Locale.reload();
+            Locale.reload(plugin);
             NotifierTask.start();
             Locale.RELOAD_SUCCESS.send(sender);
         });

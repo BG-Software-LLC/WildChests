@@ -68,7 +68,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         getCommand("chests").setExecutor(commandsHandler);
         getCommand("chests").setTabCompleter(commandsHandler);
 
-        Locale.reload();
+        Locale.reload(this);
         loadAPI();
         NotifierTask.start();
 
