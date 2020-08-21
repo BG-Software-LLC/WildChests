@@ -171,7 +171,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                 setItemStack(itemStack.getCraftItemStack().clone());
             }
 
-            else if(!itemStack.getCraftItemStack().isSimilar(this.itemStack)){
+            else if(!canPlaceItemThroughFace(itemStack.getCraftItemStack())){
                 ItemUtils.dropItem(getLocation(), itemStack.getCraftItemStack());
                 return;
             }
@@ -264,14 +264,14 @@ public final class WStorageChest extends WChest implements StorageChest {
             return false;
         }
 
-        if(clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT") && !clickedItem.isSimilar(this.itemStack)){
+        if(clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT") && !canPlaceItemThroughFace(clickedItem)){
             event.setCancelled(true);
             return false;
         }
 
         if(event.getRawSlot() == 2){
             if(cursor.getType() != Material.AIR){
-                if(this.itemStack.getType() != Material.AIR && !cursor.isSimilar(this.itemStack)) {
+                if(!canPlaceItemThroughFace(cursor)) {
                     event.setCancelled(true);
                     return false;
                 }
@@ -315,85 +315,6 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         return true;
     }
-
-    //    @Override
-//    public boolean onInteract(InventoryClickEvent event) {
-//        ItemStack cursor = event.getCursor();
-//
-//        if(event.getRawSlot() >= 5 && !event.getClick().name().contains("SHIFT"))
-//            return false;
-//
-//        if(event.getRawSlot() < 5 && event.getRawSlot() != 2){
-//            event.setCancelled(true);
-//            return false;
-//        }
-//
-//        if(recentlyClicked.contains(event.getWhoClicked().getUniqueId())) {
-//            event.setCancelled(true);
-//            return false;
-//        }
-//
-//        recentlyClicked.add(event.getWhoClicked().getUniqueId());
-//        Executor.sync(() -> recentlyClicked.remove(event.getWhoClicked().getUniqueId()));
-//
-//        if(event.getClick().name().contains("SHIFT")){
-//            if(event.getCurrentItem() == null)
-//                return false;
-//            cursor = event.getCurrentItem();
-//            event.setCurrentItem(new ItemStack(Material.AIR));
-//            event.getInventory().setItem(2, cursor);
-//            event.setCancelled(true);
-//        }
-//
-//        ItemStack chestItem = getItemStack();
-//
-//        if(cursor != null && cursor.getType() != Material.AIR) {
-//            if (chestItem.getType() == Material.AIR) {
-//                setItemStack(cursor);
-//            }else if (!cursor.isSimilar(chestItem)) {
-//                event.setCancelled(true);
-//                return false;
-//            }
-//
-//            //Add items into storage unit
-//            Executor.sync(() -> {
-//                if(event.getInventory().getItem(2) != null) {
-//                    boolean hasMaxAmount = getMaxAmount().compareTo(BigInteger.ZERO) >= 0;
-//                    BigInteger newAmount = getAmount().add(BigInteger.valueOf(event.getInventory().getItem(2).getAmount()));
-//                    BigInteger reminder = newAmount.subtract(getMaxAmount());
-//                    if(hasMaxAmount)
-//                        newAmount = newAmount.min(getMaxAmount());
-//                    setAmount(newAmount);
-//
-//                    //Less than 0
-//                    if(hasMaxAmount && reminder.compareTo(BigInteger.ZERO) > 0) {
-//                        ItemStack itemStack = event.getInventory().getItem(2).clone();
-//                        itemStack.setAmount(reminder.intValue());
-//                        event.getWhoClicked().setItemOnCursor(itemStack);
-//                    }
-//
-//                    event.getInventory().setItem(2, new ItemStack(Material.AIR));
-//                    updateInventory(event.getInventory());
-//                }
-//            }, 1L);
-//        }
-//        else{
-//            if(event.getCurrentItem() != null && event.getCurrentItem().getType() != Material.AIR)
-//                return false;
-//
-//            //Take items out of storage unit
-//            Executor.sync(() -> {
-//                //int itemAmount = Math.min(getItemStack().getMaxStackSize(), getAmount());
-//                BigInteger itemAmount = getAmount().min(BigInteger.valueOf(getItemStack().getMaxStackSize()));
-//                setAmount(getAmount().subtract(itemAmount));
-//                chestItem.setAmount(itemAmount.intValue());
-//                updateInventory(event.getInventory());
-//                event.getWhoClicked().setItemOnCursor(chestItem);
-//            }, 1L);
-//        }
-//
-//        return true;
-//    }
 
     @Override
     public void loadFromData(ResultSet resultSet) throws SQLException {
