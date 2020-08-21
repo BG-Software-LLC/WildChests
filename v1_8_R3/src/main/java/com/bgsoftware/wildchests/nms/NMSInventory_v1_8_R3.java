@@ -417,7 +417,8 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
         @Override
         public void update() {
             super.update();
-            chest.update();
+            if(chest instanceof StorageChest)
+                ((StorageChest) chest).update();
         }
 
         private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){

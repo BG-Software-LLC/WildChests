@@ -17,7 +17,6 @@ import java.util.UUID;
 public class WRegularChest extends WChest implements RegularChest {
 
     protected SyncedArray<CraftWildInventory> inventories;
-    protected long lastTimeUpdate = System.currentTimeMillis();
 
     public WRegularChest(UUID placer, Location location, ChestData chestData){
         super(placer, location, chestData);
@@ -106,16 +105,6 @@ public class WRegularChest extends WChest implements RegularChest {
             return;
 
         actualPage.setItem(slot, itemStack);
-    }
-
-    @Override
-    public void update() {
-//        long currentTime = System.currentTimeMillis();
-//
-//        if(currentTime - lastTimeUpdate >= 1000){
-//            lastTimeUpdate = currentTime;
-//            inventories.stream().forEach(inventory -> inventory.sellOrCraftInventory(null));
-//        }
     }
 
     @Override

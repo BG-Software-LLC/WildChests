@@ -93,10 +93,20 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
+    public BigInteger getExactAmount() {
+        return getAmount();
+    }
+
+    @Override
     public void setAmount(BigInteger amount) {
         this.amount = amount.max(BigInteger.ZERO);
         if(amount.compareTo(BigInteger.ZERO) == 0)
             setItemStack(null);
+    }
+
+    @Override
+    public void setAmount(int amount) {
+        setAmount(BigInteger.valueOf(amount));
     }
 
     @Override

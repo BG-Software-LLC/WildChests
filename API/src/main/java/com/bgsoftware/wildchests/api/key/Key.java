@@ -3,9 +3,13 @@ package com.bgsoftware.wildchests.api.key;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-public class Key {
+/**
+ * Class to convert item-stacks into a comparable object.
+ * This doesn't support ItemMeta, used for detection of blacklists & whitelists.
+ */
+public final class Key {
 
-    private String key;
+    private final String key;
 
     private Key(String key){
         this.key = key;
