@@ -296,18 +296,32 @@ public final class WStorageChest extends WChest implements StorageChest {
             }
 
             else{
-                ItemStack newCursor = this.itemStack.clone();
+                ItemStack itemToAdd = this.itemStack.clone();
 
-                if(newCursor.getType() == Material.AIR)
+                if(itemToAdd.getType() == Material.AIR)
                     return false;
 
                 int newAmount = getAmount().min(BigInteger.valueOf(this.itemStack.getMaxStackSize())).intValue();
+                itemToAdd.setAmount(newAmount);
 
-                newCursor.setAmount(newAmount);
+                if(event.getClick().name().contains("SHIFT")){
+                    Map<Integer, ItemStack> leftOvers = clickedPlayer.getInventory().addItem(itemToAdd);
+                    if(!leftOvers.isEmpty()){
+                        ItemStack leftOver = leftOvers.get(0);
+                        if(leftOver.getAmount() == newAmount) {
+                            return false;
+                        }
+                        else{
+                            newAmount -= leftOver.getAmount();
+                        }
+                    }
+                }
+                else{
+                    clickedPlayer.setItemOnCursor(itemToAdd);
+                }
 
                 setAmount(getAmount().subtract(BigInteger.valueOf(newAmount)));
 
-                clickedPlayer.setItemOnCursor(newCursor);
                 updateInventory(getPage(0));
             }
 
