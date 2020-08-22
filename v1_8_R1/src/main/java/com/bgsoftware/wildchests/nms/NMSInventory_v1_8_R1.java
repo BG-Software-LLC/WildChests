@@ -52,6 +52,7 @@ import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -411,7 +412,7 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
                 return itemStack;
             }
 
-            return super.splitStack(slot, amount);
+            return splitItem(slot, amount);
         }
 
         @Override
@@ -428,6 +429,24 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
         private Block getBlock(){
             return world.getType(position).getBlock();
+        }
+
+        private ItemStack splitItem(int i, int amount){
+            Inventory firstPage = chest.getPage(0);
+
+            if(firstPage == null)
+                return null;
+
+            int pageSize = firstPage.getSize();
+            int page = i / pageSize;
+            int slot = i % pageSize;
+
+            NMSInventory_v1_8_R1.CraftWildInventory actualPage = (NMSInventory_v1_8_R1.CraftWildInventory) chest.getPage(page);
+
+            if(actualPage == null)
+                return null;
+
+            return actualPage.getInventory().splitStack(slot, amount);
         }
 
     }
