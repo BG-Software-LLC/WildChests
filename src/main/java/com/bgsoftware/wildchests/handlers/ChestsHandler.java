@@ -8,6 +8,7 @@ import com.bgsoftware.wildchests.utils.ChunkPosition;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -23,6 +24,7 @@ import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +36,9 @@ public final class ChestsHandler implements ChestsManager {
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private final Map<String, ChestData> chestsData = new HashMap<>();
-    private final Map<Location, WChest> chestsByLocations = Maps.newConcurrentMap();
-    private final Map<ChunkPosition, Set<WChest>> chestsByChunks = Maps.newConcurrentMap();
+    private final Map<Location, Chest> chestsByLocations = Maps.newConcurrentMap();
+    private final Map<ChunkPosition, Set<Chest>> chestsByChunks = Maps.newConcurrentMap();
+    private final Set<Chest> cachedChests = Sets.newConcurrentHashSet();
 
     @Override
     public Chest getChest(Location location) {
@@ -76,6 +79,7 @@ public final class ChestsHandler implements ChestsManager {
                 throw new IllegalArgumentException("Invalid chest at " + location);
         }
 
+        cachedChests.add(chest);
         chestsByLocations.put(location, chest);
         chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
         plugin.getNMSInventory().updateTileEntity(chest);
@@ -86,7 +90,7 @@ public final class ChestsHandler implements ChestsManager {
     public void loadChestsData(Map<String, ChestData> chestsData){
         this.chestsData.clear();
         this.chestsData.putAll(chestsData);
-        chestsByLocations.values().forEach(chest -> chest.getTileEntityContainer().updateData());
+        chestsByLocations.values().forEach(chest -> ((WChest) chest).getTileEntityContainer().updateData());
     }
 
     private boolean isChest(Location location) {
@@ -94,8 +98,11 @@ public final class ChestsHandler implements ChestsManager {
         if(!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
             return true;
 
-        if(location.getBlock().getType() != Material.CHEST)
-            chestsByLocations.remove(location);
+        if(location.getBlock().getType() != Material.CHEST) {
+            Chest chest = chestsByLocations.remove(location);
+            if(chest != null)
+                cachedChests.remove(chest);
+        }
 
         return chestsByLocations.containsKey(location);
     }
@@ -103,6 +110,7 @@ public final class ChestsHandler implements ChestsManager {
     @Override
     public void removeChest(Chest chest) {
         chestsByLocations.remove(chest.getLocation());
+        cachedChests.remove(chest);
     }
 
     @Override
@@ -126,7 +134,13 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public List<Chest> getChests() {
-        return Collections.unmodifiableList(new ArrayList<>(chestsByLocations.values()));
+        return Collections.unmodifiableList(new ArrayList<>(cachedChests));
+    }
+
+    @Override
+    public List<Chest> getChests(Chunk chunk) {
+        Set<Chest> chunkChests = chestsByChunks.getOrDefault(ChunkPosition.of(chunk), new HashSet<>());
+        return Collections.unmodifiableList(new ArrayList<>(chunkChests));
     }
 
     @Override

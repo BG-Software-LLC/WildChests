@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
@@ -355,6 +356,20 @@ public abstract class WChest implements Chest {
                 }
             }
         }
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WChest wChest = (WChest) o;
+        return location.equals(wChest.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(location);
     }
 
     private int getViewersAmount(List<HumanEntity> viewersList){

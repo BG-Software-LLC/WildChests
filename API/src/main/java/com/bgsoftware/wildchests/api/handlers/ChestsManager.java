@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.api.handlers;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
@@ -78,6 +79,11 @@ public interface ChestsManager {
      * Get all the chests on the server, including in unloaded chunks.
      */
     List<Chest> getChests();
+
+    /**
+     * Get all the chests in a specific chunk.
+     */
+    List<Chest> getChests(Chunk chunk);
 
     /**
      * Get all the nearby chests for a location, for the suction chest.
