@@ -10,6 +10,7 @@ import net.minecraft.server.v1_16_R2.Entity;
 import net.minecraft.server.v1_16_R2.EntityItem;
 import net.minecraft.server.v1_16_R2.ItemStack;
 import net.minecraft.server.v1_16_R2.NBTCompressedStreamTools;
+import net.minecraft.server.v1_16_R2.NBTReadLimiter;
 import net.minecraft.server.v1_16_R2.NBTTagCompound;
 import net.minecraft.server.v1_16_R2.NBTTagList;
 import net.minecraft.server.v1_16_R2.TileEntityChest;
@@ -25,6 +26,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.math.BigInteger;
@@ -110,7 +112,7 @@ public final class NMSAdapter_v1_16_R2 implements NMSAdapter {
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
-            NBTTagCompound tagCompound = NBTCompressedStreamTools.a(inputStream);
+            NBTTagCompound tagCompound = NBTCompressedStreamTools.a(new DataInputStream(inputStream), NBTReadLimiter.a);
             int length = tagCompound.getInt("Length");
             inventories = new InventoryHolder[length];
 
@@ -136,7 +138,7 @@ public final class NMSAdapter_v1_16_R2 implements NMSAdapter {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
 
         try {
-            NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(inputStream);
+            NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream), NBTReadLimiter.a);
 
             ItemStack nmsItem = ItemStack.a(nbtTagCompoundRoot);
 
@@ -184,7 +186,7 @@ public final class NMSAdapter_v1_16_R2 implements NMSAdapter {
         return CraftItemStack.asBukkitCopy(nmsItem);
     }
 
-    private void serialize(Inventory inventory, NBTTagCompound tagCompound){
+    private static void serialize(Inventory inventory, NBTTagCompound tagCompound){
         NBTTagList itemsList = new NBTTagList();
         org.bukkit.inventory.ItemStack[] items = inventory.getContents();
 
@@ -201,7 +203,7 @@ public final class NMSAdapter_v1_16_R2 implements NMSAdapter {
         tagCompound.set("Items", itemsList);
     }
 
-    private InventoryHolder deserialize(NBTTagCompound tagCompound){
+    private static InventoryHolder deserialize(NBTTagCompound tagCompound){
         InventoryHolder inventory = new InventoryHolder(tagCompound.getInt("Size"), "Chest");
         NBTTagList itemsList = tagCompound.getList("Items", 10);
 
