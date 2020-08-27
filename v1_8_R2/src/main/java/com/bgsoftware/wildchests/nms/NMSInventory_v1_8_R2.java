@@ -56,6 +56,7 @@ import org.bukkit.inventory.Inventory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -468,6 +469,7 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
             this.title = title == null ? "Chest" : title;
             //noinspection all
             this.items = new WildItemStack[size];
+            Arrays.fill(this.items, AIR);
             this.chest = chest;
             this.index = index;
         }
