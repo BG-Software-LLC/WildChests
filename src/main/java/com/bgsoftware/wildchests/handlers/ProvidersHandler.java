@@ -4,7 +4,6 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.Pair;
-import net.brcdev.shopgui.ShopGuiPlusApi;
 import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
@@ -41,6 +40,7 @@ public final class ProvidersHandler {
                 case "SHOPGUIPLUS":
                     if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
                         try {
+                            //noinspection JavaReflectionMemberAccess
                             ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
                             pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
                         }catch (Throwable ex){
@@ -77,8 +77,8 @@ public final class ProvidersHandler {
      * Hooks' methods
      */
 
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        return pricesProvider.getPrice(offlinePlayer, itemStack) * multiplier;
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack){
+        return pricesProvider.getPrice(offlinePlayer, itemStack);
     }
 
     /*
@@ -104,8 +104,8 @@ public final class ProvidersHandler {
         return true;
     }
 
-    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack, double multiplier){
-        double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack, multiplier);
+    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack){
+        double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack);
         return TransactionResult.of(price, _price -> isVaultEnabled && price > 0);
     }
 

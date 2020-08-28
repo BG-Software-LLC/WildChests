@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 public final class ChestUtils {
 
@@ -80,28 +79,30 @@ public final class ChestUtils {
         if(toSell == null || toSell.getType() == Material.AIR)
             return false;
 
-        UUID placer = chest.getPlacer();
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(chest.getPlacer());
 
-        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chest.getData().getMultiplier());
-        Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
-
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(placer);
-
-        ProvidersHandler.TransactionResult<Double> transactionResult =
-                plugin.getProviders().canSellItem(offlinePlayer, toSell, sellChestTaskEvent.getMultiplier());
+        ProvidersHandler.TransactionResult<Double> transactionResult = plugin.getProviders().canSellItem(offlinePlayer, toSell);
 
         if (!transactionResult.isSuccess())
             return false;
 
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chest.getData().getMultiplier());
+        Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
+
+        double finalPrice = transactionResult.getData() * sellChestTaskEvent.getMultiplier();
+
+        if(finalPrice <= 0)
+            return false;
+
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            plugin.getProviders().depositPlayer(offlinePlayer, transactionResult.getData());
+            plugin.getProviders().depositPlayer(offlinePlayer, finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
                     .replace("{player-name}", offlinePlayer.getName())
-                    .replace("{price}", String.valueOf(transactionResult.getData())));
+                    .replace("{price}", String.valueOf(finalPrice)));
         }
 
-        NotifierTask.addTransaction(placer, toSell, toSell.getAmount(), transactionResult.getData());
+        NotifierTask.addTransaction(offlinePlayer.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
 
         return true;
     }

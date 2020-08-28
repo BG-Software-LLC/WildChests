@@ -51,7 +51,7 @@ public final class OfflinePaymentsHandler {
 
             ItemStack itemStack = plugin.getNMSAdapter().deserialzeItem(itemSerialized);
             multiplier *= itemStack.getAmount();
-            double totalAmount = plugin.getProviders().getPrice(offlinePlayer, itemStack, multiplier);
+            double totalAmount = plugin.getProviders().getPrice(offlinePlayer, itemStack) * multiplier;
 
             if(plugin.getSettings().sellCommand.isEmpty()) {
                 if(!plugin.getProviders().depositPlayer(offlinePlayer, totalAmount)){
