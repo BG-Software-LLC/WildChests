@@ -6,6 +6,7 @@ import net.brcdev.shopgui.ShopGuiPlugin;
 import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
+import net.brcdev.shopgui.util.ItemUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -35,11 +36,9 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
         Pair<ShopItem, Shop> shopPair = cachedShopItems.computeIfAbsent(wrappedItemStack, i -> {
             Map<String, Shop> shops = plugin.getShopManager().shops;
             for (Shop shop : shops.values()) {
-                for (ShopItem _shopItem : shop.getShopItems()) {
-                    if (_shopItem.getItem().isSimilar(itemStack)) {
+                for (ShopItem _shopItem : shop.getShopItems())
+                    if (ItemUtils.compareItemStacks(_shopItem.getItem(), itemStack, _shopItem.isCompareMeta()))
                         return new Pair<>(_shopItem, shop);
-                    }
-                }
             }
 
             return null;
