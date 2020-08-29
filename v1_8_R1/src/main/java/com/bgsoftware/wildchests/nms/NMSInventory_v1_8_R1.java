@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.nms;
 
-import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
@@ -44,6 +43,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_8_R1.entity.CraftItem;
 import org.bukkit.craftbukkit.v1_8_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_8_R1.event.CraftEventFactory;
 import org.bukkit.craftbukkit.v1_8_R1.inventory.CraftInventory;
@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 
 @SuppressWarnings("unused")
 public final class NMSInventory_v1_8_R1 implements NMSInventory {
@@ -138,13 +137,6 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
     }
 
     private static class TileEntityWildChest extends TileEntityChest implements IWorldInventory, TileEntityContainer, IUpdatePlayerListBox {
-
-        private static final BiPredicate<EntityItem, ChestData> suctionPredicate = (entityItem, chestData) -> {
-            Key itemKey = Key.of(CraftItemStack.asCraftMirror(entityItem.getItemStack()));
-            return entityItem.isAlive() && entityItem.getItemStack() != null &&
-                    (chestData.getWhitelisted().isEmpty() || chestData.getWhitelisted().contains(itemKey)) &&
-                    !chestData.getBlacklisted().contains(itemKey);
-        };
 
         private final TileEntityChest tileEntityChest = new TileEntityChest();
         private final Chest chest;
@@ -307,8 +299,8 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
             if(suctionItems != null) {
                 //noinspection unchecked
-                for (Entity entity : (List<Entity>) world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>)
-                        entity -> suctionPredicate.test((EntityItem) entity, chestData))) {
+                for (Entity entity : (List<Entity>) world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>) entity ->
+                        entity != null && ChestUtils.SUCTION_PREDICATE.test((CraftItem) entity.getBukkitEntity(), chestData))) {
                     EntityItem entityItem = (EntityItem) entity;
                     org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
                     Item item = (Item) entityItem.getBukkitEntity();

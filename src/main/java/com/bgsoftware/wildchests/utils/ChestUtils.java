@@ -1,8 +1,10 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
+import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.task.NotifierTask;
@@ -10,6 +12,7 @@ import com.bgsoftware.wildchests.task.NotifierTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -19,11 +22,20 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiPredicate;
 
 public final class ChestUtils {
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     public static final short DEFAULT_COOLDOWN = 20;
+
+    public static final BiPredicate<Item, ChestData> SUCTION_PREDICATE = (item, chestData) -> {
+        Key itemKey = item.getItemStack() == null ? Key.of("AIR:0") : Key.of(item.getItemStack());
+        return !item.isDead() && !itemKey.toString().equals("AIR:0") &&
+                item.getPickupDelay() < plugin.getSettings().maximumPickupDelay &&
+                (chestData.getWhitelisted().isEmpty() || chestData.getWhitelisted().contains(itemKey)) &&
+                !chestData.getBlacklisted().contains(itemKey);
+    };
 
     public static void tryCraftChest(Chest chest){
         Inventory[] pages = chest.getPages();

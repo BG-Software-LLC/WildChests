@@ -32,6 +32,7 @@ public final class SettingsHandler {
     public final int explodeDropChance;
     public final boolean invalidWorldDelete;
     public final boolean wildStackerHook;
+    public final int maximumPickupDelay;
 
     public SettingsHandler(WildChestsPlugin plugin){
         WildChestsPlugin.log("Loading configuration started...");
@@ -52,6 +53,7 @@ public final class SettingsHandler {
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
         wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);
+        maximumPickupDelay = cfg.getInt("maximum-pickup-delay", 32767);
 
         Map<String, Double> prices = new HashMap<>();
 
