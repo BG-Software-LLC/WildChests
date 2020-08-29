@@ -54,7 +54,6 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -405,15 +404,8 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
 
         @Override
         public ItemStack splitStack(int slot, int amount) {
-            if (slot == -2 && chest instanceof StorageChest) {
-                ItemStack itemStack = this.getItem(slot);
-                if(itemStack != null)
-                    itemStack.count = ((WStorageChest) chest).getAmount().min(BigInteger.valueOf(amount)).intValue();
-                ((WStorageChest) chest).setAmount(((WStorageChest) chest).getAmount().subtract(BigInteger.valueOf(amount)));
-                return itemStack;
-            }
-
-            return splitItem(slot, amount);
+            return slot != -2 || !(chest instanceof StorageChest) ? splitItem(slot, amount) :
+                    (ItemStack) ((WStorageChest) chest).splitItem(amount).getItemStack();
         }
 
         @Override

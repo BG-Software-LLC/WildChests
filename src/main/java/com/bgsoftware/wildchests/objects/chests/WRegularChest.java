@@ -11,6 +11,7 @@ import com.bgsoftware.wildchests.utils.SyncedArray;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
@@ -66,7 +67,20 @@ public class WRegularChest extends WChest implements RegularChest {
 
     @Override
     public WildItemStack<?, ?>[] getWildContents() {
-        return getNextFree().getWildContents();
+        WildItemStack<?, ?>[] contents = new WildItemStack[0];
+        int pagesAmount = getPagesAmount();
+
+        if(pagesAmount == 0)
+            return contents;
+
+        for(int page = 0; page < pagesAmount; page++){
+            CraftWildInventory inventory = inventories.get(page);
+            int oldLength = contents.length;
+            contents = Arrays.copyOf(contents, contents.length + inventory.getSize());
+            System.arraycopy(inventory.getWildContents(), 0, contents, oldLength, inventory.getSize());
+        }
+
+        return contents;
     }
 
     @Override

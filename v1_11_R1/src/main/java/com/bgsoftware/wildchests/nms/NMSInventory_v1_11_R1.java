@@ -417,14 +417,8 @@ public final class NMSInventory_v1_11_R1 implements NMSInventory {
 
         @Override
         public ItemStack splitStack(int slot, int amount) {
-            if (slot == -2 && chest instanceof StorageChest) {
-                ItemStack itemStack = this.getItem(slot);
-                itemStack.setCount(((WStorageChest) chest).getAmount().min(BigInteger.valueOf(amount)).intValue());
-                ((WStorageChest) chest).setAmount(((WStorageChest) chest).getAmount().subtract(BigInteger.valueOf(amount)));
-                return itemStack;
-            }
-
-            return super.splitStack(slot, amount);
+            return slot != -2 || !(chest instanceof StorageChest) ? super.splitStack(slot, amount) :
+                    (ItemStack) ((WStorageChest) chest).splitItem(amount).getItemStack();
         }
 
         @Override
