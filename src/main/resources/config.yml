@@ -22,7 +22,7 @@ sell-command: ''
 # Set a chance of it to get dropped between 0 and 100.
 explode-drop-chance: 100
 
-# What prices provider should the plugin use? (ShopGUIPlus, QuantumShop, Essentials, WildChests)
+# What prices provider should the plugin use? (ShopGUIPlus, QuantumShop, Essentials, zShop, WildChests)
 prices-provider: 'ShopGUIPlus'
 
 # Built-in prices list.
