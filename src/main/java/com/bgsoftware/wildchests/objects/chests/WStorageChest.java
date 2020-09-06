@@ -103,6 +103,8 @@ public final class WStorageChest extends WChest implements StorageChest {
             setItemStack(null);
         }
         else{
+            // We must clone the item, otherwise a dupe will occur
+            contents[2] = contents[2].cloneItemStack();
             ItemStack storageItem = contents[2].getCraftItemStack();
             storageItem.setAmount(Math.min(storageItem.getMaxStackSize(), amount.intValue()));
         }
@@ -176,7 +178,15 @@ public final class WStorageChest extends WChest implements StorageChest {
                 return;
             }
 
-            setAmount(amount.add(BigInteger.valueOf(itemStack.getCraftItemStack().getAmount())));
+            int itemAmount = itemStack.getCraftItemStack().getAmount();
+            int originalAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
+
+            if(itemAmount < originalAmount){
+                setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
+            }
+            else{
+                setAmount(amount.add(BigInteger.valueOf(itemAmount)));
+            }
         }
 
         update();
