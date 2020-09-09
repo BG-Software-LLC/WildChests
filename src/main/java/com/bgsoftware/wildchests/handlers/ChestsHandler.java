@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
+import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
@@ -88,8 +89,14 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     public void loadChestsData(Map<String, ChestData> chestsData){
-        this.chestsData.clear();
-        this.chestsData.putAll(chestsData);
+        for(Map.Entry<String, ChestData> entry : chestsData.entrySet()){
+            if(this.chestsData.containsKey(entry.getKey())){
+                ((WChestData) this.chestsData.get(entry.getKey())).loadFromData((WChestData) entry.getValue());
+            }
+            else{
+                this.chestsData.put(entry.getKey(), entry.getValue());
+            }
+        }
         chestsByLocations.values().forEach(chest -> ((WChest) chest).getTileEntityContainer().updateData());
     }
 

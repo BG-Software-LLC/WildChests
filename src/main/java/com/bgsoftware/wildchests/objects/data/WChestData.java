@@ -23,21 +23,21 @@ import java.util.Set;
 public final class WChestData implements ChestData {
 
     private final String name;
-    private final ItemStack itemStack;
     private final String chestType;
 
+    private ItemStack itemStack;
     private int defaultSize;
     private String defaultTitle;
     private boolean sellMode;
     private boolean hopperFilter;
-    private final Map<Recipe, List<RecipeUtils.RecipeIngredient>> recipes;
+    private Map<Recipe, List<RecipeUtils.RecipeIngredient>> recipes;
     private Map<Integer, InventoryData> pagesData;
     private int defaultPagesAmount;
     private double multiplier;
     private boolean autoCollect;
     private int autoSuctionRange;
     private boolean autoSuctionChunk;
-    private final KeySet blacklisted, whitelisted;
+    private KeySet blacklisted, whitelisted;
     private List<String> particles;
 
     //Storage Units only!
@@ -287,4 +287,24 @@ public final class WChestData implements ChestData {
                 "recipes=" + getRecipes() +
                 "}";
     }
+
+    public void loadFromData(WChestData chestData){
+        this.itemStack = chestData.itemStack;
+        this.defaultSize = chestData.defaultSize;
+        this.defaultTitle = chestData.defaultTitle;
+        this.sellMode = chestData.sellMode;
+        this.hopperFilter = chestData.hopperFilter;
+        this.recipes = chestData.recipes;
+        this.pagesData = chestData.pagesData;
+        this.defaultPagesAmount = chestData.defaultPagesAmount;
+        this.multiplier = chestData.multiplier;
+        this.autoCollect = chestData.autoCollect;
+        this.autoSuctionRange = chestData.autoSuctionRange;
+        this.autoSuctionChunk = chestData.autoSuctionChunk;
+        this.blacklisted = chestData.blacklisted;
+        this.whitelisted = chestData.whitelisted;
+        this.particles = chestData.particles;
+        this.maxAmount = chestData.maxAmount;
+    }
+
 }

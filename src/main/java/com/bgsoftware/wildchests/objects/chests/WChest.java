@@ -50,14 +50,14 @@ public abstract class WChest implements Chest {
 
     protected final UUID placer;
     protected final Location location;
-    protected final String name;
+    protected final ChestData chestData;
 
     protected TileEntityContainer tileEntityContainer;
 
     public WChest(UUID placer, Location location, ChestData chestData) {
         this.placer = placer;
         this.location = location;
-        this.name = chestData.getName();
+        this.chestData = chestData;
     }
 
     /* CHEST RELATED METHODS */
@@ -74,7 +74,7 @@ public abstract class WChest implements Chest {
 
     @Override
     public ChestData getData() {
-        return plugin.getChestsManager().getChestData(name);
+        return chestData;
     }
 
     @Override
