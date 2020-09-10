@@ -181,9 +181,9 @@ public final class WStorageChest extends WChest implements StorageChest {
             int itemAmount = itemStack.getCraftItemStack().getAmount();
             int originalAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
 
-            // The slot -1 is used for hoppers to pull items into the storage units.
+            // The slot -1 is used for hoppers to push items into the storage units.
             // Therefore, if the slot is -1 we must add the item amount
-            if(i != -1 && itemAmount < originalAmount){
+            if(i == 2 || (i != -1 && itemAmount < originalAmount)){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
             }
             else{
