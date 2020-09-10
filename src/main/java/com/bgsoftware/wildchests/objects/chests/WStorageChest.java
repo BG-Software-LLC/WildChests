@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -31,7 +32,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private BigInteger amount = BigInteger.ZERO, maxAmount;
     private final WildItemStack<?, ?>[] contents = new WildItemStack[5];
 
-    private boolean broken = false;
+    private boolean broken = false, lastItemAddedFromInventory = false;
 
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
@@ -183,13 +184,15 @@ public final class WStorageChest extends WChest implements StorageChest {
 
             // The slot -1 is used for hoppers to push items into the storage units.
             // Therefore, if the slot is -1 we must add the item amount
-            if(i == 2 || (i != -1 && itemAmount < originalAmount)){
+            if(!lastItemAddedFromInventory && (i == 2 || (i != -1 && itemAmount < originalAmount))){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
             }
             else{
                 setAmount(amount.add(BigInteger.valueOf(itemAmount)));
             }
         }
+
+        lastItemAddedFromInventory = false;
 
         update();
     }
@@ -286,6 +289,11 @@ public final class WStorageChest extends WChest implements StorageChest {
         if(clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT") && !canPlaceItemThroughFace(clickedItem)){
             event.setCancelled(true);
             return false;
+        }
+
+        if(event.getRawSlot() == 2 || (clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT"))) {
+            lastItemAddedFromInventory = true;
+            Executor.sync(() -> lastItemAddedFromInventory = false, 1L);
         }
 
         ItemStack storageItem = contents[2].getCraftItemStack();
