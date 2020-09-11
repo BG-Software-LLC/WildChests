@@ -4,7 +4,6 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
-import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -32,7 +31,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private BigInteger amount = BigInteger.ZERO, maxAmount;
     private final WildItemStack<?, ?>[] contents = new WildItemStack[5];
 
-    private boolean broken = false, lastItemAddedFromInventory = false;
+    private boolean broken = false;
 
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
@@ -78,13 +77,13 @@ public final class WStorageChest extends WChest implements StorageChest {
         if(amount.compareTo(BigInteger.ZERO) < 1)
             setItemStack(null);
 
-        return contents[2].getCraftItemStack();
+        return contents[1].getCraftItemStack();
     }
 
     @Override
     public void setItemStack(ItemStack itemStack) {
-        contents[2] = itemStack == null ? WildItemStack.AIR : WildItemStack.of(itemStack);
-        plugin.getNMSInventory().createDesignItem(inventory, contents[2].getCraftItemStack());
+        contents[1] = itemStack == null ? WildItemStack.AIR : WildItemStack.of(itemStack);
+        plugin.getNMSInventory().createDesignItem(inventory, contents[1].getCraftItemStack());
     }
 
     @Override
@@ -105,8 +104,8 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
         else{
             // We must clone the item, otherwise a dupe will occur
-            contents[2] = contents[2].cloneItemStack();
-            ItemStack storageItem = contents[2].getCraftItemStack();
+            contents[1] = contents[1].cloneItemStack();
+            ItemStack storageItem = contents[1].getCraftItemStack();
             storageItem.setAmount(Math.min(storageItem.getMaxStackSize(), amount.intValue()));
         }
     }
@@ -129,36 +128,36 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public int[] getSlotsForFace() {
         /* I am using IWorldInventory so I can force hoppers to check specific slots.
-           The slots that I want the hoppers to check are -1, -2, and 2.
+           The slots that I want the hoppers to check are -1, -2, and 1.
                 Slot -1: Will always return air, which is used when hoppers moving items into the chest.
                 (so they add the item to the chest instead of changing the item's count)
                 Slot -2: Will return the chest's item, but with a count of one.
                 (so hoppers that pulling items will set the item in the chest to air instead of changing count)
-                Slot 2: Will return the chest's item, but with the correct amount.
-                (Default getItem method, but using slot 2 so it will count as a valid slot in canTakeItemThroughFace)
+                Slot 1: Will return the chest's item, but with the correct amount.
+                (Default getItem method, but using slot 1 so it will count as a valid slot in canTakeItemThroughFace)
         */
-        return new int[] { -1, -2, 2 };
+        return new int[] { -1, -2, 1 };
     }
 
     @Override
     public boolean canPlaceItemThroughFace(ItemStack itemStack) {
-        ItemStack storageItem = contents[2].getCraftItemStack();
+        ItemStack storageItem = contents[1].getCraftItemStack();
         return storageItem.getType() == Material.AIR || itemStack.isSimilar(storageItem);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack itemStack) {
-        return slot < 0 || slot == 2;
+        return slot < 0 || slot == 1;
     }
 
     @Override
     public WildItemStack<?, ?> getWildItem(int i) {
-        return i == -1 || broken ? contents[0] : i == -2 ? contents[2] : contents[i];
+        return i == -1 || broken ? contents[0] : i == -2 ? contents[1] : contents[i];
     }
 
     @Override
     public void setItem(int i, WildItemStack<?, ?> itemStack) {
-        ItemStack storageItem = contents[2].getCraftItemStack();
+        ItemStack storageItem = contents[1].getCraftItemStack();
 
         if(itemStack == null || itemStack.getCraftItemStack().getType() == Material.AIR){
             if(amount.compareTo(BigInteger.ONE) == 0){
@@ -184,7 +183,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
             // The slot -1 is used for hoppers to push items into the storage units.
             // Therefore, if the slot is -1 we must add the item amount
-            if(!lastItemAddedFromInventory && (i == 2 || (i != -1 && itemAmount < originalAmount))){
+            if(i == 1 || i == -2 || (i != -1 && i != 2 && itemAmount < originalAmount && amount.intValue() < storageItem.getMaxStackSize())){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
             }
             else{
@@ -192,13 +191,11 @@ public final class WStorageChest extends WChest implements StorageChest {
             }
         }
 
-        lastItemAddedFromInventory = false;
-
         update();
     }
 
     public WildItemStack<?, ?> splitItem(int amount){
-        WildItemStack<?, ?> itemStack = WildItemStack.of(contents[2].getCraftItemStack());
+        WildItemStack<?, ?> itemStack = WildItemStack.of(contents[1].getCraftItemStack());
         itemStack.getCraftItemStack().setAmount(this.amount.min(BigInteger.valueOf(amount)).intValue());
         setAmount(this.amount.subtract(BigInteger.valueOf(amount)));
         return itemStack;
@@ -291,12 +288,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             return false;
         }
 
-        if(event.getRawSlot() == 2 || (clickedItem.getType() != Material.AIR && event.getClick().name().contains("SHIFT"))) {
-            lastItemAddedFromInventory = true;
-            Executor.sync(() -> lastItemAddedFromInventory = false, 1L);
-        }
-
-        ItemStack storageItem = contents[2].getCraftItemStack();
+        ItemStack storageItem = contents[1].getCraftItemStack();
 
         if(event.getRawSlot() == 2){
             if(cursor.getType() != Material.AIR){
