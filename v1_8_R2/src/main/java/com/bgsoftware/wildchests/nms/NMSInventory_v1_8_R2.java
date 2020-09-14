@@ -684,6 +684,12 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
         }
 
         @Override
+        public void setContents(org.bukkit.inventory.ItemStack[] items) {
+            for(int i = 0; i < items.length; i++)
+                setItem(i, items[i]);
+        }
+
+        @Override
         public boolean equals(Object obj) {
             return obj instanceof CraftWildInventory && getInventory() == ((CraftWildInventory) obj).getInventory();
         }
