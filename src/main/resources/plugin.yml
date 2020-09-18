@@ -1,5 +1,5 @@
 name: WildChests
-version: 2.0.4
+version: 2.0.5
 api-version: 1.13
 main: com.bgsoftware.wildchests.WildChestsPlugin
 description: Sell wildchests, auto-crafters, pouches and more in one plugin!
