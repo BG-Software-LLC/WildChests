@@ -48,7 +48,6 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public Inventory getPage(int page) {
-        inventory.setTitle(getData().getTitle(1).replace("{0}", amount + ""));
         return inventory;
     }
 
@@ -108,6 +107,8 @@ public final class WStorageChest extends WChest implements StorageChest {
             ItemStack storageItem = contents[1].getCraftItemStack();
             storageItem.setAmount(Math.min(storageItem.getMaxStackSize(), amount.intValue()));
         }
+
+        inventory.setTitle(getData().getTitle(1).replace("{0}", amount + ""));
     }
 
     @Override

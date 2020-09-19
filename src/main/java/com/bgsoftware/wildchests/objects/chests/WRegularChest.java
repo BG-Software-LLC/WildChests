@@ -27,13 +27,7 @@ public class WRegularChest extends WChest implements RegularChest {
 
     @Override
     public Inventory getPage(int page) {
-        if(page < 0 || page >= getPagesAmount())
-            return null;
-
-        CraftWildInventory inventory = inventories.get(page);
-        inventory.setTitle(getData().getTitle(page + 1).replace("{0}", getPagesAmount() + ""));
-
-        return inventory;
+        return page < 0 || page >= getPagesAmount() ? null : inventories.get(page);
     }
 
     @Override
@@ -47,6 +41,7 @@ public class WRegularChest extends WChest implements RegularChest {
         checkCapacity(page + 1, chestData.getDefaultSize(), chestData.getDefaultTitle());
         CraftWildInventory inventory = plugin.getNMSInventory().createInventory(this, size, title, page);
         inventories.set(page, inventory);
+        updateTitles();
         return inventory;
     }
 
@@ -154,16 +149,6 @@ public class WRegularChest extends WChest implements RegularChest {
         return Query.REGULAR_CHEST_SELECT.getStatementHolder().setLocation(location);
     }
 
-    private CraftWildInventory getNextFree(){
-        for(int i = 0; i < getPagesAmount(); i++){
-            if(!inventories.get(i).isFull()) {
-                return inventories.get(i);
-            }
-        }
-
-        return inventories.get(0);
-    }
-
     private void checkCapacity(int size, int inventorySize, String inventoryTitle){
         int oldSize = getPagesAmount();
         if(size > oldSize){
@@ -180,6 +165,12 @@ public class WRegularChest extends WChest implements RegularChest {
         for(int i = 0; i < getPagesAmount(); i++){
             String title = pagesData.containsKey(i + 1) ? pagesData.get(i + 1).getTitle() : chestData.getDefaultTitle();
             inventories.set(i, plugin.getNMSInventory().createInventory(this, size, title, i));
+        }
+    }
+
+    private void updateTitles(){
+        for(int i = 0; i < inventories.length(); i++){
+            inventories.get(i).setTitle(getData().getTitle(i + 1).replace("{0}", getPagesAmount() + ""));
         }
     }
 
