@@ -310,7 +310,7 @@ public abstract class WChest implements Chest {
 
     @Override
     public int[] getSlotsForFace() {
-        return IntStream.range(0, tileEntityContainer.getSize()).toArray();
+        return IntStream.range(0, getPage(0).getSize() * getPagesAmount()).toArray();
     }
 
     /* CONTAINER RELATED METHODS */

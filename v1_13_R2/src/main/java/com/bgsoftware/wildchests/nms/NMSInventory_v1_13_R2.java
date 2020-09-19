@@ -338,7 +338,7 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
 
         @Override
         public int getSize() {
-            return chest.getPage(0).getSize() * chest.getPagesAmount();
+            return chest.getPage(0).getSize();
         }
 
         @Override
@@ -563,7 +563,7 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
         }
 
         public boolean isFull(){
-            return nonEmptyItems == getSize();
+            return nonEmptyItems == (chest.getPage(0).getSize() * chest.getPagesAmount());
         }
 
         public boolean P_() {
