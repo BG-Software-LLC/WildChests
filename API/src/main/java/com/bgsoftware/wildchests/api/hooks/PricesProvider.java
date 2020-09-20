@@ -1,4 +1,4 @@
-package com.bgsoftware.wildchests.hooks;
+package com.bgsoftware.wildchests.api.hooks;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;

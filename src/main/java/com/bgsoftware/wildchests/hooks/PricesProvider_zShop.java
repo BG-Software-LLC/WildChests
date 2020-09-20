@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.hooks;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import fr.maxlego08.shop.api.ShopManager;
 import fr.maxlego08.shop.api.button.buttons.ItemButton;
 import org.bukkit.Bukkit;

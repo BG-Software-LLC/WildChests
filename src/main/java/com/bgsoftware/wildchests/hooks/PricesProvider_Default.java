@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.hooks;
 
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 

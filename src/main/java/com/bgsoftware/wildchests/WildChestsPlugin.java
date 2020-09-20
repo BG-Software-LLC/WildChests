@@ -148,6 +148,11 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         return chestsManager;
     }
 
+    @Override
+    public ProvidersHandler getProviders() {
+        return providersHandler;
+    }
+
     @SuppressWarnings("unused")
     public SettingsHandler getSettings() {
         return settingsHandler;
@@ -160,10 +165,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     @SuppressWarnings("unused")
     public DataHandler getDataHandler() {
         return dataHandler;
-    }
-
-    public ProvidersHandler getProviders() {
-        return providersHandler;
     }
 
     public OfflinePaymentsHandler getOfflinePayments() {

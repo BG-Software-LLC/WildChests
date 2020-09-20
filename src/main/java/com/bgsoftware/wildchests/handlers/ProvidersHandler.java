@@ -1,4 +1,5 @@
 package com.bgsoftware.wildchests.handlers;
+import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
@@ -16,7 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.hooks.PricesProvider;
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -27,7 +28,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public final class ProvidersHandler {
+public final class ProvidersHandler implements ProvidersManager {
 
     private boolean isVaultEnabled;
     private Economy economy;
@@ -37,35 +38,37 @@ public final class ProvidersHandler {
 
     public ProvidersHandler(WildChestsPlugin plugin){
         Executor.sync(() -> {
-            switch (plugin.getSettings().pricesProvider.toUpperCase()){
-                case "SHOPGUIPLUS":
-                    if(Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-                        try {
-                            //noinspection JavaReflectionMemberAccess
-                            ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
-                            pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
-                        }catch (Throwable ex){
-                            pricesProvider = new PricesProvider_ShopGUIPlus();
+            if(pricesProvider instanceof PricesProvider_Default) {
+                switch (plugin.getSettings().pricesProvider.toUpperCase()) {
+                    case "SHOPGUIPLUS":
+                        if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+                            try {
+                                //noinspection JavaReflectionMemberAccess
+                                ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
+                                pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
+                            } catch (Throwable ex) {
+                                pricesProvider = new PricesProvider_ShopGUIPlus();
+                            }
+                            break;
                         }
-                        break;
-                    }
-                case "QUANTUMSHOP":
-                    if(Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
-                        pricesProvider = new PricesProvider_QuantumShop();
-                        break;
-                    }
-                case "ESSENTIALS":
-                    if(Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
-                        pricesProvider = new PricesProvider_Essentials();
-                        break;
-                    }
-                case "ZSHOP":
-                    if(Bukkit.getPluginManager().isPluginEnabled("zShop")) {
-                        pricesProvider = new PricesProvider_zShop();
-                        break;
-                    }
-                default:
-                    WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
+                    case "QUANTUMSHOP":
+                        if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
+                            pricesProvider = new PricesProvider_QuantumShop();
+                            break;
+                        }
+                    case "ESSENTIALS":
+                        if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
+                            pricesProvider = new PricesProvider_Essentials();
+                            break;
+                        }
+                    case "ZSHOP":
+                        if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
+                            pricesProvider = new PricesProvider_zShop();
+                            break;
+                        }
+                    default:
+                        WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
+                }
             }
 
             if(!initVault()){
@@ -77,6 +80,11 @@ public final class ProvidersHandler {
             if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
                 SuperiorSkyblockHook.register(plugin);
         });
+    }
+
+    @Override
+    public void setPricesProvider(PricesProvider pricesProvider) {
+        this.pricesProvider = pricesProvider;
     }
 
     /*

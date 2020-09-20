@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.hooks;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.utils.Pair;
 import net.brcdev.shopgui.ShopGuiPlugin;
 import net.brcdev.shopgui.player.PlayerData;

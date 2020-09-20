@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.hooks;
 
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.earth2me.essentials.Essentials;
 import com.earth2me.essentials.IEssentials;
 import com.earth2me.essentials.Worth;
