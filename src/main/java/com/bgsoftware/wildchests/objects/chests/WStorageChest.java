@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -340,7 +341,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                     }
                 }
                 else{
-                    clickedPlayer.setItemOnCursor(itemToAdd);
+                    Executor.sync(() -> clickedPlayer.setItemOnCursor(itemToAdd), 1L);
                 }
 
                 setAmount(getAmount().subtract(BigInteger.valueOf(newAmount)));
