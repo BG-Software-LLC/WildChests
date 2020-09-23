@@ -145,7 +145,9 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public boolean canPlaceItemThroughFace(ItemStack itemStack) {
         ItemStack storageItem = contents[1].getCraftItemStack();
-        return storageItem.getType() == Material.AIR || itemStack.isSimilar(storageItem);
+        BigInteger maxAmount = getMaxAmount();
+        return (storageItem.getType() == Material.AIR || itemStack.isSimilar(storageItem)) &&
+                (maxAmount.compareTo(BigInteger.ZERO) <= 0 || maxAmount.compareTo(amount.add(BigInteger.valueOf(itemStack.getAmount()))) >= 0);
     }
 
     @Override
@@ -313,8 +315,6 @@ public final class WStorageChest extends WChest implements StorageChest {
                     setAmount(maxAmount);
                     ItemStack cursorItem = storageItem.clone();
                     cursorItem.setAmount(toAdd);
-                    clickedPlayer.setItemOnCursor(cursorItem);
-                    updateInventory(getPage(0));
                     event.setCancelled(true);
                 }
             }
