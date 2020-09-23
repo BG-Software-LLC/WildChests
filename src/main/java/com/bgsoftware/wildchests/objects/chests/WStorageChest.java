@@ -36,7 +36,8 @@ public final class WStorageChest extends WChest implements StorageChest {
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
         maxAmount = chestData.getStorageUnitMaxAmount();
-        inventory = plugin.getNMSInventory().createInventory(this, 5, chestData.getTitle(1), 0);
+        inventory = plugin.getNMSInventory().createInventory(this, 5,
+                chestData.getTitle(1).replace("{0}", amount + ""), 0);
         Arrays.fill(contents, WildItemStack.AIR);
         setItemStack(null);
     }
