@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.listeners;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -16,7 +17,14 @@ public final class ChunksListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChunkLoad(ChunkLoadEvent e){
-        plugin.getChestsManager().getChests(e.getChunk()).forEach(plugin.getNMSInventory()::updateTileEntity);
+        plugin.getChestsManager().getChests(e.getChunk()).forEach(chest -> {
+            if(chest.getLocation().getBlock().getType() != Material.CHEST){
+                plugin.getChestsManager().removeChest(chest);
+            }
+            else{
+                plugin.getNMSInventory().updateTileEntity(chest);
+            }
+        });
     }
 
 }

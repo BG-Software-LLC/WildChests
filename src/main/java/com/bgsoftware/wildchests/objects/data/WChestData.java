@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.data;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.utils.RecipeUtils;
 import com.google.common.collect.Iterators;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 public final class WChestData implements ChestData {
+
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private final String name;
     private final String chestType;
@@ -70,6 +73,10 @@ public final class WChestData implements ChestData {
 
     @Override
     public ItemStack getItemStack() {
+        return plugin.getNMSAdapter().setChestName(itemStack, name);
+    }
+
+    public ItemStack getItemRaw(){
         return itemStack.clone();
     }
 

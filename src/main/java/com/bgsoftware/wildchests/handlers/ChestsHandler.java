@@ -132,10 +132,16 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public ChestData getChestData(ItemStack itemStack) {
+        String chestName = plugin.getNMSAdapter().getChestName(itemStack);
+
+        if(chestName != null)
+            return getChestData(chestName);
+
         for(ChestData chestData : chestsData.values()){
-            if(chestData.getItemStack().isSimilar(itemStack))
+            if(((WChestData) chestData).getItemRaw().isSimilar(itemStack))
                 return chestData;
         }
+
         return null;
     }
 

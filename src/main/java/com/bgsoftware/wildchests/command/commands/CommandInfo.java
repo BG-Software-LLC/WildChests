@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.command.commands;
 
+import com.bgsoftware.wildchests.objects.data.WChestData;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.Recipe;
 import com.bgsoftware.wildchests.Locale;
@@ -57,7 +58,7 @@ public final class CommandInfo implements ICommand {
         Locale.CHEST_INFO_HEADER.send(sender);
 
         //Sections which applied to all chests
-        Locale.CHEST_INFO_NAME.send(sender, chestData.getName(), chestData.getItemStack().getItemMeta().getDisplayName());
+        Locale.CHEST_INFO_NAME.send(sender, chestData.getName(), ((WChestData) chestData).getItemRaw().getItemMeta().getDisplayName());
         Locale.CHEST_INFO_TYPE.send(sender, chestData.getChestType());
         Locale.CHEST_INFO_SIZE.send(sender, chestData.getDefaultSize());
         Locale.CHEST_INFO_DEFAULT_TITLE.send(sender, chestData.getDefaultTitle());

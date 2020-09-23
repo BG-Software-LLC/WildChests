@@ -34,17 +34,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings({"unused", "ConstantConditions"})
+@SuppressWarnings("unused")
 public final class NMSAdapter_v1_10_R1 implements NMSAdapter {
-
-    @Override
-    public void playChestAction(Location location, boolean open) {
-        World world = ((CraftWorld) location.getWorld()).getHandle();
-        BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
-        TileEntityChest tileChest = (TileEntityChest) world.getTileEntity(blockPosition);
-        if(tileChest != null)
-            world.playBlockAction(blockPosition, tileChest.getBlock(), 1, open ? 1 : 0);
-    }
 
     @Override
     public int getHopperTransfer(org.bukkit.World world) {
@@ -169,15 +160,41 @@ public final class NMSAdapter_v1_10_R1 implements NMSAdapter {
     }
 
     @Override
-    public org.bukkit.inventory.ItemStack setChestNBT(org.bukkit.inventory.ItemStack itemStack, ChestType chestType) {
+    public void playChestAction(Location location, boolean open) {
+        World world = ((CraftWorld) location.getWorld()).getHandle();
+        BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
+        TileEntityChest tileChest = (TileEntityChest) world.getTileEntity(blockPosition);
+        if(tileChest != null)
+            world.playBlockAction(blockPosition, tileChest.getBlock(), 1, open ? 1 : 0);
+    }
+
+    @Override
+    public org.bukkit.inventory.ItemStack setChestType(org.bukkit.inventory.ItemStack itemStack, ChestType chestType) {
+        return setItemTag(itemStack, "chest-type", chestType.name());
+    }
+
+    @Override
+    public org.bukkit.inventory.ItemStack setChestName(org.bukkit.inventory.ItemStack itemStack, String chestName) {
+        return setItemTag(itemStack, "chest-name", chestName);
+    }
+
+    @Override
+    public String getChestName(org.bukkit.inventory.ItemStack itemStack) {
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound tagCompound = nmsItem.hasTag() ? nmsItem.getTag() : new NBTTagCompound();
+        NBTTagCompound tagCompound = nmsItem.getTag();
+        return tagCompound == null || !tagCompound.hasKey("chest-name") ? null : tagCompound.getString("chest-name");
+    }
 
-        tagCompound.setString("chest-type", chestType.name());
+    private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack itemStack, String key, String value){
+        ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+        NBTTagCompound tagCompound = nmsItem.getTag();
 
-        nmsItem.setTag(tagCompound);
+        if(tagCompound == null)
+            nmsItem.setTag((tagCompound = new NBTTagCompound()));
 
-        return CraftItemStack.asBukkitCopy(nmsItem);
+        tagCompound.setString(key, value);
+
+        return CraftItemStack.asCraftMirror(nmsItem);
     }
 
     private void serialize(Inventory inventory, NBTTagCompound tagCompound){

@@ -112,7 +112,7 @@ public final class SettingsHandler {
 
             itemStack.setItemMeta(itemMeta);
 
-            ChestData chestData = new WChestData(name, plugin.getNMSAdapter().setChestNBT(itemStack, chestType), chestType);
+            ChestData chestData = new WChestData(name, plugin.getNMSAdapter().setChestType(itemStack, chestType), chestType);
 
             if(cfg.contains("chests." + name + ".size")){
                 int rows = cfg.getInt("chests." + name + ".size");

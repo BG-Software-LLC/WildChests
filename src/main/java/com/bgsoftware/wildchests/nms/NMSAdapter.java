@@ -29,8 +29,12 @@ public interface NMSAdapter {
 
     void spawnSuctionParticle(Location location);
 
-    ItemStack setChestNBT(ItemStack itemStack, ChestType chestType);
-
     void playChestAction(Location location, boolean open);
+
+    ItemStack setChestType(ItemStack itemStack, ChestType chestType);
+
+    ItemStack setChestName(ItemStack itemStack, String chestName);
+
+    String getChestName(ItemStack itemStack);
 
 }
