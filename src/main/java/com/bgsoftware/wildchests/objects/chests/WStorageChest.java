@@ -186,9 +186,12 @@ public final class WStorageChest extends WChest implements StorageChest {
             int itemAmount = itemStack.getCraftItemStack().getAmount();
             int originalAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
 
-            // The slot -1 is used for hoppers to push items into the storage units.
-            // Therefore, if the slot is -1 we must add the item amount
-            if(i == 1 || i == -2 || (i != -1 && i != 2 && itemAmount < originalAmount && amount.intValue() < storageItem.getMaxStackSize())){
+            /* The slot -2 is used to pull items from the chest with hoppers.
+               The slot 1 is used to pull items from the chest by other plugins.
+               The slot -1 is used to push items into the chest with hoppers.
+               The slot 0 is used to push items into the chest by other plugins.
+             */
+            if(i == 1 || i == -2 || (i != -1 && i != 2 && i != 0 && itemAmount < originalAmount && amount.intValue() < storageItem.getMaxStackSize())){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
             }
             else{
