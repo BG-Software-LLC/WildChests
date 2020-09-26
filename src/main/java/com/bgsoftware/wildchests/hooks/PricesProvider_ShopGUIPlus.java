@@ -4,7 +4,6 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.utils.Pair;
 import net.brcdev.shopgui.ShopGuiPlugin;
-import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
 import org.bukkit.OfflinePlayer;
@@ -45,12 +44,10 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
 
         if(shopPair != null){
             if(onlinePlayer == null) {
-                //noinspection deprecation
                 price = Math.max(price, shopPair.key.getSellPriceForAmount(itemStack.getAmount()));
             }
             else{
-                PlayerData playerData = ShopGuiPlugin.getInstance().getPlayerManager().getPlayerData(onlinePlayer);
-                price = Math.max(price, shopPair.key.getSellPriceForAmount(onlinePlayer, playerData, itemStack.getAmount()));
+                price = Math.max(price, shopPair.key.getSellPriceForAmount(onlinePlayer, itemStack.getAmount()));
             }
         }
 
