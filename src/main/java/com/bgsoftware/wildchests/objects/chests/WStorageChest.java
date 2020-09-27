@@ -165,12 +165,16 @@ public final class WStorageChest extends WChest implements StorageChest {
         ItemStack storageItem = contents[1].getCraftItemStack();
 
         if(itemStack == null || itemStack.getCraftItemStack().getType() == Material.AIR){
-            if(amount.compareTo(BigInteger.ONE) == 0){
-                setItemStack(null);
-                setAmount(BigInteger.ZERO);
-            }
-            else {
-                setAmount(amount.subtract(BigInteger.valueOf(storageItem.getMaxStackSize())));
+            // If other plugins set the #1 slot to AIR, then they want to subtract the amount that they received before.
+            if(i == 1) {
+                if (amount.compareTo(BigInteger.ONE) == 0) {
+                    setItemStack(null);
+                    setAmount(BigInteger.ZERO);
+                }
+                else{
+                    BigInteger itemAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize()));
+                    setAmount(amount.subtract(itemAmount));
+                }
             }
         }
         else{
@@ -187,9 +191,9 @@ public final class WStorageChest extends WChest implements StorageChest {
             int originalAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
 
             /* The slot -2 is used to pull items from the chest with hoppers.
-               The slot 1 is used to pull items from the chest by other plugins.
                The slot -1 is used to push items into the chest with hoppers.
                The slot 0 is used to push items into the chest by other plugins.
+               The slot 1 is used to pull items from the chest by other plugins.
              */
             if(i == 1 || i == -2 || (i != -1 && i != 2 && i != 0 && itemAmount < originalAmount && amount.intValue() < storageItem.getMaxStackSize())){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
