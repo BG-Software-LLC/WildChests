@@ -118,6 +118,12 @@ public final class ChestsHandler implements ChestsManager {
     public void removeChest(Chest chest) {
         chestsByLocations.remove(chest.getLocation());
         cachedChests.remove(chest);
+
+        Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chest.getLocation()));
+        if(chunkChests != null)
+            chunkChests.remove(chest);
+
+        plugin.getNMSInventory().removeTileEntity(chest);
     }
 
     @Override

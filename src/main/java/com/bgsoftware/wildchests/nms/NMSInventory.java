@@ -10,6 +10,8 @@ public interface NMSInventory {
 
     void updateTileEntity(Chest chest);
 
+    void removeTileEntity(Chest chest);
+
     WildItemStack<?, ?> createItemStack(ItemStack itemStack);
 
     CraftWildInventory createInventory(Chest chest, int size, String title, int index);

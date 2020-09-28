@@ -77,6 +77,14 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
     }
 
     @Override
+    public void removeTileEntity(Chest chest) {
+        Location loc = chest.getLocation();
+        World world = ((CraftWorld) loc.getWorld()).getHandle();
+        BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        world.t(blockPosition);
+    }
+
+    @Override
     public WildItemStack<?, ?> createItemStack(org.bukkit.inventory.ItemStack itemStack) {
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
         return new WildItemStack<>(nmsItem, CraftItemStack.asCraftMirror(nmsItem));
@@ -290,9 +298,7 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
             Block currentBlock = world.getType(position).getBlock();
 
             if(currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST){
-                world.getChunkAtWorldCoords(position).tileEntities.remove(position);
-                world.capturedTileEntities.remove(position);
-                world.tileEntityList.remove(this);
+                world.t(position);
                 return;
             }
 
