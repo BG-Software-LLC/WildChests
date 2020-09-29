@@ -166,7 +166,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         if(itemStack == null || itemStack.getCraftItemStack().getType() == Material.AIR){
             // If other plugins set the #1 slot to AIR, then they want to subtract the amount that they received before.
-            if(i == 1) {
+            if(i < 0 || i == 1) {
                 if (amount.compareTo(BigInteger.ONE) == 0) {
                     setItemStack(null);
                     setAmount(BigInteger.ZERO);
