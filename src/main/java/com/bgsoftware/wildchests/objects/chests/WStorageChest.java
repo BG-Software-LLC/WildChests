@@ -31,6 +31,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     private BigInteger amount = BigInteger.ZERO, maxAmount;
     private final WildItemStack<?, ?>[] contents = new WildItemStack[5];
+    private int maxStackSize = 64;
 
     private boolean broken = false;
 
@@ -84,6 +85,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void setItemStack(ItemStack itemStack) {
         contents[1] = itemStack == null ? WildItemStack.AIR : WildItemStack.of(itemStack);
+        maxStackSize = itemStack == null ? 64 : itemStack.getMaxStackSize();
         plugin.getNMSInventory().createDesignItem(inventory, contents[1].getCraftItemStack());
     }
 
@@ -107,7 +109,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             // We must clone the item, otherwise a dupe will occur
             contents[1] = contents[1].cloneItemStack();
             ItemStack storageItem = contents[1].getCraftItemStack();
-            storageItem.setAmount(Math.min(storageItem.getMaxStackSize(), amount.intValue()));
+            storageItem.setAmount(Math.min(maxStackSize, amount.intValue()));
         }
 
         inventory.setTitle(getData().getTitle(1).replace("{0}", amount + ""));
@@ -172,7 +174,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                     setAmount(BigInteger.ZERO);
                 }
                 else{
-                    BigInteger itemAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize()));
+                    BigInteger itemAmount = amount.min(BigInteger.valueOf(maxStackSize));
                     setAmount(amount.subtract(itemAmount));
                 }
             }
@@ -188,14 +190,14 @@ public final class WStorageChest extends WChest implements StorageChest {
             }
 
             int itemAmount = itemStack.getCraftItemStack().getAmount();
-            int originalAmount = amount.min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
+            int originalAmount = amount.min(BigInteger.valueOf(maxStackSize)).intValue();
 
             /* The slot -2 is used to pull items from the chest with hoppers.
                The slot -1 is used to push items into the chest with hoppers.
                The slot 0 is used to push items into the chest by other plugins.
                The slot 1 is used to pull items from the chest by other plugins.
              */
-            if(i == 1 || i == -2 || (i != -1 && i != 2 && i != 0 && itemAmount < originalAmount && amount.intValue() < storageItem.getMaxStackSize())){
+            if(i == 1 || i == -2 || (i != -1 && i != 2 && i != 0 && itemAmount < originalAmount && amount.intValue() < maxStackSize)){
                 setAmount(amount.subtract(BigInteger.valueOf(originalAmount - itemAmount)));
             }
             else{
@@ -332,7 +334,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                 if(itemToAdd.getType() == Material.AIR)
                     return false;
 
-                int newAmount = getAmount().min(BigInteger.valueOf(storageItem.getMaxStackSize())).intValue();
+                int newAmount = getAmount().min(BigInteger.valueOf(maxStackSize)).intValue();
                 itemToAdd.setAmount(newAmount);
 
                 if(event.getClick().name().contains("SHIFT")){
