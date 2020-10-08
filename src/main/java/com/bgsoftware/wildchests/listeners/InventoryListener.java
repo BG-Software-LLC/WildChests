@@ -126,33 +126,7 @@ public final class InventoryListener implements Listener {
 
         e.setCancelled(true);
 
-        try {
-            Chest chest = WChest.viewers.get(e.getPlayer().getUniqueId());
-            ChestData chestData = chest.getData();
-            InventoryData inventoryData = buyNewPage.get(e.getPlayer().getUniqueId());
-            int pageIndex = 0;
-
-            while (chest.getPagesAmount() > pageIndex)
-                pageIndex++;
-
-            if (e.getMessage().equalsIgnoreCase("confirm")) {
-                if (plugin.getProviders().withdrawPlayer(e.getPlayer(), inventoryData.getPrice())) {
-                    Locale.EXPAND_PURCHASED.send(e.getPlayer());
-                    chest.setPage(pageIndex++, chestData.getDefaultSize(), inventoryData.getTitle());
-                } else {
-                    Locale.EXPAND_FAILED.send(e.getPlayer());
-                }
-            } else {
-                Locale.EXPAND_FAILED.send(e.getPlayer());
-            }
-
-            final int PAGE = --pageIndex;
-            Executor.sync(() -> chest.openPage(e.getPlayer(), PAGE));
-        }catch(Exception ex){
-            Locale.EXPAND_FAILED_CHEST_BROKEN.send(e.getPlayer());
-        }
-
-        buyNewPage.remove(e.getPlayer().getUniqueId());
+        handleUpgrade(e.getPlayer(), e.getMessage().equalsIgnoreCase("confirm"));
     }
 
     @EventHandler
@@ -161,31 +135,30 @@ public final class InventoryListener implements Listener {
             return;
 
         e.setCancelled(true);
-        Player player = (Player) e.getWhoClicked();
 
+        handleUpgrade((Player) e.getWhoClicked(), e.getRawSlot() == 4);
+    }
+
+    private void handleUpgrade(Player player, boolean confirm){
         try {
-            Chest chest = WChest.viewers.get(e.getWhoClicked().getUniqueId());
+            Chest chest = WChest.viewers.get(player.getUniqueId());
             ChestData chestData = chest.getData();
             InventoryData inventoryData = buyNewPage.get(player.getUniqueId());
-            int pageIndex = 0;
+            int pageIndex = chest.getPagesAmount() - 1;
 
-            while (chest.getPagesAmount() > pageIndex)
-                pageIndex++;
-
-            if(e.getRawSlot() == 4){
+            if (confirm) {
                 if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
                     Locale.EXPAND_PURCHASED.send(player);
-                    chest.setPage(pageIndex++, chestData.getDefaultSize(), inventoryData.getTitle());
+                    chest.setPage(++pageIndex, chestData.getDefaultSize(), inventoryData.getTitle());
                 } else {
                     Locale.EXPAND_FAILED.send(player);
                 }
-            } else if(e.getRawSlot() == 0){
+            } else {
                 Locale.EXPAND_FAILED.send(player);
-            } else{
-                return;
             }
 
-            player.openInventory(chest.getPage(--pageIndex));
+            final int PAGE = pageIndex;
+            Executor.sync(() -> chest.openPage(player, PAGE));
         }catch(Exception ex){
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(player);
         }
