@@ -83,7 +83,9 @@ public final class ChestsHandler implements ChestsManager {
         cachedChests.add(chest);
         chestsByLocations.put(location, chest);
         chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
-        plugin.getNMSInventory().updateTileEntity(chest);
+
+        if(location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
+            plugin.getNMSInventory().updateTileEntity(chest);
 
         return chest;
     }
