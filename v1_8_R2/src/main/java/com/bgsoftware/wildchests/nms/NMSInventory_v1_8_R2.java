@@ -297,7 +297,7 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
 
             Block currentBlock = world.getType(position).getBlock();
 
-            if(currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST){
+            if(((WChest) chest).isRemoved() || (currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST)){
                 world.t(position);
                 return;
             }

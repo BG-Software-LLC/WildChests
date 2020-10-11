@@ -53,6 +53,7 @@ public abstract class WChest implements Chest {
     protected final ChestData chestData;
 
     protected TileEntityContainer tileEntityContainer;
+    protected boolean removed = false;
 
     public WChest(UUID placer, Location location, ChestData chestData) {
         this.placer = placer;
@@ -84,7 +85,12 @@ public abstract class WChest implements Chest {
 
     @Override
     public void remove(){
+        removed = true;
         plugin.getChestsManager().removeChest(this);
+    }
+
+    public boolean isRemoved(){
+        return removed;
     }
 
     /* INVENTORIES / PAGES RELATED METHODS */
