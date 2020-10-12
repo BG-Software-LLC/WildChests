@@ -9,6 +9,7 @@ import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
@@ -44,8 +45,8 @@ public final class DataHandler {
         }, 2L);
     }
 
-    public void saveDatabase(){
-        List<Chest> chestList = plugin.getChestsManager().getChests();
+    public void saveDatabase(Chunk chunk){
+        List<Chest> chestList = chunk == null ? plugin.getChestsManager().getChests() : plugin.getChestsManager().getChests(chunk);
 
         chestList.forEach(chest -> {
             if(chest instanceof LinkedChest) {

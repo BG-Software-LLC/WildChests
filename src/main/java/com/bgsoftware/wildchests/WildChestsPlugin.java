@@ -103,6 +103,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
 
+        dataHandler.saveDatabase(null);
+
         log("Terminating all database threads...");
         Executor.stop();
         Database.stop();

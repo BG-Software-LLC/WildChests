@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 public final class ChunksListener implements Listener {
 
@@ -25,6 +26,11 @@ public final class ChunksListener implements Listener {
                 plugin.getNMSInventory().updateTileEntity(chest);
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkUnload(ChunkUnloadEvent e){
+        plugin.getDataHandler().saveDatabase(e.getChunk());
     }
 
 }
