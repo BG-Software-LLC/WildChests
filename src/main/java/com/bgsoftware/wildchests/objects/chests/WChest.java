@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.objects.chests;
 
-import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
@@ -331,11 +330,7 @@ public abstract class WChest implements Chest {
 
     /* DATA RELATED METHODS */
 
-    public abstract void executeInsertQuery(boolean async);
-
-    public abstract void executeUpdateQuery(boolean async);
-
-    public abstract StatementHolder getSelectQuery();
+    public abstract void executeInsertQuery();
 
     public void loadFromData(ResultSet resultSet) throws SQLException {
         String serialized = resultSet.getString("inventories");

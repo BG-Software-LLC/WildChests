@@ -2,7 +2,6 @@ package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
@@ -119,34 +118,19 @@ public class WRegularChest extends WChest implements RegularChest {
     @Override
     public void remove() {
         super.remove();
-        Query.REGULAR_CHEST_DELETE.getStatementHolder()
+        Query.REGULAR_CHEST_DELETE.insertParameters()
                 .setLocation(getLocation())
-                .execute(true);
+                .queue(this);
     }
 
     @Override
-    public void executeInsertQuery(boolean async) {
-        Query.REGULAR_CHEST_INSERT.getStatementHolder()
+    public void executeInsertQuery() {
+        Query.REGULAR_CHEST_INSERT.insertParameters()
                 .setLocation(location)
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setString("")
-                .execute(async);
-    }
-
-    @Override
-    public void executeUpdateQuery(boolean async) {
-        Query.REGULAR_CHEST_UPDATE.getStatementHolder()
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setInventories(getPages())
-                .setLocation(location)
-                .execute(async);
-    }
-
-    @Override
-    public StatementHolder getSelectQuery() {
-        return Query.REGULAR_CHEST_SELECT.getStatementHolder().setLocation(location);
+                .setObject(placer.toString())
+                .setObject(getData().getName())
+                .setObject("")
+                .queue(this);
     }
 
     private void checkCapacity(int size, int inventorySize, String inventoryTitle){

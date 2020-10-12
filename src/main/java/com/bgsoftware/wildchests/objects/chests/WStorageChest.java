@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.Executor;
@@ -225,9 +224,9 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void remove() {
         super.remove();
-        Query.STORAGE_UNIT_DELETE.getStatementHolder()
+        Query.STORAGE_UNIT_DELETE.insertParameters()
                 .setLocation(getLocation())
-                .execute(true);
+                .queue(this);
     }
 
     @Override
@@ -385,32 +384,15 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void executeInsertQuery(boolean async) {
-        Query.STORAGE_UNIT_INSERT.getStatementHolder()
+    public void executeInsertQuery() {
+        Query.STORAGE_UNIT_INSERT.insertParameters()
                 .setLocation(location)
-                .setString(placer.toString())
-                .setString(getData().getName())
+                .setObject(placer.toString())
+                .setObject(getData().getName())
                 .setItemStack(getItemStack())
-                .setString(getAmount().toString())
-                .setString(getMaxAmount().toString())
-                .execute(async);
-    }
-
-    @Override
-    public void executeUpdateQuery(boolean async) {
-        Query.STORAGE_UNIT_UPDATE.getStatementHolder()
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setItemStack(getItemStack())
-                .setString(getAmount().toString())
-                .setString(getMaxAmount().toString())
-                .setLocation(location)
-                .execute(async);
-    }
-
-    @Override
-    public StatementHolder getSelectQuery() {
-        return Query.STORAGE_UNIT_SELECT.getStatementHolder().setLocation(location);
+                .setObject(getAmount().toString())
+                .setObject(getMaxAmount().toString())
+                .queue(this);
     }
 
     private void updateInventory(Inventory inventory){

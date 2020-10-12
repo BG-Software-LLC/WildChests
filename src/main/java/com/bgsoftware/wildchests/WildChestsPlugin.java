@@ -4,7 +4,7 @@ import com.bgsoftware.wildchests.api.WildChests;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.command.CommandsHandler;
-import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.Database;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.OfflinePaymentsHandler;
@@ -103,11 +103,9 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
 
-        dataHandler.saveDatabase(false);
-
         log("Terminating all database threads...");
         Executor.stop();
-        SQLHelper.close();
+        Database.stop();
     }
 
     private void loadAPI(){
