@@ -545,7 +545,11 @@ public final class NMSInventory_v1_15_R1 implements NMSInventory {
         }
 
         public List<HumanEntity> getViewers() {
-            return new ArrayList<>(((WChest) chest).getTileEntityContainer().getTransaction());
+            try {
+                return new ArrayList<>(((WChest) chest).getTileEntityContainer().getTransaction());
+            }catch (Exception ex){
+                return new ArrayList<>();
+            }
         }
 
         public org.bukkit.inventory.InventoryHolder getOwner() {
