@@ -21,6 +21,8 @@ import com.bgsoftware.wildchests.utils.Executor;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -80,6 +82,14 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
 
         log("******** ENABLE DONE ********");
+
+        Executor.sync(() -> {
+            for(World world : Bukkit.getWorlds()){
+                for(Chunk chunk : world.getLoadedChunks())
+                    ChunksListener.handleChunkLoad(this, chunk);
+            }
+        }, 20L);
+
     }
 
     @Override

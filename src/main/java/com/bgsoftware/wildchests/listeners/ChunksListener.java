@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.listeners;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,7 +19,16 @@ public final class ChunksListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onChunkLoad(ChunkLoadEvent e){
-        plugin.getChestsManager().getChests(e.getChunk()).forEach(chest -> {
+        handleChunkLoad(plugin, e.getChunk());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkUnload(ChunkUnloadEvent e){
+        plugin.getDataHandler().saveDatabase(e.getChunk());
+    }
+
+    public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk){
+        plugin.getChestsManager().getChests(chunk).forEach(chest -> {
             if(chest.getLocation().getBlock().getType() != Material.CHEST){
                 plugin.getChestsManager().removeChest(chest);
             }
@@ -26,11 +36,6 @@ public final class ChunksListener implements Listener {
                 plugin.getNMSInventory().updateTileEntity(chest);
             }
         });
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onChunkUnload(ChunkUnloadEvent e){
-        plugin.getDataHandler().saveDatabase(e.getChunk());
     }
 
 }
