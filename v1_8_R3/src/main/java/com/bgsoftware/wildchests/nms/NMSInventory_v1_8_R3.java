@@ -57,6 +57,7 @@ import org.bukkit.inventory.Inventory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
@@ -72,7 +73,13 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
         TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
 
         chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-        world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
+        try {
+            world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
+        }catch (Throwable ex){
+            // iSpigot has a Long->TileEntity map instead
+            // noinspection all
+            ((Map) world.capturedTileEntities).put(blockPosition.asLong(), tileEntityWildChest);
+        }
         world.tileEntityList.add(tileEntityWildChest);
     }
 
