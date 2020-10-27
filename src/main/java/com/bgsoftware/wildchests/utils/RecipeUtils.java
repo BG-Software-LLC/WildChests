@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -22,15 +23,19 @@ public final class RecipeUtils {
                 recipe instanceof ShapelessRecipe ? getIngredients((ShapelessRecipe) recipe) : new ArrayList<>();
     }
 
-    public static int countItems(RecipeIngredient recipeIngredient, Inventory inventory){
+    public static Pair<List<Integer>, Integer> countItems(RecipeIngredient recipeIngredient, Inventory inventory, int offsetSlot){
+        List<Integer> slots = new ArrayList<>();
         int amount = 0;
 
-        for(ItemStack itemStack : inventory.getContents()){
-            if(itemStack != null && recipeIngredient.test(itemStack))
+        for(int i = 0; i < inventory.getSize(); i++){
+            ItemStack itemStack = inventory.getContents()[i];
+            if(itemStack != null && recipeIngredient.test(itemStack)) {
                 amount += itemStack.getAmount();
+                slots.add(offsetSlot + i);
+            }
         }
 
-        return amount;
+        return new Pair<>(slots, amount);
     }
 
     private static List<RecipeIngredient> getIngredients(ShapedRecipe shapedRecipe){
@@ -146,6 +151,19 @@ public final class RecipeUtils {
 
         public boolean isSimilar(RecipeIngredient other){
             return ingredients.stream().allMatch(other);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            RecipeIngredient that = (RecipeIngredient) o;
+            return ingredients.equals(that.ingredients);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(ingredients);
         }
 
         public static RecipeIngredient of(ItemStack itemStack){

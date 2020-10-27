@@ -19,6 +19,7 @@ import org.bukkit.inventory.Recipe;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,17 +51,40 @@ public final class ChestUtils {
                 continue;
 
             int amountOfRecipes = Integer.MAX_VALUE;
+            int pageSize = pages[0].getSize();
+            Map<RecipeUtils.RecipeIngredient, List<Integer>> slots = new HashMap<>();
 
             for (RecipeUtils.RecipeIngredient ingredient : recipe.getValue()) {
-                for (Inventory page : pages) {
-                    amountOfRecipes = Math.min(amountOfRecipes, RecipeUtils.countItems(ingredient, page) / ingredient.getAmount());
+                for (int i = 0; i < pages.length; i++) {
+                    // Count items returns a list of slots and the total amount of the items in the slots.
+                    Pair<List<Integer>, Integer> countResult = RecipeUtils.countItems(ingredient, pages[i], i * pageSize);
+                    amountOfRecipes = Math.min(amountOfRecipes, countResult.value / ingredient.getAmount());
+                    slots.put(ingredient, countResult.key);
                 }
             }
 
             if (amountOfRecipes > 0) {
-                for (RecipeUtils.RecipeIngredient recipeIngredient : recipe.getValue()) {
-                    for(ItemStack ingredient : recipeIngredient.getIngredients())
-                        chest.removeItem(ingredient.getAmount() * amountOfRecipes, ingredient);
+                // We can't use chest#removeItem due to a glitch with named items
+                // We manually removing the items
+                for(Map.Entry<RecipeUtils.RecipeIngredient, List<Integer>> entry : slots.entrySet()){
+                    int amountToRemove = entry.getKey().getAmount() * amountOfRecipes;
+                    for(int slot : entry.getValue()){
+                        int page = slot / pageSize;
+                        slot = slot % pageSize;
+
+                        ItemStack itemStack = pages[page].getItem(slot);
+
+                        if(itemStack.getAmount() > amountToRemove){
+                            itemStack.setAmount(itemStack.getAmount() - amountToRemove);
+                            break;
+                        }
+                        else{
+                            amountToRemove -= itemStack.getAmount();
+                            pages[page].setItem(slot, new ItemStack(Material.AIR));
+                        }
+
+                    }
+
                 }
 
                 ItemStack result = recipe.getKey().getResult().clone();
