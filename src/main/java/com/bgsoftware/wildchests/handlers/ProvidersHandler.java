@@ -5,7 +5,6 @@ import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
-import com.bgsoftware.wildchests.utils.Pair;
 import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
@@ -33,7 +32,7 @@ public final class ProvidersHandler implements ProvidersManager {
     private boolean isVaultEnabled;
     private Economy economy;
 
-    private final Map<UUID, Pair<Long, Double>> pendingTransactions = new HashMap<>();
+    private final Map<UUID, MutableDouble> pendingTransactions = new HashMap<>();
     private PricesProvider pricesProvider = new PricesProvider_Default();
 
     public ProvidersHandler(WildChestsPlugin plugin){
@@ -134,22 +133,28 @@ public final class ProvidersHandler implements ProvidersManager {
         }
     }
 
+    public void startSellingTask(OfflinePlayer offlinePlayer){
+        if(!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
+            pendingTransactions.put(offlinePlayer.getUniqueId(), new MutableDouble());
+    }
+
+    public void stopSellingTask(OfflinePlayer offlinePlayer){
+        MutableDouble sellTaskValue = pendingTransactions.remove(offlinePlayer.getUniqueId());
+        if(sellTaskValue != null)
+            depositPlayer(offlinePlayer, sellTaskValue.value);
+    }
+
     public boolean depositPlayer(OfflinePlayer offlinePlayer, double money){
         try {
-            Pair<Long, Double> pendingTransaction = pendingTransactions.computeIfAbsent(offlinePlayer.getUniqueId(), p -> new Pair<>(0L, 0D));
-            long currentTime = System.currentTimeMillis();
-            if(currentTime - pendingTransaction.key <= 5000){
-                pendingTransaction.value += money;
+            MutableDouble sellTaskValue = pendingTransactions.get(offlinePlayer.getUniqueId());
+
+            if(sellTaskValue != null){
+                sellTaskValue.value += money;
                 return true;
             }
 
             if (!economy.hasAccount(offlinePlayer))
                 economy.createPlayerAccount(offlinePlayer);
-
-            money += pendingTransaction.value;
-
-            pendingTransaction.key = currentTime;
-            pendingTransaction.value = 0D;
 
             economy.depositPlayer(offlinePlayer, money);
 
@@ -164,11 +169,8 @@ public final class ProvidersHandler implements ProvidersManager {
     }
 
     public void depositAllPending(){
-        for(Map.Entry<UUID, Pair<Long, Double>> entry : pendingTransactions.entrySet()){
-            entry.getValue().key = 0L;
-            depositPlayer(Bukkit.getOfflinePlayer(entry.getKey()), 0);
-        }
-
+        pendingTransactions.forEach((uuid, sellTaskValue) ->
+                depositPlayer(Bukkit.getOfflinePlayer(uuid), sellTaskValue.value));
         pendingTransactions.clear();
     }
 
@@ -193,6 +195,12 @@ public final class ProvidersHandler implements ProvidersManager {
         public static <T> TransactionResult<T> of(T data, Predicate<T> success){
             return new TransactionResult<>(data, success);
         }
+
+    }
+
+    private static final class MutableDouble{
+
+        private double value = 0;
 
     }
 

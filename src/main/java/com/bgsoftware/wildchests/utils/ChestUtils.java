@@ -103,21 +103,25 @@ public final class ChestUtils {
     }
 
     public static void trySellChest(Chest chest){
-        Arrays.stream(chest.getPages()).forEach(inventory -> {
-            for(int i = 0; i < inventory.getSize(); i++){
-                if(trySellItem(chest, inventory.getItem(i)))
-                    inventory.setItem(i, new ItemStack(Material.AIR));
-            }
-        });
+        OfflinePlayer player = Bukkit.getOfflinePlayer(chest.getPlacer());
+        try {
+            plugin.getProviders().startSellingTask(player);
+            Arrays.stream(chest.getPages()).forEach(inventory -> {
+                for (int i = 0; i < inventory.getSize(); i++) {
+                    if (trySellItem(player, chest, inventory.getItem(i)))
+                        inventory.setItem(i, new ItemStack(Material.AIR));
+                }
+            });
+        } finally {
+            plugin.getProviders().stopSellingTask(player);
+        }
     }
 
-    public static boolean trySellItem(Chest chest, ItemStack toSell){
+    public static boolean trySellItem(OfflinePlayer player, Chest chest, ItemStack toSell){
         if(toSell == null || toSell.getType() == Material.AIR)
             return false;
 
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(chest.getPlacer());
-
-        ProvidersHandler.TransactionResult<Double> transactionResult = plugin.getProviders().canSellItem(offlinePlayer, toSell);
+        ProvidersHandler.TransactionResult<Double> transactionResult = plugin.getProviders().canSellItem(player, toSell);
 
         if (!transactionResult.isSuccess())
             return false;
@@ -131,14 +135,14 @@ public final class ChestUtils {
             return false;
 
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            plugin.getProviders().depositPlayer(offlinePlayer, finalPrice);
+            plugin.getProviders().depositPlayer(player, finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
-                    .replace("{player-name}", offlinePlayer.getName())
+                    .replace("{player-name}", player.getName())
                     .replace("{price}", String.valueOf(finalPrice)));
         }
 
-        NotifierTask.addTransaction(offlinePlayer.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
+        NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
 
         return true;
     }
