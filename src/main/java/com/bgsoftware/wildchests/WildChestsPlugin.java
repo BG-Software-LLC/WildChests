@@ -115,8 +115,9 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         dataHandler.saveDatabase(null);
 
-        log("Terminating all database threads...");
+        log("Terminating executor...");
         Executor.stop();
+        log("Terminating database...");
         Database.stop();
     }
 

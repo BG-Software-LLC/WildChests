@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.listeners;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,8 +30,13 @@ public final class ChunksListener implements Listener {
 
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk){
         plugin.getChestsManager().getChests(chunk).forEach(chest -> {
-            if(chest.getLocation().getBlock().getType() != Material.CHEST){
-                plugin.getChestsManager().removeChest(chest);
+            Location location = chest.getLocation();
+            Material blockType = location.getBlock().getType();
+            if(blockType != Material.CHEST){
+                WildChestsPlugin.log("Loading chunk " + chunk.getX() + ", " + chunk.getX() + " but found a chest not " +
+                        "associated with a chest block but " + blockType + " at " + location.getWorld().getName() + ", " +
+                        location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ());
+                chest.remove();
             }
             else{
                 plugin.getNMSInventory().updateTileEntity(chest);

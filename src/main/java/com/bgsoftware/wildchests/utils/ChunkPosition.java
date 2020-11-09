@@ -16,6 +16,14 @@ public final class ChunkPosition {
         this.z = z;
     }
 
+    public int getX() {
+        return x;
+    }
+
+    public int getZ() {
+        return z;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

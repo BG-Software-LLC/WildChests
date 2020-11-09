@@ -68,6 +68,10 @@ public final class NMSInventory_v1_9_R1 implements NMSInventory {
         Location loc = chest.getLocation();
         World world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+        if(world.getTileEntity(blockPosition) instanceof TileEntityWildChest)
+            removeTileEntity(chest);
+
         Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
 
         TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
@@ -82,7 +86,9 @@ public final class NMSInventory_v1_9_R1 implements NMSInventory {
         Location loc = chest.getLocation();
         World world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        world.s(blockPosition);
+        TileEntity currentTileEntity = world.getTileEntity(blockPosition);
+        if(currentTileEntity instanceof TileEntityWildChest)
+            world.s(blockPosition);
     }
 
     @Override

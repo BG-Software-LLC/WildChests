@@ -56,7 +56,7 @@ public abstract class WChest implements Chest {
 
     public WChest(UUID placer, Location location, ChestData chestData) {
         this.placer = placer;
-        this.location = location;
+        this.location = location.clone();
         this.chestData = chestData;
     }
 
@@ -84,12 +84,15 @@ public abstract class WChest implements Chest {
 
     @Override
     public void remove(){
-        removed = true;
         plugin.getChestsManager().removeChest(this);
     }
 
     public boolean isRemoved(){
         return removed;
+    }
+
+    public void markAsRemoved(){
+        removed = true;
     }
 
     /* INVENTORIES / PAGES RELATED METHODS */
@@ -215,7 +218,7 @@ public abstract class WChest implements Chest {
             inventory.clear();
         }
 
-        viewers.keySet().removeIf(uuid -> viewers.get(uuid).equals(this));
+        viewers.entrySet().removeIf(entry -> entry.getValue().equals(this));
 
         return true;
     }

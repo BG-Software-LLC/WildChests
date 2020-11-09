@@ -216,9 +216,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public void update() {
-        tileEntityContainer.getTransaction().stream()
-                .filter(viewer -> viewer instanceof Player)
-                .forEach(viewer -> openPage((Player) viewer, 0));
+        Executor.sync(() -> updateInventory(inventory), 1L);
     }
 
     @Override
@@ -278,9 +276,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 
-        Inventory page = getPage(0);
-        if(page != null) page.clear();
-        WChest.viewers.keySet().removeIf(uuid -> WChest.viewers.get(uuid).equals(this));
+        WChest.viewers.entrySet().removeIf(entry -> entry.getValue().equals(this));
 
         return true;
     }
