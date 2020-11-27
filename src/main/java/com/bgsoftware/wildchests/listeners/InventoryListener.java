@@ -74,7 +74,6 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestOpen(PlayerInteractEvent e){
-
         if(e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK || (e.getItem() != null && e.getPlayer().isSneaking()))
             return;
 
@@ -87,6 +86,8 @@ public final class InventoryListener implements Listener {
 
         if(chest == null)
             return;
+
+        plugin.getNMSInventory().updateTileEntity(chest);
 
         chest.onOpen(e);
     }

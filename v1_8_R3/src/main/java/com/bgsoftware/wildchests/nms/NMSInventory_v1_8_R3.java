@@ -68,13 +68,19 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
         Location loc = chest.getLocation();
         World world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        TileEntity tileEntity = world.getTileEntity(blockPosition);
 
-        if(world.getTileEntity(blockPosition) instanceof TileEntityWildChest)
-            removeTileEntity(chest);
+        TileEntityWildChest tileEntityWildChest;
+
+        if(tileEntity instanceof TileEntityWildChest) {
+            tileEntityWildChest = (TileEntityWildChest) tileEntity;
+            ((WChest) chest).setTileEntityContainer(tileEntityWildChest);
+        }
+        else {
+            tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
+        }
 
         Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
-
-        TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
 
         chunk.tileEntities.put(blockPosition, tileEntityWildChest);
         try {
@@ -84,7 +90,9 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
             // noinspection all
             ((Map) world.capturedTileEntities).put(blockPosition.asLong(), tileEntityWildChest);
         }
-        world.tileEntityList.add(tileEntityWildChest);
+
+        if(!world.tileEntityList.contains(tileEntityWildChest))
+            world.tileEntityList.add(tileEntityWildChest);
     }
 
     @Override

@@ -57,6 +57,7 @@ import org.bukkit.inventory.Inventory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
@@ -67,17 +68,31 @@ public final class NMSInventory_v1_8_R2 implements NMSInventory {
         Location loc = chest.getLocation();
         World world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        TileEntity tileEntity = world.getTileEntity(blockPosition);
 
-        if(world.getTileEntity(blockPosition) instanceof TileEntityWildChest)
-            removeTileEntity(chest);
+        TileEntityWildChest tileEntityWildChest;
+
+        if(tileEntity instanceof TileEntityWildChest) {
+            tileEntityWildChest = (TileEntityWildChest) tileEntity;
+            ((WChest) chest).setTileEntityContainer(tileEntityWildChest);
+        }
+        else {
+            tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
+        }
 
         Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
 
-        TileEntityWildChest tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
-
         chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-        world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
-        world.tileEntityList.add(tileEntityWildChest);
+        try {
+            world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
+        }catch (Throwable ex){
+            // iSpigot has a Long->TileEntity map instead
+            // noinspection all
+            ((Map) world.capturedTileEntities).put(blockPosition.asLong(), tileEntityWildChest);
+        }
+
+        if(!world.tileEntityList.contains(tileEntityWildChest))
+            world.tileEntityList.add(tileEntityWildChest);
     }
 
     @Override
