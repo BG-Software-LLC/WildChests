@@ -148,15 +148,20 @@ public final class InventoryListener implements Listener {
             InventoryData inventoryData = buyNewPage.get(player.getUniqueId());
             int pageIndex = chest.getPagesAmount() - 1;
 
-            if (confirm) {
-                if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
-                    Locale.EXPAND_PURCHASED.send(player);
-                    chest.setPage(++pageIndex, chestData.getDefaultSize(), inventoryData.getTitle());
+            if(!chestData.getPagesData().containsKey(pageIndex + 2)){
+                Locale.EXPAND_FAILED.send(player);
+            }
+            else {
+                if (confirm) {
+                    if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
+                        Locale.EXPAND_PURCHASED.send(player);
+                        chest.setPage(++pageIndex, chestData.getDefaultSize(), inventoryData.getTitle());
+                    } else {
+                        Locale.EXPAND_FAILED.send(player);
+                    }
                 } else {
                     Locale.EXPAND_FAILED.send(player);
                 }
-            } else {
-                Locale.EXPAND_FAILED.send(player);
             }
 
             final int PAGE = pageIndex;
