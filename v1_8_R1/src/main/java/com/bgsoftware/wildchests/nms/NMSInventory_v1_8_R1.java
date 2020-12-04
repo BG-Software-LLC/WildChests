@@ -15,7 +15,6 @@ import net.minecraft.server.v1_8_R1.Block;
 import net.minecraft.server.v1_8_R1.BlockPosition;
 import net.minecraft.server.v1_8_R1.Blocks;
 import net.minecraft.server.v1_8_R1.ChatComponentText;
-import net.minecraft.server.v1_8_R1.Chunk;
 import net.minecraft.server.v1_8_R1.Container;
 import net.minecraft.server.v1_8_R1.ContainerChest;
 import net.minecraft.server.v1_8_R1.ContainerHopper;
@@ -63,7 +62,6 @@ import java.util.function.BiConsumer;
 public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
     @Override
-    @SuppressWarnings("unchecked")
     public void updateTileEntity(Chest chest) {
         Location loc = chest.getLocation();
         World world = ((CraftWorld) loc.getWorld()).getHandle();
@@ -80,12 +78,7 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
         }
 
-        Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
-
-        chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-
-        if(!world.tileEntityList.contains(tileEntityWildChest))
-            world.tileEntityList.add(tileEntityWildChest);
+        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override

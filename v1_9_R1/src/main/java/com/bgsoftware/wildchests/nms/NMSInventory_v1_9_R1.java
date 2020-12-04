@@ -15,7 +15,6 @@ import net.minecraft.server.v1_9_R1.Block;
 import net.minecraft.server.v1_9_R1.BlockPosition;
 import net.minecraft.server.v1_9_R1.Blocks;
 import net.minecraft.server.v1_9_R1.ChatComponentText;
-import net.minecraft.server.v1_9_R1.Chunk;
 import net.minecraft.server.v1_9_R1.Container;
 import net.minecraft.server.v1_9_R1.ContainerChest;
 import net.minecraft.server.v1_9_R1.ContainerHopper;
@@ -80,13 +79,7 @@ public final class NMSInventory_v1_9_R1 implements NMSInventory {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
         }
 
-        Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
-
-        chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-        world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
-
-        if(!world.tileEntityListTick.contains(tileEntityWildChest))
-            world.tileEntityListTick.add(tileEntityWildChest);
+        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override

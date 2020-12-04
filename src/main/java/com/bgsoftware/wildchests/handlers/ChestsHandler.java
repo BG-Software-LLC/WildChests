@@ -6,6 +6,7 @@ import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
+import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
 import org.bukkit.Chunk;
@@ -58,7 +59,7 @@ public final class ChestsHandler implements ChestsManager {
     public Chest addChest(UUID placer, Location location, ChestData chestData){
         WChest chest = loadChest(placer, location, chestData);
         plugin.getDataHandler().insertChest(chest);
-        plugin.getNMSInventory().updateTileEntity(chest);
+        Executor.sync(() -> plugin.getNMSInventory().updateTileEntity(chest));
         return chest;
     }
 
@@ -182,9 +183,13 @@ public final class ChestsHandler implements ChestsManager {
         if(chunkChests == null)
             return null;
 
+        Chest chest = chunkChests.get(location);
+
         try {
-            return chestClass.cast(chunkChests.get(location));
+            return chestClass.cast(chest);
         }catch(ClassCastException ex){
+            WildChestsPlugin.log("&cTried to cast " + chest.getClass() + " into " + chestClass + ". Stack trace:");
+            ex.printStackTrace();
             return null;
         }
     }

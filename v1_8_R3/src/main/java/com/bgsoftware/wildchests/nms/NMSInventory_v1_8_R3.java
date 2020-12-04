@@ -15,7 +15,6 @@ import net.minecraft.server.v1_8_R3.Block;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.Blocks;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
-import net.minecraft.server.v1_8_R3.Chunk;
 import net.minecraft.server.v1_8_R3.Container;
 import net.minecraft.server.v1_8_R3.ContainerChest;
 import net.minecraft.server.v1_8_R3.ContainerHopper;
@@ -57,7 +56,6 @@ import org.bukkit.inventory.Inventory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
@@ -80,19 +78,7 @@ public final class NMSInventory_v1_8_R3 implements NMSInventory {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
         }
 
-        Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
-
-        chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-        try {
-            world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
-        }catch (Throwable ex){
-            // iSpigot has a Long->TileEntity map instead
-            // noinspection all
-            ((Map) world.capturedTileEntities).put(blockPosition.asLong(), tileEntityWildChest);
-        }
-
-        if(!world.tileEntityList.contains(tileEntityWildChest))
-            world.tileEntityList.add(tileEntityWildChest);
+        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override

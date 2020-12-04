@@ -78,13 +78,7 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
         }
 
-        Chunk chunk = world.getChunkAtWorldCoords(blockPosition);
-
-        chunk.tileEntities.put(blockPosition, tileEntityWildChest);
-        world.capturedTileEntities.put(blockPosition, tileEntityWildChest);
-
-        if(!world.tileEntityListTick.contains(tileEntityWildChest))
-            world.tileEntityListTick.add(tileEntityWildChest);
+        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override
