@@ -76,8 +76,6 @@ public final class DataHandler {
                         .queue(chest);
             }
         });
-
-        chestList.forEach(plugin.getNMSInventory()::removeTileEntity);
     }
 
     public void insertChest(WChest chest){
