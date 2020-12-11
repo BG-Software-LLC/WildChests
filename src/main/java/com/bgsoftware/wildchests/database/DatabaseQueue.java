@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.database;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.sql.Connection;
@@ -49,6 +50,9 @@ public final class DatabaseQueue {
         if(currentIndex > 0) {
             Map<Query, PreparedStatement> preparedStatementMap = new EnumMap<>(Query.class);
             Connection connection = Database.getConnection();
+
+            if(WildChestsPlugin.getPlugin().debug)
+                WildChestsPlugin.log("Amount of queries: " + queuedCalls.size());
 
             for(int i = 0; i < currentIndex; i++){
                 try {

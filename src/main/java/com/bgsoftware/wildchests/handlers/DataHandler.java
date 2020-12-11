@@ -94,15 +94,6 @@ public final class DataHandler {
         Database.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
         Database.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
 
-        //Load offline payments
-        Database.executeQuery("SELECT * FROM offline_payment;", resultSet -> {
-            while(resultSet.next()) {
-                UUID uuid = UUID.fromString(resultSet.getString("uuid"));
-                String payment = resultSet.getString("payment");
-                plugin.getOfflinePayments().depositItems(uuid, payment);
-            }
-        });
-
         Database.executeUpdate("DELETE FROM offline_payment;");
     }
 

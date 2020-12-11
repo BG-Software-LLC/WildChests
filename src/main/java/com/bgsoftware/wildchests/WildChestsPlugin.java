@@ -7,7 +7,6 @@ import com.bgsoftware.wildchests.command.CommandsHandler;
 import com.bgsoftware.wildchests.database.Database;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
-import com.bgsoftware.wildchests.handlers.OfflinePaymentsHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.handlers.SettingsHandler;
 import com.bgsoftware.wildchests.listeners.BlockListener;
@@ -40,7 +39,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     private SettingsHandler settingsHandler;
     private DataHandler dataHandler;
     private ProvidersHandler providersHandler;
-    private OfflinePaymentsHandler offlinePaymentsHandler;
 
     private NMSAdapter nmsAdapter;
     private NMSInventory nmsInventory;
@@ -58,7 +56,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         chestsManager = new ChestsHandler();
         settingsHandler = new SettingsHandler(this);
         dataHandler = new DataHandler(this);
-        offlinePaymentsHandler = new OfflinePaymentsHandler(this);
         providersHandler = new ProvidersHandler(this);
 
         getServer().getPluginManager().registerEvents(new BlockListener(this), this);
@@ -92,6 +89,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     }
 
+    public boolean debug = false;
+
     @Override
     public void onDisable() {
         Bukkit.getScheduler().cancelTasks(this);
@@ -113,7 +112,16 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         for(Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
 
-        dataHandler.saveDatabase(null);
+        int loadedChunks = 0;
+
+        for(World world : Bukkit.getWorlds()){
+            for(Chunk chunk : world.getLoadedChunks()) {
+                dataHandler.saveDatabase(chunk);
+                loadedChunks++;
+            }
+        }
+
+        log("Chunks to save: " + loadedChunks);
 
         log("Terminating executor...");
         Executor.stop();
@@ -176,10 +184,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     @SuppressWarnings("unused")
     public DataHandler getDataHandler() {
         return dataHandler;
-    }
-
-    public OfflinePaymentsHandler getOfflinePayments() {
-        return offlinePaymentsHandler;
     }
 
     public static void log(String message){
