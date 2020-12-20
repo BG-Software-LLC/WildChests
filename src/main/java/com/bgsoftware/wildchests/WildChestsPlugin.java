@@ -79,14 +79,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
 
         log("******** ENABLE DONE ********");
-
-        Executor.sync(() -> {
-            for(World world : Bukkit.getWorlds()){
-                for(Chunk chunk : world.getLoadedChunks())
-                    ChunksListener.handleChunkLoad(this, chunk);
-            }
-        }, 20L);
-
     }
 
     public boolean debug = false;
