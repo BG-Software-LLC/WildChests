@@ -18,7 +18,7 @@ public final class ChunksListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onChunkLoad(ChunkLoadEvent e){
         handleChunkLoad(plugin, e.getChunk());
     }
