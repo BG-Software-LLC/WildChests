@@ -5,12 +5,14 @@ import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.database.Database;
 import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
@@ -89,10 +91,20 @@ public final class DataHandler {
         Database.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
         Database.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
-        //Loading all tables
-        Database.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
-        Database.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
-        Database.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
+        Executor.async(() -> {
+            //Loading all tables
+            Database.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
+            Database.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
+            Database.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
+
+            Executor.sync(() -> {
+                for(World world : Bukkit.getWorlds()){
+                    for(Chunk chunk : world.getLoadedChunks())
+                        ChunksListener.handleChunkLoad(plugin, chunk);
+                }
+            }, 1L);
+
+        });
 
         Database.executeUpdate("DELETE FROM offline_payment;");
     }
