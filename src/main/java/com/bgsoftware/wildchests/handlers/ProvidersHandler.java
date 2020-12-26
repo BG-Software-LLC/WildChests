@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
+import com.bgsoftware.wildchests.hooks.ChestShopHook;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
@@ -78,6 +79,9 @@ public final class ProvidersHandler implements ProvidersManager {
 
             if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
                 SuperiorSkyblockHook.register(plugin);
+
+            if(Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
+                ChestShopHook.register(plugin);
         });
     }
 
