@@ -222,9 +222,9 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void remove() {
         super.remove();
-        Query.STORAGE_UNIT_DELETE.insertParameters()
+        Query.STORAGE_UNIT_DELETE.getStatementHolder(this)
                 .setLocation(getLocation())
-                .queue(this);
+                .execute(true);
     }
 
     @Override
@@ -380,15 +380,15 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void executeInsertQuery() {
-        Query.STORAGE_UNIT_INSERT.insertParameters()
+    public void executeInsertStatement(boolean async) {
+        Query.STORAGE_UNIT_INSERT.getStatementHolder(this)
                 .setLocation(location)
-                .setObject(placer.toString())
-                .setObject(getData().getName())
+                .setString(placer.toString())
+                .setString(getData().getName())
                 .setItemStack(getItemStack())
-                .setObject(getAmount().toString())
-                .setObject(getMaxAmount().toString())
-                .queue(this);
+                .setString(getAmount().toString())
+                .setString(getMaxAmount().toString())
+                .execute(true);
     }
 
     private void updateInventory(Inventory inventory){

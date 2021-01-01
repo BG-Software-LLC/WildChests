@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.database.DatabaseObject;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
@@ -40,7 +41,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
-public abstract class WChest implements Chest {
+public abstract class WChest extends DatabaseObject implements Chest {
 
     protected static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     public static final Map<UUID, Chest> viewers = Maps.newHashMap();
@@ -332,8 +333,6 @@ public abstract class WChest implements Chest {
     }
 
     /* DATA RELATED METHODS */
-
-    public abstract void executeInsertQuery();
 
     public void loadFromData(ResultSet resultSet) throws SQLException {
         String serialized = resultSet.getString("inventories");

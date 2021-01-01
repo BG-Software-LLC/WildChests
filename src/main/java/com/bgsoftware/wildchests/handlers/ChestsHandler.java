@@ -9,6 +9,8 @@ import com.bgsoftware.wildchests.utils.ChunkPosition;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -27,10 +29,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 public final class ChestsHandler implements ChestsManager {
@@ -38,7 +39,8 @@ public final class ChestsHandler implements ChestsManager {
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private final Map<String, ChestData> chestsData = new HashMap<>();
 
-    private final Map<ChunkPosition, Map<Location, Chest>> chests = Maps.newConcurrentMap();
+    private final Map<Location, Chest> chests = Maps.newConcurrentMap();
+    private final Map<ChunkPosition, Set<Chest>> chestsByChunks = Maps.newConcurrentMap();
 
     @Override
     public Chest getChest(Location location) {
@@ -80,7 +82,8 @@ public final class ChestsHandler implements ChestsManager {
                 throw new IllegalArgumentException("Invalid chest at " + location);
         }
 
-        chests.computeIfAbsent(ChunkPosition.of(location), s -> Maps.newConcurrentMap()).put(location, chest);
+        chests.put(location, chest);
+        chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
 
         return chest;
     }
@@ -95,17 +98,19 @@ public final class ChestsHandler implements ChestsManager {
             }
         }
 
-        chests.values().forEach(map -> map.values().forEach(chest -> {
+        chests.values().forEach(chest -> {
             if(((WChest) chest).getTileEntityContainer() != null)
                 ((WChest) chest).getTileEntityContainer().updateData();
-        }));
+        });
     }
 
     @Override
     public void removeChest(Chest chest) {
-        Map<Location, Chest> chunkChests = chests.get(ChunkPosition.of(chest.getLocation()));
+        chests.remove(chest.getLocation());
+
+        Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chest.getLocation()));
         if(chunkChests != null)
-            chunkChests.remove(chest.getLocation());
+            chunkChests.remove(chest);
 
         ((WChest) chest).markAsRemoved();
 
@@ -139,14 +144,13 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public List<Chest> getChests() {
-        return chests.values().stream().flatMap((Function<Map<Location, Chest>, Stream<Chest>>) locationChestMap ->
-                locationChestMap.values().stream()).collect(Collectors.toList());
+        return Collections.unmodifiableList(new ArrayList<>(chests.values()));
     }
 
     @Override
     public List<Chest> getChests(Chunk chunk) {
-        Map<Location, Chest> chunkChests = chests.get(ChunkPosition.of(chunk));
-        return Collections.unmodifiableList(chunkChests == null ? new ArrayList<>() : new ArrayList<>(chunkChests.values()));
+        Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chunk));
+        return Collections.unmodifiableList(chunkChests == null ? new ArrayList<>() : new ArrayList<>(chunkChests));
     }
 
     @Override
@@ -175,15 +179,15 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     private <T extends Chest> T getChest(Location location, Class<T> chestClass){
-        if(!isChest(location))
+        Chest chest = chests.get(location);
+
+        if(chest == null)
             return null;
 
-        Map<Location, Chest> chunkChests = chests.get(ChunkPosition.of(location));
-
-        if(chunkChests == null)
+        if(Bukkit.isPrimaryThread() && location.getBlock().getType() != Material.CHEST) {
+            removeChest(chest);
             return null;
-
-        Chest chest = chunkChests.get(location);
+        }
 
         try {
             return chestClass.cast(chest);
@@ -192,27 +196,6 @@ public final class ChestsHandler implements ChestsManager {
             ex.printStackTrace();
             return null;
         }
-    }
-
-    private boolean isChest(Location location) {
-        // If the chunk is not loaded, we will return true without checking the actual block.
-        if(!location.getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4))
-            return true;
-
-        Map<Location, Chest> chunkChests = chests.get(ChunkPosition.of(location));
-
-        if(chunkChests == null)
-            return false;
-
-        if(location.getBlock().getType() != Material.CHEST) {
-            Chest chest = chunkChests.remove(location);
-            if(chest != null)
-                removeChest(chest);
-
-            return false;
-        }
-
-        return chunkChests.containsKey(location);
     }
 
 }

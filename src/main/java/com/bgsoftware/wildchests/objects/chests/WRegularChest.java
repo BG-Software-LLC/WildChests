@@ -118,19 +118,19 @@ public class WRegularChest extends WChest implements RegularChest {
     @Override
     public void remove() {
         super.remove();
-        Query.REGULAR_CHEST_DELETE.insertParameters()
+        Query.REGULAR_CHEST_DELETE.getStatementHolder(this)
                 .setLocation(getLocation())
-                .queue(this);
+                .execute(true);
     }
 
     @Override
-    public void executeInsertQuery() {
-        Query.REGULAR_CHEST_INSERT.insertParameters()
+    public void executeInsertStatement(boolean async) {
+        Query.REGULAR_CHEST_INSERT.getStatementHolder(this)
                 .setLocation(location)
-                .setObject(placer.toString())
-                .setObject(getData().getName())
-                .setObject("")
-                .queue(this);
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setString("")
+                .execute(async);
     }
 
     private void checkCapacity(int size, int inventorySize, String inventoryTitle){

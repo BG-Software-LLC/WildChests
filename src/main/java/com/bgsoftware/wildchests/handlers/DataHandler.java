@@ -3,8 +3,9 @@ package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
-import com.bgsoftware.wildchests.database.Database;
+import com.bgsoftware.wildchests.database.DatabaseObject;
 import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
@@ -37,7 +38,8 @@ public final class DataHandler {
         this.plugin = plugin;
         Executor.sync(() -> {
             try {
-                Database.start(new File(plugin.getDataFolder(), "database.db"));
+                //Database.start(new File(plugin.getDataFolder(), "database.db"));
+                SQLHelper.createConnection(plugin);
                 loadDatabase();
                 loadOldDatabase();
             }catch(Exception ex){
@@ -47,55 +49,55 @@ public final class DataHandler {
         }, 2L);
     }
 
-    public void saveDatabase(Chunk chunk){
+    public void saveDatabase(Chunk chunk, boolean async){
         List<Chest> chestList = chunk == null ? plugin.getChestsManager().getChests() : plugin.getChestsManager().getChests(chunk);
 
         chestList.forEach(chest -> {
             if(chest instanceof LinkedChest) {
                 LinkedChest linkedChest = ((LinkedChest) chest).getLinkedChest();
 
-                Query.LINKED_CHEST_UPDATE_INVENTORY.insertParameters()
+                Query.LINKED_CHEST_UPDATE_INVENTORY.getStatementHolder((DatabaseObject) chest)
                         .setInventories(((LinkedChest) chest).isLinkedIntoChest() ? null : chest.getPages())
                         .setLocation(chest.getLocation())
-                        .queue(chest);
-                Query.LINKED_CHEST_UPDATE_TARGET.insertParameters()
+                        .execute(async);
+                Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder((DatabaseObject) chest)
                         .setLocation(linkedChest == null ? null : linkedChest.getLocation())
                         .setLocation(chest.getLocation())
-                        .queue(chest);
+                        .execute(async);
             }
             else if(chest instanceof StorageChest){
                 StorageChest storageChest = (StorageChest) chest;
-                Query.STORAGE_UNIT_UPDATE_INVENTORY.insertParameters()
+                Query.STORAGE_UNIT_UPDATE_INVENTORY.getStatementHolder((DatabaseObject) chest)
                         .setItemStack(storageChest.getItemStack())
-                        .setObject(storageChest.getAmount().toString())
+                        .setString(storageChest.getAmount().toString())
                         .setLocation(storageChest.getLocation())
-                        .queue(chest);
+                        .execute(async);
             }
             else{
-                Query.REGULAR_CHEST_UPDATE_INVENTORY.insertParameters()
+                Query.REGULAR_CHEST_UPDATE_INVENTORY.getStatementHolder((DatabaseObject) chest)
                         .setInventories(chest.getPages())
                         .setLocation(chest.getLocation())
-                        .queue(chest);
+                        .execute(async);
             }
         });
     }
 
     public void insertChest(WChest chest){
-        chest.executeInsertQuery();
+        chest.executeInsertStatement(true);
     }
 
     private void loadDatabase(){
         //Creating default tables
-        Database.executeUpdate("CREATE TABLE IF NOT EXISTS chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR);");
-        Database.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
-        Database.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
-        Database.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
+        SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
         Executor.async(() -> {
             //Loading all tables
-            Database.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
-            Database.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
-            Database.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
+            SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
+            SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
+            SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
 
             Executor.sync(() -> {
                 for(World world : Bukkit.getWorlds()){
@@ -106,7 +108,7 @@ public final class DataHandler {
 
         });
 
-        Database.executeUpdate("DELETE FROM offline_payment;");
+        SQLHelper.executeUpdate("DELETE FROM offline_payment;");
     }
 
     private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException{
@@ -123,6 +125,7 @@ public final class DataHandler {
                     ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
                     WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
                     chest.loadFromData(resultSet);
+                    WildChestsPlugin.debug("Loaded chest from database at " + stringLocation);
                 }
             }catch(Exception ex){
                 errorMessage = ex.getMessage();
@@ -132,7 +135,7 @@ public final class DataHandler {
                 WildChestsPlugin.log("Couldn't load the location " + stringLocation);
                 WildChestsPlugin.log(errorMessage);
                 if(errorMessage.contains("Null") && plugin.getSettings().invalidWorldDelete){
-                    Database.executeUpdate("DELETE FROM " + tableName + " WHERE location = '" + stringLocation + "';");
+                    SQLHelper.executeUpdate("DELETE FROM " + tableName + " WHERE location = '" + stringLocation + "';");
                     WildChestsPlugin.log("Deleted spawner (" + stringLocation + ") from database.");
                 }
             }

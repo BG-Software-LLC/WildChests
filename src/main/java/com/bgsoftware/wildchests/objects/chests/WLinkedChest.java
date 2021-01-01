@@ -59,10 +59,10 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         }
 
         LinkedChest _linkedChest = getLinkedChest();
-        Query.LINKED_CHEST_UPDATE_TARGET.insertParameters()
+        Query.LINKED_CHEST_UPDATE_TARGET.getStatementHolder(this)
                 .setLocation(linkedChest == null ? null : _linkedChest.getLocation())
                 .setLocation(getLocation())
-                .queue(this);
+                .execute(true);
     }
 
     @Override
@@ -107,9 +107,9 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         if(linkedChestsContainer != null)
             linkedChestsContainer.unlinkChest(this);
         //Removing the linked chest from database
-        Query.LINKED_CHEST_DELETE.insertParameters()
+        Query.LINKED_CHEST_DELETE.getStatementHolder(this)
                 .setLocation(getLocation())
-                .queue(this);
+                .execute(true);
     }
 
     @Override
@@ -176,14 +176,14 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     }
 
     @Override
-    public void executeInsertQuery() {
-        Query.LINKED_CHEST_INSERT.insertParameters()
+    public void executeInsertStatement(boolean async) {
+        Query.LINKED_CHEST_INSERT.getStatementHolder(this)
                 .setLocation(location)
-                .setObject(placer.toString())
-                .setObject(getData().getName())
-                .setObject("")
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setString("")
                 .setLocation(linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
-                .queue(this);
+                .execute(async);
     }
 
 }

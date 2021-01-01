@@ -10,10 +10,12 @@ import com.bgsoftware.wildchests.objects.Materials;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
+import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -74,7 +76,8 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestOpen(PlayerInteractEvent e){
-        if(e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK || (e.getItem() != null && e.getPlayer().isSneaking()))
+        if(e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK ||
+                e.getClickedBlock().getType() != Material.CHEST)
             return;
 
         if(buyNewPage.containsKey(e.getPlayer().getUniqueId())){
@@ -82,7 +85,14 @@ public final class InventoryListener implements Listener {
             return;
         }
 
+        boolean debug = e.getPlayer().isOp();
+
         Chest chest = plugin.getChestsManager().getChest(e.getClickedBlock().getLocation());
+
+        if(debug){
+            WildChestsPlugin.debug("Opening a chest at " + LocationUtils.toString(e.getClickedBlock().getLocation()));
+            WildChestsPlugin.debug("Cached Chest: " + chest);
+        }
 
         if(chest == null)
             return;

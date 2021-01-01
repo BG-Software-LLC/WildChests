@@ -37,8 +37,8 @@ public enum Query {
         return parametersCount;
     }
 
-    public QueryParameters insertParameters(){
-        return new QueryParameters(this);
+    public StatementHolder getStatementHolder(DatabaseObject databaseObject){
+        return new StatementHolder(databaseObject, this);
     }
 
 }
