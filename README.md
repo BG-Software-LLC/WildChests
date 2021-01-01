@@ -4,65 +4,21 @@ WildChests - New era of chests!
 
 ## Compiling
 
-I am compiling it using the built-in system of Intellij. I made it so every folder is a module, so I can add different
-dependencies for every one of them. Down below, you'll find information about every module and what dependencies
-it should contain:
+You can compile the project using gradlew.<br>
+Run `gradlew shadowJar build` in console to build the project.<br>
+You can find already compiled jars on our [Jenkins](https://hub.bg-software.com/) hub!<br>
+You must add yourself all the private jars or purchase access to our private repository.
 
-- main module:
+##### Private Jars:
+- QuantumShop by NightExpress [[link]](https://www.spigotmc.org/resources/50696/)
+- ShopGUIPlus (v1.20 & v1.43) by brcdev [[link]](https://www.spigotmc.org/resources/6515/)
 
-  - v1_8_R1 jar (1.8 spigot jar)
-   
-  - v1_15_R1 jar (1.15.x spigot jar)
-      
-  - all the libraries from the libs folder (their order shouldn't matter, but it might cause issues).
-      
-  - the API module.
+## Updates
 
-- API module:
+This plugin is provided "as is", which means no updates or new features are guaranteed. We will do our best to keep 
+updating and pushing new updates, and you are more than welcome to contribute your time as well and make pull requests
+for bug fixes. 
 
-  - v1_8_R1 jar (1.8 spigot jar)
+## License
 
-- NMS modules:
-
-  - their matching spigot jar (module v1_8_R1 will get a v1_8_R1 spigot jar, etc)
-      
-  - the API module.
-      
-  - the main module.
-
-## Spigot Jars
-
-As I am not allowed to publish the spigot jars, I will explain below what are the versions of spigot that you need.
-
-  v1_8_R1 - Spigot 1.8
-
-  v1_8_R2 - Spigot 1.8.3
-
-  v1_8_R3 - Spigot 1.8.8
-
-  v1_9_R1 - Spigot 1.9
-
-  v1_9_R2 - Spigot 1.9.2
-
-  v1_10_R1 - Spigot 1.10.x
-
-  v1_11_R1 - Spigot 1.11.x
-
-  v1_12_R1 - Spigot 1.12.x
-
-  v1_13_R1 - Spigot 1.13
-
-  v1_13_R2 - Spigot 1.13.2
-
-  v1_14_R1 - Spigot 1.14.x
-
-  v1_15_R1 - Spigot 1.15.x
-
-  v1_16_R1 - Spigot 1.16.x
-
-
-If you struggle with finding the correct ones, please open a ticket on the Discord server, so I can help with them.
-
-## Credits
-
-• Ome_R for the base-code.
+This plugin is licensed under GNU GPL v3.0
