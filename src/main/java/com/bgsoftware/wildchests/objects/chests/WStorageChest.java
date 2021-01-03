@@ -276,8 +276,6 @@ public final class WStorageChest extends WChest implements StorageChest {
             ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 
-        WChest.viewers.entrySet().removeIf(entry -> entry.getValue().equals(this));
-
         return true;
     }
 

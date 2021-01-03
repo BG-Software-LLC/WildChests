@@ -6,6 +6,7 @@ import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.google.common.collect.Maps;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,6 +36,7 @@ import com.bgsoftware.wildchests.utils.ItemUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -86,6 +88,14 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public void remove(){
         plugin.getChestsManager().removeChest(this);
+        new HashSet<>(WChest.viewers.entrySet()).stream().filter(entry -> entry.getValue().equals(this)).forEach(entry -> {
+            Player player = Bukkit.getPlayer(entry.getKey());
+
+            if(player != null)
+                player.closeInventory();
+
+            WChest.viewers.remove(entry.getKey());
+        });
     }
 
     public boolean isRemoved(){
@@ -218,8 +228,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
                 }
             inventory.clear();
         }
-
-        viewers.entrySet().removeIf(entry -> entry.getValue().equals(this));
 
         return true;
     }
