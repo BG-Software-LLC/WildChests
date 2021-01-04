@@ -8,6 +8,9 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
+import com.bgsoftware.wildchests.objects.chests.WRegularChest;
+import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
@@ -28,6 +31,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class DataHandler {
@@ -93,25 +99,31 @@ public final class DataHandler {
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
-        Executor.async(() -> {
-            //Loading all tables
-            SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
-            SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
-            SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
 
-            Executor.sync(() -> {
-                for(World world : Bukkit.getWorlds()){
-                    for(Chunk chunk : world.getLoadedChunks())
-                        ChunksListener.handleChunkLoad(plugin, chunk);
-                }
-            }, 1L);
+        //Loading all tables
+        SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(executorService, resultSet, "chests"));
+        SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(executorService, resultSet, "linked_chests"));
+        SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(executorService, resultSet, "storage_units"));
 
-        });
+        try{
+            executorService.shutdown();
+            executorService.awaitTermination(1, TimeUnit.MINUTES);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        Executor.sync(() -> {
+            for(World world : Bukkit.getWorlds()){
+                for(Chunk chunk : world.getLoadedChunks())
+                    ChunksListener.handleChunkLoad(plugin, chunk);
+            }
+        }, 1L);
 
         SQLHelper.executeUpdate("DELETE FROM offline_payment;");
     }
 
-    private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException{
+    private void loadResultSet(ExecutorService service, ResultSet resultSet, String tableName) throws SQLException{
         while (resultSet.next()) {
             UUID placer = UUID.fromString(resultSet.getString("placer"));
             String stringLocation = resultSet.getString("location");
@@ -124,7 +136,24 @@ public final class DataHandler {
                     Location location = LocationUtils.fromString(stringLocation);
                     ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
                     WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
-                    chest.loadFromData(resultSet);
+
+                    if(chest instanceof StorageChest){
+                        String item = resultSet.getString("item");
+                        String amount = resultSet.getString("amount");
+                        String maxAmount = resultSet.getString("max_amount");
+                        service.execute(() -> ((WStorageChest) chest).loadFromData(item, amount, maxAmount));
+                    }
+                    else{
+                        String serialized = resultSet.getString("inventories");
+                        if(chest instanceof LinkedChest){
+                            String linkedChest = resultSet.getString("linked_chest");
+                            service.execute(() -> ((WLinkedChest) chest).loadFromData(serialized, linkedChest));
+                        }
+                        else{
+                            service.execute(() -> ((WRegularChest) chest).loadFromData(serialized));
+                        }
+                    }
+
                     WildChestsPlugin.debug("Loaded chest from database at " + stringLocation);
                 }
             }catch(Exception ex){

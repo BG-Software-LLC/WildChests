@@ -342,15 +342,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     /* DATA RELATED METHODS */
 
-    public void loadFromData(ResultSet resultSet) throws SQLException {
-        String serialized = resultSet.getString("inventories");
-        if(!serialized.isEmpty()) {
-            InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serialized);
-            for (int i = 0; i < inventories.length; i++)
-                setPage(i, inventories[i]);
-        }
-    }
-
     public void loadFromFile(YamlConfiguration cfg){
         if (cfg.contains("inventory")) {
             ChestData chestData = getData();

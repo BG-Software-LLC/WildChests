@@ -5,6 +5,7 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
+import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.SyncedArray;
 import org.bukkit.Location;
@@ -121,6 +122,14 @@ public class WRegularChest extends WChest implements RegularChest {
         Query.REGULAR_CHEST_DELETE.getStatementHolder(this)
                 .setLocation(getLocation())
                 .execute(true);
+    }
+
+    public void loadFromData(String serialized){
+        if(!serialized.isEmpty()) {
+            InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serialized);
+            for (int i = 0; i < inventories.length; i++)
+                setPage(i, inventories[i]);
+        }
     }
 
     @Override

@@ -141,15 +141,8 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         return true;
     }
 
-    @Override
-    public void loadFromData(ResultSet resultSet) throws SQLException {
-        try {
-            super.loadFromData(resultSet);
-        }catch (Exception ex){
-            ex.printStackTrace();
-            throw ex;
-        }
-        String linkedChest = resultSet.getString("linked_chest");
+    public void loadFromData(String serialized, String linkedChest){
+        super.loadFromData(serialized);
         if(!linkedChest.isEmpty()){
             Location linkedChestLocation = LocationUtils.fromString(linkedChest);
             Executor.sync(() -> {

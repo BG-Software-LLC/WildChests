@@ -356,11 +356,10 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
-    @Override
-    public void loadFromData(ResultSet resultSet) throws SQLException {
-        setItemStack(plugin.getNMSAdapter().deserialzeItem(resultSet.getString("item")));
-        setAmount(new BigInteger(resultSet.getString("amount")));
-        setMaxAmount(new BigInteger(resultSet.getString("max_amount")));
+    public void loadFromData(String item, String amount, String maxAmount) {
+        setItemStack(plugin.getNMSAdapter().deserialzeItem(item));
+        setAmount(new BigInteger(amount));
+        setMaxAmount(new BigInteger(maxAmount));
     }
 
     @Override
