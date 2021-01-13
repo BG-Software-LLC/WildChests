@@ -33,8 +33,6 @@ import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,7 +55,8 @@ public abstract class WChest extends DatabaseObject implements Chest {
     protected TileEntityContainer tileEntityContainer;
     protected boolean removed = false;
 
-    public WChest(UUID placer, Location location, ChestData chestData) {
+    protected WChest(UUID placer, Location location, ChestData chestData, ObjectIdentifier identifier) {
+        super(identifier);
         this.placer = placer;
         this.location = location.clone();
         this.chestData = chestData;
@@ -88,6 +87,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public void remove(){
         plugin.getChestsManager().removeChest(this);
+
         new HashSet<>(WChest.viewers.entrySet()).stream().filter(entry -> entry.getValue().equals(this)).forEach(entry -> {
             Player player = Bukkit.getPlayer(entry.getKey());
 
@@ -96,6 +96,8 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
             WChest.viewers.remove(entry.getKey());
         });
+
+        deleteObject();
     }
 
     public boolean isRemoved(){
@@ -311,6 +313,10 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public boolean onHopperItemTake(Inventory hopperInventory) {
         throw new UnsupportedOperationException("onHopperItemTake for chests is not supported anymore.");
+    }
+
+    public void onChunkLoad(){
+        plugin.getNMSInventory().updateTileEntity(this);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.objects.chests;
 
-import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.Executor;
@@ -17,8 +16,6 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +32,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private boolean broken = false;
 
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
-        super(placer, location, chestData);
+        super(placer, location, chestData, new ObjectIdentifier("storage_units", "location", v -> location));
         maxAmount = chestData.getStorageUnitMaxAmount();
         inventory = plugin.getNMSInventory().createInventory(this, 5,
                 chestData.getTitle(1).replace("{0}", amount + ""), 0);
@@ -220,14 +217,6 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void remove() {
-        super.remove();
-        Query.STORAGE_UNIT_DELETE.getStatementHolder(this)
-                .setLocation(getLocation())
-                .execute(true);
-    }
-
-    @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
 
@@ -377,15 +366,21 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void executeInsertStatement(boolean async) {
-        Query.STORAGE_UNIT_INSERT.getStatementHolder(this)
-                .setLocation(location)
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setItemStack(getItemStack())
-                .setString(getAmount().toString())
-                .setString(getMaxAmount().toString())
-                .execute(true);
+    public void insertObject() {
+        saveData("location", v -> location);
+        saveData("placer", v -> placer.toString());
+        saveData("chest_data", v -> getData().getName());
+        saveData("item", v -> getItemStack());
+        saveData("amount", v -> getAmount().toString());
+        saveData("max_amount", v -> getMaxAmount().toString());
+        objectState = ObjectState.INSERT;
+    }
+
+    @Override
+    public void saveObject() {
+        objectState = ObjectState.UPDATE;
+        saveData("item", v -> getItemStack());
+        saveData("amount", v -> getAmount().toString());
     }
 
     private void updateInventory(Inventory inventory){

@@ -4,7 +4,7 @@ import com.bgsoftware.wildchests.api.WildChests;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.command.CommandsHandler;
-import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.Database;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
@@ -108,7 +108,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         for(World world : Bukkit.getWorlds()){
             for(Chunk chunk : world.getLoadedChunks()) {
-                dataHandler.saveDatabase(chunk, false);
+                dataHandler.saveDatabase(chunk);
                 loadedChunks++;
             }
         }
@@ -118,8 +118,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         log("Terminating executor...");
         Executor.stop();
         log("Terminating database...");
-        //Database.stop();
-        SQLHelper.close();
+        Database.stop();
     }
 
     private void loadAPI(){

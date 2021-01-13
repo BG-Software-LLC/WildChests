@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests.objects.chests;
 
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
-import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
@@ -18,9 +17,14 @@ import java.util.UUID;
 public class WRegularChest extends WChest implements RegularChest {
 
     protected SyncedArray<CraftWildInventory> inventories;
+    private String serializedData = null;
 
     public WRegularChest(UUID placer, Location location, ChestData chestData){
-        super(placer, location, chestData);
+        this(placer, location, chestData, new ObjectIdentifier("chests", "location", v -> location));
+    }
+
+    protected WRegularChest(UUID placer, Location location, ChestData chestData, ObjectIdentifier identifier){
+        super(placer, location, chestData, identifier);
         this.inventories = new SyncedArray<>(chestData.getDefaultPagesAmount());
         initContainer(chestData);
     }
@@ -117,29 +121,32 @@ public class WRegularChest extends WChest implements RegularChest {
     }
 
     @Override
-    public void remove() {
-        super.remove();
-        Query.REGULAR_CHEST_DELETE.getStatementHolder(this)
-                .setLocation(getLocation())
-                .execute(true);
-    }
-
-    public void loadFromData(String serialized){
-        if(!serialized.isEmpty()) {
-            InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serialized);
+    public void onChunkLoad() {
+        super.onChunkLoad();
+        if(serializedData != null) {
+            InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serializedData);
             for (int i = 0; i < inventories.length; i++)
                 setPage(i, inventories[i]);
         }
     }
 
+    public void loadFromData(String serialized){
+        this.serializedData = !serialized.isEmpty() ? serialized : null;
+    }
+
     @Override
-    public void executeInsertStatement(boolean async) {
-        Query.REGULAR_CHEST_INSERT.getStatementHolder(this)
-                .setLocation(location)
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setString("")
-                .execute(async);
+    public void insertObject() {
+        saveData("location", v -> location);
+        saveData("placer", v -> placer.toString());
+        saveData("chest_data", v -> getData().getName());
+        saveData("inventories", v -> getPages());
+        objectState = ObjectState.INSERT;
+    }
+
+    @Override
+    public void saveObject() {
+        objectState = ObjectState.UPDATE;
+        saveData("inventories", v -> getPages());
     }
 
     private void checkCapacity(int size, int inventorySize, String inventoryTitle){
