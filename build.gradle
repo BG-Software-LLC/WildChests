@@ -47,8 +47,8 @@ repositories {
 }
 
 dependencies {
-    implementation project(":API")
     implementation fileTree("archive")
+    implementation project(":API")
 
     // Spigot jars
     compileOnly "org.spigotmc:v1_8_R1:latest"
