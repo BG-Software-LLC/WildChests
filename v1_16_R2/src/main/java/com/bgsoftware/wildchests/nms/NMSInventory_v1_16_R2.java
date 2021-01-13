@@ -1,9 +1,9 @@
 package com.bgsoftware.wildchests.nms;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.hooks.WildStackerHook;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
@@ -59,6 +59,8 @@ import java.util.function.BiConsumer;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
 public final class NMSInventory_v1_16_R2 implements NMSInventory {
+
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     @Override
     public void updateTileEntity(Chest chest) {
@@ -308,8 +310,7 @@ public final class NMSInventory_v1_16_R2 implements NMSInventory {
                     org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
                     Item item = (Item) entityItem.getBukkitEntity();
 
-                    if (WildStackerHook.isEnabled())
-                        itemStack.setAmount(WildStackerHook.getItemAmount(item));
+                    itemStack.setAmount(plugin.getProviders().getItemAmount(item));
 
                     org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
 
@@ -317,10 +318,8 @@ public final class NMSInventory_v1_16_R2 implements NMSInventory {
                         ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),
                                 entityItem.locZ(), 0, 0.0, 0.0, 0.0, 1.0, false);
                         entityItem.die();
-                    } else if (WildStackerHook.isEnabled()) {
-                        WildStackerHook.setRemainings(item, remainingItem.getAmount());
                     } else {
-                        item.setItemStack(remainingItem);
+                        plugin.getProviders().setItemAmount(item, remainingItem.getAmount());
                     }
                 }
             }

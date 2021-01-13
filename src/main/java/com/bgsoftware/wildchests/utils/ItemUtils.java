@@ -1,9 +1,7 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.hooks.WildStackerHook;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -47,31 +45,12 @@ public final class ItemUtils {
         return amount;
     }
 
-    public static int getSpaceLeft(Inventory inventory, ItemStack itemStack){
-        int spaceLeft = 0, counter = 0;
-
-        for(ItemStack _itemStack : inventory.getContents()){
-            if(counter >= 5)
-                break;
-            else if(_itemStack == null || _itemStack.getType() == Material.AIR) {
-                spaceLeft += itemStack.getMaxStackSize();
-            }
-            else if(_itemStack.isSimilar(itemStack)){
-                spaceLeft += Math.max(0, _itemStack.getMaxStackSize() - _itemStack.getAmount());
-            }
-            counter++;
-        }
-        return spaceLeft;
-    }
-
     public static void dropItem(Location location, ItemStack itemStack){
         if(itemStack.getMaxStackSize() <= 0)
             return;
 
-        if(plugin.getSettings().wildStackerHook && WildStackerHook.isEnabled()){
-            WildStackerHook.dropItem(location, itemStack, itemStack.getAmount());
+        if(plugin.getProviders().dropItem(location, itemStack, itemStack.getAmount()))
             return;
-        }
 
         int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
 
@@ -96,21 +75,6 @@ public final class ItemUtils {
         }
 
         dropItem(location, itemStack);
-    }
-
-    public static Map<ItemStack, Integer> getSortedItems(ItemStack[] itemStacks){
-        // <ItemStack, TotalAmount>
-        Map<ItemStack, Integer> map = new HashMap<>();
-
-        for(ItemStack itemStack : itemStacks){
-            if(itemStack != null && itemStack.getType() != Material.AIR){
-                ItemStack cloned = itemStack.clone();
-                cloned.setAmount(1);
-                map.put(cloned, map.getOrDefault(cloned, 0) + itemStack.getAmount());
-            }
-        }
-
-        return map;
     }
 
 }

@@ -1,9 +1,12 @@
 package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
+import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.hooks.ChestShopHook;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
+import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
+import com.bgsoftware.wildchests.hooks.StackerProvider_WildStacker;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
 import net.brcdev.shopgui.player.PlayerData;
@@ -12,7 +15,9 @@ import net.brcdev.shopgui.shop.ShopItem;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -35,6 +40,7 @@ public final class ProvidersHandler implements ProvidersManager {
 
     private final Map<UUID, MutableDouble> pendingTransactions = new HashMap<>();
     private PricesProvider pricesProvider = new PricesProvider_Default();
+    private StackerProvider stackerProvider = new StackerProvider_Default();
 
     public ProvidersHandler(WildChestsPlugin plugin){
         Executor.sync(() -> {
@@ -71,6 +77,11 @@ public final class ProvidersHandler implements ProvidersManager {
                 }
             }
 
+            if(stackerProvider instanceof StackerProvider_Default){
+                if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+                    setStackerProvider(new StackerProvider_WildStacker());
+            }
+
             if(!initVault()){
                 WildChestsPlugin.log("");
                 WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
@@ -90,12 +101,29 @@ public final class ProvidersHandler implements ProvidersManager {
         this.pricesProvider = pricesProvider;
     }
 
+    @Override
+    public void setStackerProvider(StackerProvider stackerProvider) {
+        this.stackerProvider = stackerProvider;
+    }
+
     /*
      * Hooks' methods
      */
 
     public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack){
         return pricesProvider.getPrice(offlinePlayer, itemStack);
+    }
+
+    public int getItemAmount(Item item) {
+        return stackerProvider.getItemAmount(item);
+    }
+
+    public void setItemAmount(Item item, int amount) {
+        stackerProvider.setItemAmount(item, amount);
+    }
+
+    public boolean dropItem(Location location, ItemStack itemStack, int amount) {
+        return stackerProvider.dropItem(location, itemStack, amount);
     }
 
     /*

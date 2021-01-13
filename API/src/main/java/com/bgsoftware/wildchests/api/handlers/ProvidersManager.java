@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.api.handlers;
 
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
+import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 
 public interface ProvidersManager {
 
@@ -9,5 +10,11 @@ public interface ProvidersManager {
      * @param pricesProvider The provider to set.
      */
     void setPricesProvider(PricesProvider pricesProvider);
+
+    /**
+     * Set the stacker provider for the core.
+     * @param stackerProvider The provider to set.
+     */
+    void setStackerProvider(StackerProvider stackerProvider);
 
 }
