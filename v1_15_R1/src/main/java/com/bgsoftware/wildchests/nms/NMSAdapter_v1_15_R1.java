@@ -30,6 +30,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -70,7 +71,7 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
             return null;
         }
 
-        return new BigInteger(1, outputStream.toByteArray()).toString(32);
+        return "*" + new String(Base64.getEncoder().encode(outputStream.toByteArray()));
     }
 
     @Override
@@ -93,12 +94,21 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
             return null;
         }
 
-        return new BigInteger(1, outputStream.toByteArray()).toString(32);
+        return "*" + new String(Base64.getEncoder().encode(outputStream.toByteArray()));
     }
 
     @Override
     public InventoryHolder[] deserialze(String serialized) {
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
+        byte[] buff;
+
+        if(serialized.toCharArray()[0] == '*'){
+            buff = Base64.getDecoder().decode(serialized.substring(1));
+        }
+        else{
+            buff = new BigInteger(serialized, 32).toByteArray();
+        }
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
@@ -123,7 +133,16 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
         if(serialized.isEmpty())
             return new org.bukkit.inventory.ItemStack(Material.AIR);
 
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(new BigInteger(serialized, 32).toByteArray());
+        byte[] buff;
+
+        if(serialized.toCharArray()[0] == '*'){
+            buff = Base64.getDecoder().decode(serialized.substring(1));
+        }
+        else{
+            buff = new BigInteger(serialized, 32).toByteArray();
+        }
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
 
         try {
             NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
@@ -150,7 +169,7 @@ public final class NMSAdapter_v1_15_R1 implements NMSAdapter {
         else {
             AxisAlignedBB boundingBox = new AxisAlignedBB(location.getX() + range, location.getY() + range, location.getZ() + range,
                     location.getX() - range, location.getY() - range, location.getZ() - range);
-            entityList = world.getEntities((Entity) null, boundingBox, entity -> entity instanceof EntityItem);
+            entityList = world.getEntities(null, boundingBox, entity -> entity instanceof EntityItem);
         }
 
         return entityList.stream().map(entity -> (Item) entity.getBukkitEntity())
