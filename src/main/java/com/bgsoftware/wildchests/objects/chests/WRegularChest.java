@@ -127,6 +127,7 @@ public class WRegularChest extends WChest implements RegularChest {
             InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serializedData);
             for (int i = 0; i < inventories.length; i++)
                 setPage(i, inventories[i]);
+            serializedData = null;
         }
     }
 
