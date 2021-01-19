@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
@@ -32,11 +33,11 @@ import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import net.minecraft.server.v1_16_R3.NonNullList;
 import net.minecraft.server.v1_16_R3.PacketPlayOutOpenWindow;
 import net.minecraft.server.v1_16_R3.PlayerInventory;
+import net.minecraft.server.v1_16_R3.SoundEffects;
 import net.minecraft.server.v1_16_R3.TileEntity;
 import net.minecraft.server.v1_16_R3.TileEntityChest;
 import net.minecraft.server.v1_16_R3.World;
 import net.minecraft.server.v1_16_R3.WorldServer;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -205,7 +206,9 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
 
         @Override
         public Container createContainer(int id, PlayerInventory playerinventory) {
-            return NMSInventory_v1_16_R3.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            Container container = NMSInventory_v1_16_R3.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            startOpen(playerinventory.player);
+            return container;
         }
 
         @Override
@@ -217,7 +220,6 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
         public final void closeContainer(EntityHuman entityHuman) {
             CraftHumanEntity craftHumanEntity = entityHuman.getBukkitEntity();
 
-            this.viewingCount = (int) this.transaction.stream().filter(human -> human.getGameMode() != GameMode.SPECTATOR).count();
             this.transaction.remove(craftHumanEntity);
 
             if (!craftHumanEntity.getHandle().isSpectator()) {
@@ -232,6 +234,8 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
                 }
 
                 super.onOpen();
+                if(viewingCount <= 0)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_CLOSE);
             }
         }
 
@@ -261,6 +265,8 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
                 }
 
                 super.onOpen();
+                if(viewingCount == 1)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
             }
         }
 
@@ -349,21 +355,6 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
         @Override
         public List<HumanEntity> getTransaction() {
             return transaction;
-        }
-
-        @Override
-        public void setTransaction(List<HumanEntity> transaction) {
-            this.transaction = transaction;
-        }
-
-        @Override
-        public void openContainer(HumanEntity humanEntity) {
-            startOpen(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
-        public void closeContainer(HumanEntity humanEntity) {
-            closeContainer(((CraftHumanEntity) humanEntity).getHandle());
         }
 
         @Override
@@ -677,6 +668,12 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
             return bukkitEntity;
         }
 
+        @Override
+        public void b(EntityHuman entityhuman) {
+            if(!InventoryListener.buyNewPage.containsKey(entityhuman.getUniqueID()))
+                ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
+        }
+
         static Container of(int id, PlayerInventory playerInventory, WildInventory inventory){
             Containers<?> containers = Containers.GENERIC_9X3;
             int rows = 3;
@@ -729,6 +726,11 @@ public final class NMSInventory_v1_16_R3 implements NMSInventory {
             }
 
             return bukkitEntity;
+        }
+
+        @Override
+        public void b(EntityHuman entityhuman) {
+            ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
         }
 
         static WildContainerHopper of(int id, PlayerInventory playerInventory, WildInventory inventory){

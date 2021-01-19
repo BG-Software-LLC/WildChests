@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
@@ -11,7 +12,9 @@ import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import net.minecraft.server.v1_13_R2.AxisAlignedBB;
 import net.minecraft.server.v1_13_R2.Block;
+import net.minecraft.server.v1_13_R2.BlockChest;
 import net.minecraft.server.v1_13_R2.BlockPosition;
+import net.minecraft.server.v1_13_R2.BlockPropertyChestType;
 import net.minecraft.server.v1_13_R2.Blocks;
 import net.minecraft.server.v1_13_R2.ChatComponentText;
 import net.minecraft.server.v1_13_R2.Chunk;
@@ -33,11 +36,13 @@ import net.minecraft.server.v1_13_R2.NBTTagCompound;
 import net.minecraft.server.v1_13_R2.NonNullList;
 import net.minecraft.server.v1_13_R2.PacketPlayOutOpenWindow;
 import net.minecraft.server.v1_13_R2.PlayerInventory;
+import net.minecraft.server.v1_13_R2.SoundCategory;
+import net.minecraft.server.v1_13_R2.SoundEffect;
+import net.minecraft.server.v1_13_R2.SoundEffects;
 import net.minecraft.server.v1_13_R2.TileEntity;
 import net.minecraft.server.v1_13_R2.TileEntityChest;
 import net.minecraft.server.v1_13_R2.World;
 import net.minecraft.server.v1_13_R2.WorldServer;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -220,8 +225,9 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
 
         @Override
         public Container createContainer(PlayerInventory playerinventory, EntityHuman entityHuman) {
-            return NMSInventory_v1_13_R2.createContainer(playerinventory, entityHuman,
-                    (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            Container container = NMSInventory_v1_13_R2.createContainer(playerinventory, entityHuman, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            startOpen(playerinventory.player);
+            return container;
         }
 
         @Override
@@ -233,7 +239,6 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
         public final void closeContainer(EntityHuman entityHuman) {
             CraftHumanEntity craftHumanEntity = entityHuman.getBukkitEntity();
 
-            this.f = (int) this.transaction.stream().filter(human -> human.getGameMode() != GameMode.SPECTATOR).count();
             this.transaction.remove(craftHumanEntity);
 
             if (!craftHumanEntity.getHandle().isSpectator()) {
@@ -251,6 +256,8 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
                 Block block = this.getBlock().getBlock();
                 this.world.playBlockAction(this.position, block, 1, this.f);
                 this.world.applyPhysics(this.position, block);
+                if(f <= 0)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_CLOSE);
             }
         }
 
@@ -282,6 +289,8 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
                 Block block = this.getBlock().getBlock();
                 this.world.playBlockAction(this.position, block, 1, this.f);
                 this.world.applyPhysics(this.position, block);
+                if(f == 1)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
             }
         }
 
@@ -374,21 +383,6 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
         }
 
         @Override
-        public void setTransaction(List<HumanEntity> transaction) {
-            this.transaction = transaction;
-        }
-
-        @Override
-        public void openContainer(HumanEntity humanEntity) {
-            startOpen(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
-        public void closeContainer(HumanEntity humanEntity) {
-            closeContainer(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
         public void updateData(){
             ChestData chestData = chest.getData();
             suctionItems = !chestData.isAutoSuction() ? null :  new AxisAlignedBB(
@@ -434,6 +428,22 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
         private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){
             tileEntity.setWorld(world);
             tileEntity.setPosition(blockPosition);
+        }
+
+        private void playOpenSound(SoundEffect soundEffect){
+            BlockPropertyChestType blockProperty = getBlock().get(BlockChest.b);
+            if (blockProperty != BlockPropertyChestType.LEFT) {
+                double d0 = (double)this.position.getX() + 0.5D;
+                double d1 = (double)this.position.getY() + 0.5D;
+                double d2 = (double)this.position.getZ() + 0.5D;
+                if (blockProperty == BlockPropertyChestType.RIGHT) {
+                    EnumDirection enumdirection = BlockChest.k(this.getBlock());
+                    d0 += (double)enumdirection.getAdjacentX() * 0.5D;
+                    d2 += (double)enumdirection.getAdjacentZ() * 0.5D;
+                }
+
+                this.world.a(null, d0, d1, d2, soundEffect, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+            }
         }
 
     }
@@ -725,6 +735,12 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
             return bukkitEntity;
         }
 
+        @Override
+        public void b(EntityHuman entityhuman) {
+            if(!InventoryListener.buyNewPage.containsKey(entityhuman.getUniqueID()))
+                ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
+        }
+
         static Container of(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory){
             return new WildContainerChest(playerInventory, entityHuman, inventory);
         }
@@ -751,6 +767,11 @@ public final class NMSInventory_v1_13_R2 implements NMSInventory {
             }
 
             return bukkitEntity;
+        }
+
+        @Override
+        public void b(EntityHuman entityhuman) {
+            ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
         }
 
         static WildContainerHopper of(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory){

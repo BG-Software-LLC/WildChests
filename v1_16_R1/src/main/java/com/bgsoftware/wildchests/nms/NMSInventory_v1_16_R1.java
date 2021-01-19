@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
@@ -11,7 +12,9 @@ import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import net.minecraft.server.v1_16_R1.AxisAlignedBB;
 import net.minecraft.server.v1_16_R1.Block;
+import net.minecraft.server.v1_16_R1.BlockChest;
 import net.minecraft.server.v1_16_R1.BlockPosition;
+import net.minecraft.server.v1_16_R1.BlockPropertyChestType;
 import net.minecraft.server.v1_16_R1.Blocks;
 import net.minecraft.server.v1_16_R1.ChatComponentText;
 import net.minecraft.server.v1_16_R1.Container;
@@ -32,11 +35,13 @@ import net.minecraft.server.v1_16_R1.NBTTagCompound;
 import net.minecraft.server.v1_16_R1.NonNullList;
 import net.minecraft.server.v1_16_R1.PacketPlayOutOpenWindow;
 import net.minecraft.server.v1_16_R1.PlayerInventory;
+import net.minecraft.server.v1_16_R1.SoundCategory;
+import net.minecraft.server.v1_16_R1.SoundEffect;
+import net.minecraft.server.v1_16_R1.SoundEffects;
 import net.minecraft.server.v1_16_R1.TileEntity;
 import net.minecraft.server.v1_16_R1.TileEntityChest;
 import net.minecraft.server.v1_16_R1.World;
 import net.minecraft.server.v1_16_R1.WorldServer;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -205,7 +210,9 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
 
         @Override
         public Container createContainer(int id, PlayerInventory playerinventory) {
-            return NMSInventory_v1_16_R1.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            Container container = NMSInventory_v1_16_R1.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            startOpen(playerinventory.player);
+            return container;
         }
 
         @Override
@@ -217,7 +224,6 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
         public final void closeContainer(EntityHuman entityHuman) {
             CraftHumanEntity craftHumanEntity = entityHuman.getBukkitEntity();
 
-            this.viewingCount = (int) this.transaction.stream().filter(human -> human.getGameMode() != GameMode.SPECTATOR).count();
             this.transaction.remove(craftHumanEntity);
 
             if (!craftHumanEntity.getHandle().isSpectator()) {
@@ -232,6 +238,8 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
                 }
 
                 super.onOpen();
+                if(viewingCount <= 0)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_CLOSE);
             }
         }
 
@@ -261,6 +269,8 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
                 }
 
                 super.onOpen();
+                if(viewingCount == 1)
+                    playOpenSound(SoundEffects.BLOCK_CHEST_OPEN);
             }
         }
 
@@ -352,21 +362,6 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
         }
 
         @Override
-        public void setTransaction(List<HumanEntity> transaction) {
-            this.transaction = transaction;
-        }
-
-        @Override
-        public void openContainer(HumanEntity humanEntity) {
-            startOpen(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
-        public void closeContainer(HumanEntity humanEntity) {
-            closeContainer(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
         public void updateData(){
             ChestData chestData = chest.getData();
             suctionItems = !chestData.isAutoSuction() ? null :  new AxisAlignedBB(
@@ -411,6 +406,22 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
 
         private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition){
             tileEntity.setLocation(world, blockPosition);
+        }
+
+        private void playOpenSound(SoundEffect soundEffect){
+            BlockPropertyChestType blockProperty = getBlock().get(BlockChest.c);
+            if (blockProperty != BlockPropertyChestType.LEFT) {
+                double d0 = (double)this.position.getX() + 0.5D;
+                double d1 = (double)this.position.getY() + 0.5D;
+                double d2 = (double)this.position.getZ() + 0.5D;
+                if (blockProperty == BlockPropertyChestType.RIGHT) {
+                    EnumDirection enumdirection = BlockChest.h(this.getBlock());
+                    d0 += (double)enumdirection.getAdjacentX() * 0.5D;
+                    d2 += (double)enumdirection.getAdjacentZ() * 0.5D;
+                }
+
+                this.world.playSound(null, d0, d1, d2, soundEffect, SoundCategory.BLOCKS, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
+            }
         }
 
     }
@@ -677,6 +688,12 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
             return bukkitEntity;
         }
 
+        @Override
+        public void b(EntityHuman entityhuman) {
+            if(!InventoryListener.buyNewPage.containsKey(entityhuman.getUniqueID()))
+                ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
+        }
+
         static Container of(int id, PlayerInventory playerInventory, WildInventory inventory){
             Containers<?> containers = Containers.GENERIC_9X3;
             int rows = 3;
@@ -729,6 +746,11 @@ public final class NMSInventory_v1_16_R1 implements NMSInventory {
             }
 
             return bukkitEntity;
+        }
+
+        @Override
+        public void b(EntityHuman entityhuman) {
+            ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
         }
 
         static WildContainerHopper of(int id, PlayerInventory playerInventory, WildInventory inventory){

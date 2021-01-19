@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
@@ -208,8 +209,9 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
         @Override
         public Container createContainer(PlayerInventory playerinventory, EntityHuman entityHuman) {
-            return NMSInventory_v1_8_R1.createContainer(playerinventory, entityHuman,
-                    (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            Container container = NMSInventory_v1_8_R1.createContainer(playerinventory, entityHuman, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+            startOpen(playerinventory.player);
+            return container;
         }
 
         @Override
@@ -239,6 +241,9 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
                 this.world.applyPhysics(this.position, this.getBlock());
                 this.world.applyPhysics(this.position.down(), this.getBlock());
+
+                if(l <= 0)
+                    playOpenSound("random.chestclosed");
             }
         }
 
@@ -270,6 +275,9 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
 
                 this.world.applyPhysics(this.position, this.getBlock());
                 this.world.applyPhysics(this.position.down(), this.getBlock());
+
+                if(l == 1)
+                    playOpenSound("random.chestopen");
             }
         }
 
@@ -363,21 +371,6 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
         }
 
         @Override
-        public void setTransaction(List<HumanEntity> transaction) {
-            this.transaction = transaction;
-        }
-
-        @Override
-        public void openContainer(HumanEntity humanEntity) {
-            startOpen(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
-        public void closeContainer(HumanEntity humanEntity) {
-            closeContainer(((CraftHumanEntity) humanEntity).getHandle());
-        }
-
-        @Override
         public void updateData(){
             ChestData chestData = chest.getData();
             suctionItems = !chestData.isAutoSuction() ? null :  new AxisAlignedBB(
@@ -445,6 +438,13 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
                 return null;
 
             return actualPage.getInventory().splitStack(slot, amount);
+        }
+
+        private void playOpenSound(String sound){
+            double d0 = (double)this.position.getX() + 0.5D;
+            double d1 = (double)this.position.getY() + 0.5D;
+            double d2 = (double)this.position.getZ() + 0.5D;
+            this.world.makeSound(d0, d1, d2, sound, 0.5F, this.world.random.nextFloat() * 0.1F + 0.9F);
         }
 
     }
@@ -734,6 +734,12 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
             return bukkitEntity;
         }
 
+        @Override
+        public void b(EntityHuman entityhuman) {
+            if(!InventoryListener.buyNewPage.containsKey(entityhuman.getUniqueID()))
+                ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
+        }
+
         static Container of(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory){
             return new WildContainerChest(playerInventory, entityHuman, inventory);
         }
@@ -760,6 +766,11 @@ public final class NMSInventory_v1_8_R1 implements NMSInventory {
             }
 
             return bukkitEntity;
+        }
+
+        @Override
+        public void b(EntityHuman entityhuman) {
+            ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
         }
 
         static WildContainerHopper of(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory){

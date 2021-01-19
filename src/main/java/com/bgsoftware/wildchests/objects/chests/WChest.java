@@ -237,7 +237,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public boolean onOpen(PlayerInteractEvent event){
         viewers.put(event.getPlayer().getUniqueId(), this);
-        tileEntityContainer.openContainer(event.getPlayer());
         return true;
     }
 
@@ -248,7 +247,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
             return false;
 
         viewers.remove(event.getPlayer().getUniqueId());
-        tileEntityContainer.closeContainer(event.getPlayer());
 
         //Checking that it's the last player that views the inventory
         return getViewersAmount(event.getViewers()) <= 1;
