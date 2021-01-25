@@ -83,9 +83,9 @@ public final class NMSInventory_v1_15_R1 implements NMSInventory {
         }
         else {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
+            world.removeTileEntity(blockPosition);
+            world.setTileEntity(blockPosition, tileEntityWildChest);
         }
-
-        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override
