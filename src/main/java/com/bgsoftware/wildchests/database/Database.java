@@ -78,6 +78,7 @@ public final class Database {
                 Class.forName("org.sqlite.JDBC");
                 String sqlURL = "jdbc:sqlite:" + dbFilePath;
                 connection = DriverManager.getConnection(sqlURL);
+                connection.setAutoCommit(false);
                 lastConnectionCreation = currentTime;
             }
         }catch (Exception ex){

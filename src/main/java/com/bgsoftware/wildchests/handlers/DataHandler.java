@@ -66,6 +66,7 @@ public final class DataHandler {
         Database.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
         Database.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
         Database.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
+        Database.commitTransaction();
 
         List<Chest> updateContentsChests = new ArrayList<>();
 
@@ -82,8 +83,6 @@ public final class DataHandler {
                     ChunksListener.handleChunkLoad(plugin, chunk);
             }
         }, 1L);
-
-        Database.executeUpdate("DELETE FROM offline_payment;");
     }
 
     private void loadResultSet(ResultSet resultSet, String tableName, List<Chest> updateContentsChests) throws SQLException{
