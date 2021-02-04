@@ -34,7 +34,7 @@ public final class Database {
     }
 
     public static void startTransaction(){
-        executeUpdate("BEGIN TRANSACTION");
+        //executeUpdate("BEGIN TRANSACTION");
     }
 
     public static void commitTransaction(){
