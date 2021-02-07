@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.database;
 
+import org.bukkit.Bukkit;
+
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,18 +11,25 @@ import java.sql.SQLException;
 
 public final class Database {
 
-    private static final int CONNECTION_TIMEOUT = 900;
-
     private static String dbFilePath = "";
 
     private static Connection connection = null;
-    private static long lastConnectionCreation = 0;
 
     private Database(){}
 
     public static void start(File databaseFile){
         Database.dbFilePath = databaseFile.getAbsolutePath().replace("\\", "/");
-        DatabaseQueue.start();
+
+        try{
+            Class.forName("org.sqlite.JDBC");
+            String sqlURL = "jdbc:sqlite:" + dbFilePath;
+            connection = DriverManager.getConnection(sqlURL);
+            connection.setAutoCommit(false);
+            DatabaseQueue.start();
+        }catch (Exception ex){
+            ex.printStackTrace();
+            Bukkit.shutdown();
+        }
     }
 
     public static void stop(){
@@ -34,7 +43,7 @@ public final class Database {
     }
 
     public static void startTransaction(){
-        //executeUpdate("BEGIN TRANSACTION");
+        executeUpdate("BEGIN TRANSACTION");
     }
 
     public static void commitTransaction(){
@@ -42,6 +51,7 @@ public final class Database {
     }
 
     public static void executeQuery(String statement, DatabaseConsumer<ResultSet> callback){
+        System.out.println("Execute: " + statement);
         initializeConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(statement); ResultSet resultSet = preparedStatement.executeQuery()){
             callback.accept(resultSet);
@@ -55,6 +65,7 @@ public final class Database {
     }
 
     public static void executeUpdate(String statement, DatabaseConsumer<PreparedStatement> statementConsumer){
+        System.out.println("Execute: " + statement);
         initializeConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(statement)){
             statementConsumer.accept(preparedStatement);
@@ -70,20 +81,18 @@ public final class Database {
     }
 
     private static void initializeConnection(){
-        try {
-            long currentTime = System.currentTimeMillis() / 1000;
-            if(connection == null || currentTime - lastConnectionCreation > CONNECTION_TIMEOUT) {
-                if(connection != null)
-                    connection.close();
-                Class.forName("org.sqlite.JDBC");
-                String sqlURL = "jdbc:sqlite:" + dbFilePath;
-                connection = DriverManager.getConnection(sqlURL);
-                connection.setAutoCommit(false);
-                lastConnectionCreation = currentTime;
-            }
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
+//        try {
+//            long currentTime = System.currentTimeMillis() / 1000;
+//            if(connection == null) {
+//                Class.forName("org.sqlite.JDBC");
+//                String sqlURL = "jdbc:sqlite:" + dbFilePath;
+//                connection = DriverManager.getConnection(sqlURL);
+//                connection.setAutoCommit(false);
+//                lastConnectionCreation = currentTime;
+//            }
+//        }catch (Exception ex){
+//            ex.printStackTrace();
+//        }
     }
 
     public interface DatabaseConsumer<T>{

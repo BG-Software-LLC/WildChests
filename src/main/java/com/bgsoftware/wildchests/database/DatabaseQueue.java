@@ -56,10 +56,13 @@ public final class DatabaseQueue {
     }
 
     private static void processQueue(){
-        Database.startTransaction();
+        if(queuedObjects.isEmpty())
+            return;
 
         try{
             lock.writeLock().lock();
+
+            Database.startTransaction();
 
             for(DatabaseObject databaseObject : queuedObjects){
                 DatabaseObject.ObjectIdentifier identifier = databaseObject.getIdentifier();
