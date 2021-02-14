@@ -51,7 +51,6 @@ public final class Database {
     }
 
     public static void executeQuery(String statement, DatabaseConsumer<ResultSet> callback){
-        System.out.println("Execute: " + statement);
         initializeConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(statement); ResultSet resultSet = preparedStatement.executeQuery()){
             callback.accept(resultSet);
@@ -65,7 +64,6 @@ public final class Database {
     }
 
     public static void executeUpdate(String statement, DatabaseConsumer<PreparedStatement> statementConsumer){
-        System.out.println("Execute: " + statement);
         initializeConnection();
         try(PreparedStatement preparedStatement = connection.prepareStatement(statement)){
             statementConsumer.accept(preparedStatement);
