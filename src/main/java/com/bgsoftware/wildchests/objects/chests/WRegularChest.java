@@ -3,6 +3,8 @@ package com.bgsoftware.wildchests.objects.chests;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
@@ -20,11 +22,7 @@ public class WRegularChest extends WChest implements RegularChest {
     private String serializedData = null;
 
     public WRegularChest(UUID placer, Location location, ChestData chestData){
-        this(placer, location, chestData, new ObjectIdentifier("chests", "location", v -> location));
-    }
-
-    protected WRegularChest(UUID placer, Location location, ChestData chestData, ObjectIdentifier identifier){
-        super(placer, location, chestData, identifier);
+        super(placer, location, chestData);
         this.inventories = new SyncedArray<>(chestData.getDefaultPagesAmount());
         initContainer(chestData);
     }
@@ -136,18 +134,30 @@ public class WRegularChest extends WChest implements RegularChest {
     }
 
     @Override
-    public void insertObject() {
-        saveData("location", v -> location);
-        saveData("placer", v -> placer.toString());
-        saveData("chest_data", v -> getData().getName());
-        saveData("inventories", v -> getPages());
-        objectState = ObjectState.INSERT;
+    public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
+        return statementHolder.setInventories(getPages()).setLocation(location);
     }
 
     @Override
-    public void saveObject() {
-        objectState = ObjectState.UPDATE;
-        saveData("inventories", v -> getPages());
+    public void executeUpdateStatement(boolean async) {
+        setUpdateStatement(Query.REGULAR_CHEST_UPDATE_INVENTORIES.getStatementHolder(this)).execute(async);
+    }
+
+    @Override
+    public void executeInsertStatement(boolean async) {
+        Query.REGULAR_CHEST_INSERT.getStatementHolder(this)
+                .setLocation(location)
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setInventories(getPages())
+                .execute(async);
+    }
+
+    @Override
+    public void executeDeleteStatement(boolean async) {
+        Query.REGULAR_CHEST_DELETE.getStatementHolder(this)
+                .setLocation(location)
+                .execute(async);
     }
 
     private void checkCapacity(int size, int inventorySize, String inventoryTitle){

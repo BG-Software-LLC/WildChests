@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import com.bgsoftware.wildchests.utils.Executor;
@@ -32,7 +34,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     private boolean broken = false;
 
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
-        super(placer, location, chestData, new ObjectIdentifier("storage_units", "location", v -> location));
+        super(placer, location, chestData);
         maxAmount = chestData.getStorageUnitMaxAmount();
         inventory = plugin.getNMSInventory().createInventory(this, 5,
                 chestData.getTitle(1).replace("{0}", amount + ""), 0);
@@ -366,21 +368,32 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     @Override
-    public void insertObject() {
-        saveData("location", v -> location);
-        saveData("placer", v -> placer.toString());
-        saveData("chest_data", v -> getData().getName());
-        saveData("item", v -> getItemStack());
-        saveData("amount", v -> getAmount().toString());
-        saveData("max_amount", v -> getMaxAmount().toString());
-        objectState = ObjectState.INSERT;
+    public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
+        return statementHolder.setItemStack(getItemStack()).setString(getAmount().toString()).setLocation(location);
     }
 
     @Override
-    public void saveObject() {
-        objectState = ObjectState.UPDATE;
-        saveData("item", v -> getItemStack());
-        saveData("amount", v -> getAmount().toString());
+    public void executeUpdateStatement(boolean async) {
+        setUpdateStatement(Query.STORAGE_UNIT_UPDATE_ITEM.getStatementHolder(this)).execute(async);
+    }
+
+    @Override
+    public void executeInsertStatement(boolean async) {
+        Query.STORAGE_UNIT_INSERT.getStatementHolder(this)
+                .setLocation(location)
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setItemStack(getItemStack())
+                .setString(getAmount().toString())
+                .setString(getMaxAmount().toString())
+                .execute(async);
+    }
+
+    @Override
+    public void executeDeleteStatement(boolean async) {
+        Query.STORAGE_UNIT_DELETE.getStatementHolder(this)
+                .setLocation(location)
+                .execute(async);
     }
 
     private void updateInventory(Inventory inventory){

@@ -55,8 +55,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
     protected TileEntityContainer tileEntityContainer;
     protected boolean removed = false;
 
-    protected WChest(UUID placer, Location location, ChestData chestData, ObjectIdentifier identifier) {
-        super(identifier);
+    protected WChest(UUID placer, Location location, ChestData chestData) {
         this.placer = placer;
         this.location = location.clone();
         this.chestData = chestData;
@@ -96,8 +95,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
             WChest.viewers.remove(entry.getKey());
         });
-
-        deleteObject();
     }
 
     public boolean isRemoved(){

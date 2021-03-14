@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.database.Query;
+import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.containers.LinkedChestsContainer;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
@@ -22,7 +24,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     private LinkedChestsContainer linkedChestsContainer;
 
     public WLinkedChest(UUID placer, Location location, ChestData chestData){
-        super(placer, location, chestData, new ObjectIdentifier("linked_chests", "location", v -> location));
+        super(placer, location, chestData);
         this.linkedChestsContainer = null;
     }
 
@@ -55,9 +57,15 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
             }
         }
 
-        LinkedChest _linkedChest = getLinkedChest();
+        saveLinkedChest();
+        ((WLinkedChest) linkedChest).saveLinkedChest();
+    }
 
-        saveData("linked_chest", v -> _linkedChest.getLocation());
+    public void saveLinkedChest(){
+        Query.LINKED_CHEST_UPDATE_LINKED_CHEST.getStatementHolder(this)
+                .setLocation(!isLinkedIntoChest() || linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
+                .setLocation(location)
+                .execute(true);
     }
 
     @Override
@@ -160,21 +168,31 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     }
 
     @Override
-    public void insertObject() {
-        saveData("location", v -> location);
-        saveData("placer", v -> placer.toString());
-        saveData("chest_data", v -> getData().getName());
-        saveData("inventories", v -> isLinkedIntoChest() ? null : getPages());
-        saveData("linked_chest", v -> linkedChestsContainer == null ? null :
-                linkedChestsContainer.getSourceChest().getLocation());
-        objectState = ObjectState.INSERT;
+    public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
+        return statementHolder.setInventories(isLinkedIntoChest() ? null : getPages()).setLocation(location);
     }
 
+    @Override
+    public void executeUpdateStatement(boolean async) {
+        setUpdateStatement(Query.LINKED_CHEST_UPDATE_INVENTORIES.getStatementHolder(this)).execute(async);
+    }
 
     @Override
-    public void saveObject() {
-        objectState = ObjectState.UPDATE;
-        saveData("inventories", v -> isLinkedIntoChest() ? null : getPages());
+    public void executeInsertStatement(boolean async) {
+        Query.LINKED_CHEST_INSERT.getStatementHolder(this)
+                .setLocation(location)
+                .setString(placer.toString())
+                .setString(getData().getName())
+                .setInventories(isLinkedIntoChest() ? null : getPages())
+                .setLocation(linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
+                .execute(async);
+    }
+
+    @Override
+    public void executeDeleteStatement(boolean async) {
+        Query.LINKED_CHEST_DELETE.getStatementHolder(this)
+                .setLocation(location)
+                .execute(async);
     }
 
 }
