@@ -1,4 +1,4 @@
-package xyz.wildseries.wildchests.metrics;
+package com.bgsoftware.wildchests.metrics;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
