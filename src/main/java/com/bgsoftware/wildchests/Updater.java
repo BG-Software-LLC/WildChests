@@ -11,7 +11,7 @@ import java.net.URL;
 @SuppressWarnings("WeakerAccess")
 public final class Updater {
 
-    private static WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private static String latestVersion, versionDescription;
 
     static{
