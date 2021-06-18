@@ -1,7 +1,6 @@
 plugins {
     id 'java'
-    id 'maven'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.0.0'
     id 'maven-publish'
 }
 
@@ -14,6 +13,11 @@ subprojects {
 
     repositories {
         maven { url 'https://repo.bg-software.com/repository/nms/' }
+        maven { url 'https://repo.bg-software.com/repository/common/' }
+    }
+
+    dependencies {
+        compileOnly 'com.bgsoftware.common.reflection:ReflectionUtils:latest'
     }
 
     shadowJar {
@@ -30,6 +34,7 @@ repositories {
     maven { url 'https://repo.bg-software.com/repository/nms/' }
     maven { url 'https://repo.bg-software.com/repository/api/' }
     maven { url 'https://repo.bg-software.com/repository/public-libs/' }
+    maven { url 'https://repo.bg-software.com/repository/common/' }
 
     String mavenUsername = project.hasProperty('mavenUsername') ? project.mavenUsername : System.getenv('mavenUsername');
     String mavenPassword = project.hasProperty('mavenPassword') ? project.mavenPassword : System.getenv('mavenPassword');
@@ -49,6 +54,8 @@ repositories {
 dependencies {
     implementation fileTree("archive")
     implementation project(":API")
+
+    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:latest'
 
     // Spigot jars
     compileOnly "org.spigotmc:v1_8_R1:latest"
