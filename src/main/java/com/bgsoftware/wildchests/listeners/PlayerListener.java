@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.listeners;
 
-import com.bgsoftware.wildchests.Updater;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.ChatColor;
@@ -29,10 +28,10 @@ public final class PlayerListener implements Listener {
                     ChatColor.GRAY + "This server is using WildChests v" + plugin.getDescription().getVersion()), 5L);
         }
 
-        if(e.getPlayer().isOp() && Updater.isOutdated()){
+        if(e.getPlayer().isOp() && plugin.getUpdater().isOutdated()){
             Executor.sync(() ->
                 e.getPlayer().sendMessage(ChatColor.DARK_PURPLE + "" + ChatColor.BOLD + "WildChests" +
-                    ChatColor.GRAY + " A new version is available (v" + Updater.getLatestVersion() + ")!"), 20L);
+                    ChatColor.GRAY + " A new version is available (v" + plugin.getUpdater().getLatestVersion() + ")!"), 20L);
         }
     }
 

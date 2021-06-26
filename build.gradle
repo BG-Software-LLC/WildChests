@@ -56,6 +56,7 @@ dependencies {
     implementation project(":API")
 
     implementation 'com.bgsoftware.common.reflection:ReflectionUtils:latest'
+    implementation 'com.bgsoftware.common.updater:Updater:latest'
 
     // Spigot jars
     compileOnly "org.spigotmc:v1_8_R1:latest"

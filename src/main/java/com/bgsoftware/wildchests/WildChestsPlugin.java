@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests;
 
+import com.bgsoftware.common.updater.Updater;
 import com.bgsoftware.wildchests.api.WildChests;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
@@ -34,6 +35,8 @@ import java.util.List;
 public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
     private static WildChestsPlugin plugin;
+
+    private final Updater updater = new Updater(this, "wildchests");
 
     private ChestsHandler chestsManager;
     private SettingsHandler settingsHandler;
@@ -71,10 +74,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         loadAPI();
         NotifierTask.start();
 
-        if(Updater.isOutdated()) {
+        if(updater.isOutdated()) {
             log("");
-            log("A new version is available (v" + Updater.getLatestVersion() + ")!");
-            log("Version's description: \"" + Updater.getVersionDescription() + "\"");
+            log("A new version is available (v" + updater.getLatestVersion() + ")!");
+            log("Version's description: \"" + updater.getVersionDescription() + "\"");
             log("");
         }
 
@@ -176,6 +179,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     @SuppressWarnings("unused")
     public DataHandler getDataHandler() {
         return dataHandler;
+    }
+
+    public Updater getUpdater() {
+        return updater;
     }
 
     public static void debug(String message){
