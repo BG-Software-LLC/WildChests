@@ -152,8 +152,6 @@ public final class DataHandler {
                         if(serialized.toCharArray()[0] != '*')
                             updateContentsChests.add(chest);
                     }
-
-                    WildChestsPlugin.debug("Loaded chest from database at " + stringLocation);
                 }
             }catch(Exception ex){
                 errorMessage = ex.getMessage();

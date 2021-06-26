@@ -185,10 +185,6 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         return updater;
     }
 
-    public static void debug(String message){
-        //log(message);
-    }
-
     public static void log(String message){
         message = ChatColor.translateAlternateColorCodes('&', message);
         boolean colored = message.contains(ChatColor.COLOR_CHAR + "");

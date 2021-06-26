@@ -85,14 +85,7 @@ public final class InventoryListener implements Listener {
             return;
         }
 
-        boolean debug = e.getPlayer().isOp();
-
         Chest chest = plugin.getChestsManager().getChest(e.getClickedBlock().getLocation());
-
-        if(debug){
-            WildChestsPlugin.debug("Opening a chest at " + LocationUtils.toString(e.getClickedBlock().getLocation()));
-            WildChestsPlugin.debug("Cached Chest: " + chest);
-        }
 
         if(chest == null)
             return;

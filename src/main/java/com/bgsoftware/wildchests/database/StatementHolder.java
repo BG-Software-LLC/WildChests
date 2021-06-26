@@ -99,7 +99,6 @@ public final class StatementHolder {
 
             synchronized (SQLHelper.getMutex()) {
                 queryCalls.computeIfAbsent(queryEnum, q -> new IncreasableInteger()).increase();
-                WildChestsPlugin.debug("Query: " + query);
                 SQLHelper.buildStatement(query, preparedStatement -> {
                     if (isBatch) {
                         if (batches.isEmpty()) {
