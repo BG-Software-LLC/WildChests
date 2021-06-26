@@ -31,9 +31,6 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     @Override
     public void linkIntoChest(LinkedChest linkedChest) {
         if(linkedChest == null) {
-            if(linkedChestsContainer != null)
-                linkedChestsContainer.unlinkChest(linkedChest);
-
             linkedChestsContainer = null;
         }
 
@@ -55,10 +52,11 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
                 otherContainer.linkChest(this);
                 linkedChestsContainer = otherContainer;
             }
+
+            ((WLinkedChest) linkedChest).saveLinkedChest();
         }
 
         saveLinkedChest();
-        ((WLinkedChest) linkedChest).saveLinkedChest();
     }
 
     public void saveLinkedChest(){
