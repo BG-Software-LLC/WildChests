@@ -7,6 +7,7 @@ import net.minecraft.server.v1_8_R3.AxisAlignedBB;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.Chunk;
 import net.minecraft.server.v1_8_R3.Entity;
+import net.minecraft.server.v1_8_R3.EntityHuman;
 import net.minecraft.server.v1_8_R3.EntityItem;
 import net.minecraft.server.v1_8_R3.ItemStack;
 import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
@@ -19,7 +20,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.CraftChunk;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftHumanEntity;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 
@@ -202,6 +205,13 @@ public final class NMSAdapter_v1_8_R3 implements NMSAdapter {
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound tagCompound = nmsItem.getTag();
         return tagCompound == null || !tagCompound.hasKey("chest-name") ? null : tagCompound.getString("chest-name");
+    }
+
+    @Override
+    public void dropItemAsPlayer(HumanEntity humanEntity, org.bukkit.inventory.ItemStack bukkitItem) {
+        EntityHuman entityHuman = ((CraftHumanEntity) humanEntity).getHandle();
+        ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
+        entityHuman.drop(itemStack, false);
     }
 
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack itemStack, String key, String value){

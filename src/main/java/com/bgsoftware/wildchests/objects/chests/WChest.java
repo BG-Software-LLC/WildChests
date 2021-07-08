@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -239,11 +240,22 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public boolean onClose(InventoryCloseEvent event) {
+        HumanEntity player = event.getPlayer();
+
         //Checking if player is buying new page
-        if(InventoryListener.buyNewPage.containsKey(event.getPlayer().getUniqueId()))
+        if(InventoryListener.buyNewPage.containsKey(player.getUniqueId()))
             return false;
 
-        viewers.remove(event.getPlayer().getUniqueId());
+        viewers.remove(player.getUniqueId());
+
+        // Remove item in cursor and drop it on ground
+        ItemStack itemCursor = player.getItemOnCursor();
+        if(itemCursor != null && itemCursor.getType() != Material.AIR) {
+            player.setItemOnCursor(new ItemStack(Material.AIR));
+            ItemStack leftOvers = player.getInventory().addItem(itemCursor).get(0);
+            if(leftOvers != null)
+                plugin.getNMSAdapter().dropItemAsPlayer(player, leftOvers);
+        }
 
         //Checking that it's the last player that views the inventory
         return getViewersAmount(event.getViewers()) <= 1;

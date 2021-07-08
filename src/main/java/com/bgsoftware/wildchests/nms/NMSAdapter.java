@@ -5,6 +5,7 @@ import com.bgsoftware.wildchests.key.KeySet;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -36,5 +37,7 @@ public interface NMSAdapter {
     ItemStack setChestName(ItemStack itemStack, String chestName);
 
     String getChestName(ItemStack itemStack);
+
+    void dropItemAsPlayer(HumanEntity humanEntity, ItemStack bukkitItem);
 
 }
