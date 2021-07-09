@@ -131,9 +131,14 @@ public final class NMSInventory_v1_17_R1 implements NMSInventory {
 
         container.setTitle(new ChatComponentText(title));
 
+        // Cursor item is not updated, so we need to update it manually
+        org.bukkit.inventory.ItemStack cursorItem = player.getItemOnCursor();
+
         entityPlayer.b.sendPacket(new PacketPlayOutOpenWindow(container.j, container.getType(), container.getTitle()));
         entityPlayer.bV = container;
         entityPlayer.initMenu(container);
+
+        player.setItemOnCursor(cursorItem);
     }
 
     @Override
