@@ -111,7 +111,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         for(World world : Bukkit.getWorlds()){
             for(Chunk chunk : world.getLoadedChunks()) {
-                dataHandler.saveDatabase(chunk);
+                dataHandler.saveDatabase(chunk, false);
                 loadedChunks++;
             }
         }

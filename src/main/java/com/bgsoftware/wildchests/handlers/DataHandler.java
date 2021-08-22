@@ -55,7 +55,7 @@ public final class DataHandler {
         }, 2L);
     }
 
-    public void saveDatabase(Chunk chunk){
+    public void saveDatabase(Chunk chunk, boolean async){
         List<Chest> chestList = chunk == null ? plugin.getChestsManager().getChests() : plugin.getChestsManager().getChests(chunk);
 
         List<Chest> regularModifiedChests = chestList.stream()
@@ -72,21 +72,21 @@ public final class DataHandler {
             StatementHolder chestsUpdateHolder = Query.REGULAR_CHEST_UPDATE_INVENTORIES.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             regularModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
-            chestsUpdateHolder.execute(false);
+            chestsUpdateHolder.execute(async);
         }
 
         if(!storageModifiedChests.isEmpty()){
             StatementHolder chestsUpdateHolder = Query.STORAGE_UNIT_UPDATE_ITEM.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             storageModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
-            chestsUpdateHolder.execute(false);
+            chestsUpdateHolder.execute(async);
         }
 
         if(!linkedChestsModifiedChests.isEmpty()){
             StatementHolder chestsUpdateHolder = Query.LINKED_CHEST_UPDATE_INVENTORIES.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             linkedChestsModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
-            chestsUpdateHolder.execute(false);
+            chestsUpdateHolder.execute(async);
         }
 
     }

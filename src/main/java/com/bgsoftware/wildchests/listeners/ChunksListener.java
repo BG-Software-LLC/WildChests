@@ -26,7 +26,7 @@ public final class ChunksListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkUnload(ChunkUnloadEvent e){
-        plugin.getDataHandler().saveDatabase(e.getChunk());
+        plugin.getDataHandler().saveDatabase(e.getChunk(), true);
     }
 
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk){
