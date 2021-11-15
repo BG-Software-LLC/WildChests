@@ -11,6 +11,7 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,11 +48,16 @@ public final class NotifierTask extends BukkitRunnable {
                 BigDecimal totalEarned = BigDecimal.ZERO;
 
                 for(TransactionDetails item : itemsSold){
-                    Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.format(item.amountEarned));
+                    if(!plugin.getSettings().sellFormat)
+                        Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.format(item.amountEarned));
+                    else
+                        Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.fancyFormat(item.amountEarned));
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
-
-                Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.format(totalEarned));
+                if(!plugin.getSettings().sellFormat)
+                    Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.format(totalEarned));
+                else
+                    Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.fancyFormat(totalEarned));
             }
         }
         for(UUID uuid : craftings.keySet()){

@@ -41,6 +41,13 @@ EXPAND_PURCHASED: '&5&lWildChests &7Successfully purchased an extension to your 
 EXPAND_FAILED: '&5&lWildChests &7Opening chest...'
 EXPAND_FAILED_CHEST_BROKEN: '&5&lWildChests &7Couldn''t find the chest anymore in world.'
 
+# Format for sell-format
+FORMAT_QUAD: 'Q'
+FORMAT_TRILLION: 'T'
+FORMAT_BILLION: 'B'
+FORMAT_MILLION: 'M'
+FORMAT_THOUSANDS: 'K'
+
 # Called when a player runs an invalid chests sub-command.
 HELP_COMMAND_HEADER: '&8&m---------------&5&l WildChests &8&m---------------'
 HELP_COMMAND_LINE: '&7- &5/{0} &8- &f{1}'

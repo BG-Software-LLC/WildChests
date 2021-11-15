@@ -28,6 +28,7 @@ public final class SettingsHandler {
     public final long notifyInterval;
     public final boolean confirmGUI;
     public final String sellCommand;
+    public final boolean sellFormat;
     public final String pricesProvider;
     public final int explodeDropChance;
     public final boolean invalidWorldDelete;
@@ -49,6 +50,7 @@ public final class SettingsHandler {
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
+        sellFormat = cfg.getBoolean("sell-format", true);
         explodeDropChance = cfg.getInt("explode-drop-chance", 100);
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
