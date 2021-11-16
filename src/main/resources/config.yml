@@ -19,7 +19,7 @@ confirm-gui: false
 sell-command: ''
 
 # When enabled, the values will be formatted (e.g 10B, 1T)
-sell-format: true
+sell-format: false
 
 # Should the chest item be dropped on explosions?
 # Set a chance of it to get dropped between 0 and 100.

@@ -48,16 +48,10 @@ public final class NotifierTask extends BukkitRunnable {
                 BigDecimal totalEarned = BigDecimal.ZERO;
 
                 for(TransactionDetails item : itemsSold){
-                    if(!plugin.getSettings().sellFormat)
-                        Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.format(item.amountEarned));
-                    else
-                        Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.fancyFormat(item.amountEarned));
+                    if(!plugin.getSettings().sellFormat)  Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.format(item.amountEarned)); else Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(), StringUtils.fancyFormat(item.amountEarned));
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
-                if(!plugin.getSettings().sellFormat)
-                    Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.format(totalEarned));
-                else
-                    Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.fancyFormat(totalEarned));
+                if(!plugin.getSettings().sellFormat) Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.format(totalEarned)); else Locale.SOLD_CHEST_FOOTER.send(offlinePlayer.getPlayer(), StringUtils.fancyFormat(totalEarned));
             }
         }
         for(UUID uuid : craftings.keySet()){

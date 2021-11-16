@@ -50,7 +50,7 @@ public final class SettingsHandler {
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
-        sellFormat = cfg.getBoolean("sell-format", true);
+        sellFormat = cfg.getBoolean("sell-format", false);
         explodeDropChance = cfg.getInt("explode-drop-chance", 100);
         pricesProvider = cfg.getString("prices-provider", "ShopGUIPlus");
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
