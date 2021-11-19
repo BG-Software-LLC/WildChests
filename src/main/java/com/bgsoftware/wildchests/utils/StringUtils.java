@@ -1,5 +1,7 @@
 package com.bgsoftware.wildchests.utils;
 
+import com.bgsoftware.wildchests.Locale;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -17,19 +19,19 @@ public final class StringUtils {
 
     public static String fancyFormat(BigDecimal bigDecimal) {
         if (bigDecimal.compareTo(Q) >= 0)
-            return format(bigDecimal.divide(Q, 2, RoundingMode.HALF_UP));
+            return format(bigDecimal.divide(Q, 2, RoundingMode.HALF_UP)) + Locale.FORMAT_QUAD.getMessage();
 
         if (bigDecimal.compareTo(T) >= 0)
-            return format(bigDecimal.divide(T, 2, RoundingMode.HALF_UP));
+            return format(bigDecimal.divide(T, 2, RoundingMode.HALF_UP)) + Locale.FORMAT_TRILLION.getMessage();
 
         if (bigDecimal.compareTo(B) >= 0)
-            return format(bigDecimal.divide(B, 2, RoundingMode.HALF_UP));
+            return format(bigDecimal.divide(B, 2, RoundingMode.HALF_UP)) + Locale.FORMAT_BILLION.getMessage();
 
         if (bigDecimal.compareTo(M) >= 0)
-            return format(bigDecimal.divide(M, 2, RoundingMode.HALF_UP));
+            return format(bigDecimal.divide(M, 2, RoundingMode.HALF_UP)) + Locale.FORMAT_MILLION.getMessage();
 
         if (bigDecimal.compareTo(K) >= 0)
-            return format(bigDecimal.divide(K, 2, RoundingMode.HALF_UP));
+            return format(bigDecimal.divide(K, 2, RoundingMode.HALF_UP)) + Locale.FORMAT_THOUSANDS.getMessage();
 
         return format(bigDecimal);
     }
