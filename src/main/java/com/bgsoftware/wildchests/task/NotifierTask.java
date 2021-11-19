@@ -48,7 +48,7 @@ public final class NotifierTask extends BukkitRunnable {
 
                 for(TransactionDetails item : itemsSold){
                     Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(),
-                            plugin.getSettings().sellFormat ? StringUtils.fancyFormat(totalEarned) :
+                            plugin.getSettings().sellFormat ? StringUtils.fancyFormat(item.amountEarned) :
                                     StringUtils.format(item.amountEarned));
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
