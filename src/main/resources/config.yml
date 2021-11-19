@@ -18,6 +18,9 @@ confirm-gui: false
 # Set to '' in order to disable the feature.
 sell-command: ''
 
+# When enabled, the values will be formatted (e.g 10B, 1T)
+sell-format: false
+
 # Should the chest item be dropped on explosions?
 # Set a chance of it to get dropped between 0 and 100.
 explode-drop-chance: 100

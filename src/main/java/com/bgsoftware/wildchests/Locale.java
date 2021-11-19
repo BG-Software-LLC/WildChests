@@ -47,6 +47,11 @@ public final class Locale {
     public static Locale EXPAND_PURCHASED = new Locale("EXPAND_PURCHASED");
     public static Locale EXPAND_FAILED = new Locale("EXPAND_FAILED");
     public static Locale EXPAND_FAILED_CHEST_BROKEN = new Locale("EXPAND_FAILED_CHEST_BROKEN");
+    public static Locale FORMAT_QUAD = new Locale("FORMAT_QUAD");
+    public static Locale FORMAT_TRILLION = new Locale("FORMAT_TRILLION");
+    public static Locale FORMAT_BILLION = new Locale("FORMAT_BILLION");
+    public static Locale FORMAT_MILLION = new Locale("FORMAT_MILLION");
+    public static Locale FORMAT_THOUSANDS = new Locale("FORMAT_THOUSANDS");
     public static Locale MONEY_EARNED_OFFLINE = new Locale("MONEY_EARNED_OFFLINE");
     public static Locale LEFTOVERS_ITEMS_WARNING = new Locale("LEFTOVERS_ITEMS_WARNING");
 
