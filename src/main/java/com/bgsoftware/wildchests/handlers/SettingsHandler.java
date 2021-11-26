@@ -26,6 +26,7 @@ import java.util.Map;
 public final class SettingsHandler {
 
     public final long notifyInterval;
+    public final boolean detailedNotifier;
     public final boolean confirmGUI;
     public final String sellCommand;
     public final boolean sellFormat;
@@ -48,6 +49,7 @@ public final class SettingsHandler {
         cfg.syncWithConfig(file, plugin.getResource("config.yml"), "chests");
 
         notifyInterval = cfg.getLong("notifier-interval", 12000);
+        detailedNotifier = cfg.getBoolean("detailed-notifier", true);
         confirmGUI = cfg.getBoolean("confirm-gui", false);
         sellCommand = cfg.getString("sell-command", "");
         sellFormat = cfg.getBoolean("sell-format", false);
