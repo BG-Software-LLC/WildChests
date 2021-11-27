@@ -10,7 +10,6 @@
 notifier-interval: 12000
 
 # When enabled there will be a list of items that has been sold and crafted.
-# The value above must be larger than 0.
 detailed-notifier: true
 
 # When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.
