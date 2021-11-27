@@ -47,9 +47,10 @@ public final class NotifierTask extends BukkitRunnable {
                 BigDecimal totalEarned = BigDecimal.ZERO;
 
                 for(TransactionDetails item : itemsSold){
-                    Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(),
-                            plugin.getSettings().sellFormat ? StringUtils.fancyFormat(item.amountEarned) :
-                                    StringUtils.format(item.amountEarned));
+                    if(plugin.getSettings().detailedNotifier)
+                        Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType(),
+                                plugin.getSettings().sellFormat ? StringUtils.fancyFormat(item.amountEarned) :
+                                        StringUtils.format(item.amountEarned));
                     totalEarned  = totalEarned.add(item.amountEarned);
                 }
 
@@ -65,7 +66,8 @@ public final class NotifierTask extends BukkitRunnable {
                 int totalCrafted = 0;
 
                 for(CraftingDetails item : itemsCrafted){
-                    Locale.CRAFTED_ITEMS_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType());
+                    if(plugin.getSettings().detailedNotifier)
+                        Locale.CRAFTED_ITEMS_LINE.send(offlinePlayer.getPlayer(), item.amount, item.itemStack.getType());
                     totalCrafted += item.amount;
                 }
 

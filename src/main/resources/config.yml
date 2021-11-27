@@ -9,6 +9,9 @@
 # Set 0 to disable this feature.
 notifier-interval: 12000
 
+# When enabled there will be a list of items that has been sold and crafted.
+detailed-notifier: true
+
 # When enabled, a gui will be popped to confirm chest expand purchase. Otherwise, it will be done in chat.
 confirm-gui: false
 
