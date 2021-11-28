@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
@@ -135,6 +136,10 @@ public final class SettingsHandler {
                 chestData.setSellMode(true);
             }
 
+            if(cfg.contains("chests." + name + ".deposit-method")){
+                chestData.setDepositMethod(DepositMethod.valueOf(cfg.getString("chests." + name + ".deposit-method")));
+            }
+
             if(cfg.contains("chests." + name + ".crafter-chest")){
                 chestData.setAutoCrafter(cfg.getStringList("chests." + name + ".crafter-chest"));
             }
@@ -168,10 +173,6 @@ public final class SettingsHandler {
             if(cfg.contains("chests." + name + ".auto-suction")){
                 chestData.setAutoSuctionRange(cfg.getInt("chests." + name + ".auto-suction.range", 1));
                 chestData.setAutoSuctionChunk(cfg.getBoolean("chests." + name + ".auto-suction.chunk", false));
-            }
-
-            if(cfg.contains("chests." + name + ".transfer-money")){
-                chestData.setTransferMoney(cfg.getString("chests." + name + ".transfer-money", "Vault"));
             }
 
             if(cfg.contains("chests." + name + ".blacklist")){

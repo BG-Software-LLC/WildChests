@@ -1,13 +1,12 @@
 package com.bgsoftware.wildchests.utils;
 
-import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
-import com.bgsoftware.superiorskyblock.api.wrappers.SuperiorPlayer;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
+import com.bgsoftware.wildchests.hooks.DepositMethod;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.task.NotifierTask;
 
@@ -19,7 +18,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.BiPredicate;
 
@@ -133,15 +131,7 @@ public final class ChestUtils {
             return false;
 
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            switch (chest.getData().getTransferMoney().toUpperCase()) {
-                case "VAULT":
-                    plugin.getProviders().depositPlayer(player, finalPrice);
-                    break;
-                case "SUPERIORSKYBLOCK2":
-                    SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(player.getUniqueId());
-                    superiorPlayer.getIsland().getIslandBank().depositAdminMoney(Bukkit.getConsoleSender(), BigDecimal.valueOf(finalPrice));
-                    break;
-            }
+            new DepositMethod().Deposit(chest, player, finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
                     .replace("{player-name}", player.getName())

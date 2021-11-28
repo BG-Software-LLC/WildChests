@@ -22,7 +22,6 @@ CHEST_INFO_TYPE: '&5 Type&7: &f{0}'
 CHEST_INFO_SIZE: '&5 Default Size&7: &f{0}'
 CHEST_INFO_DEFAULT_TITLE: '&5 Default Title&7: &f{0}'
 CHEST_INFO_SELL_MODE: '&5 Sell Mode&7: &f{0}'
-CHEST_INFO_TRANSFER_MONEY_METHOD: '&5 Sell Method&7: &f{0}'
 CHEST_INFO_RECIPES: '&5 Recipes&7: &f{0}'
 CHEST_INFO_FOOTER: '&8&m---------------&5&l WildChests &8&m---------------'
 

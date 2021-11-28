@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.api.objects.data;
 
 import com.bgsoftware.wildchests.api.key.Key;
+import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import com.bgsoftware.wildchests.api.objects.ChestType;
@@ -108,9 +109,9 @@ public interface ChestData {
     boolean isAutoSuctionChunk();
 
     /**
-     * Get the transfer method.
+     * Get the deposit method.
      */
-    String getTransferMoney();
+    DepositMethod getDepositMethod();
 
     /**
      * Get all the blacklisted items.
@@ -149,6 +150,12 @@ public interface ChestData {
      * @param sellMode The new status.
      */
     void setSellMode(boolean sellMode);
+
+    /**
+     * Set the deposit method for this chest.
+     * @param depositMethod The new status.
+     */
+    void setDepositMethod(DepositMethod depositMethod);
 
     /**
      * Set whether or not the chest should have an hopper filter.
@@ -199,12 +206,6 @@ public interface ChestData {
      * @param autoSuctionChunk The new status.
      */
     void setAutoSuctionChunk(boolean autoSuctionChunk);
-
-    /**
-     * Set the method for transferring the money.
-     * @param transferMoney The new method.
-     */
-    void setTransferMoney(String transferMoney);
 
     /**
      * Set the blacklisted items for the chest.
