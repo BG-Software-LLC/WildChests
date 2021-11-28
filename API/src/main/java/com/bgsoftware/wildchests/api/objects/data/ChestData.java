@@ -98,7 +98,7 @@ public interface ChestData {
     boolean isAutoSuction();
 
     /**
-     * Get the suction-mode's check range
+     * Get the suction-mode's check range.
      */
     int getAutoSuctionRange();
 
@@ -106,6 +106,11 @@ public interface ChestData {
      * Check whether or not this chest has it's suction-mode restricted to it's chunk.
      */
     boolean isAutoSuctionChunk();
+
+    /**
+     * Get the transfer method.
+     */
+    String getTransferMoney();
 
     /**
      * Get all the blacklisted items.
@@ -194,6 +199,12 @@ public interface ChestData {
      * @param autoSuctionChunk The new status.
      */
     void setAutoSuctionChunk(boolean autoSuctionChunk);
+
+    /**
+     * Set the method for transferring the money.
+     * @param transferMoney The new method.
+     */
+    void setTransferMoney(String transferMoney);
 
     /**
      * Set the blacklisted items for the chest.

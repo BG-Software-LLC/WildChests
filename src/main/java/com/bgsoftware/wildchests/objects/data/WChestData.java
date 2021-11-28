@@ -40,6 +40,7 @@ public final class WChestData implements ChestData {
     private boolean autoCollect;
     private int autoSuctionRange;
     private boolean autoSuctionChunk;
+    private String transferMoney;
     private KeySet blacklisted, whitelisted;
     private List<String> particles;
 
@@ -61,6 +62,7 @@ public final class WChestData implements ChestData {
         this.maxAmount = BigInteger.valueOf(-1);
         this.autoSuctionRange = -1;
         this.autoSuctionChunk = false;
+        this.transferMoney = "Vault";
         this.blacklisted = new KeySet();
         this.whitelisted = new KeySet();
         this.particles = Collections.unmodifiableList(new ArrayList<>());
@@ -176,6 +178,9 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public String getTransferMoney() { return transferMoney; }
+
+    @Override
     public Set<Key> getBlacklisted() {
         return blacklisted;
     }
@@ -261,6 +266,9 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public void setTransferMoney(String transferMoney) { this.transferMoney = transferMoney; }
+
+    @Override
     public void setBlacklisted(Set<Key> blacklisted) {
         this.blacklisted.addAll(blacklisted);
     }
@@ -308,6 +316,7 @@ public final class WChestData implements ChestData {
         this.autoCollect = chestData.autoCollect;
         this.autoSuctionRange = chestData.autoSuctionRange;
         this.autoSuctionChunk = chestData.autoSuctionChunk;
+        this.transferMoney = chestData.transferMoney;
         this.blacklisted = chestData.blacklisted;
         this.whitelisted = chestData.whitelisted;
         this.particles = chestData.particles;

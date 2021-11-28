@@ -170,6 +170,10 @@ public final class SettingsHandler {
                 chestData.setAutoSuctionChunk(cfg.getBoolean("chests." + name + ".auto-suction.chunk", false));
             }
 
+            if(cfg.contains("chests." + name + ".transfer-money")){
+                chestData.setTransferMoney(cfg.getString("chests." + name + ".transfer-money", "Vault"));
+            }
+
             if(cfg.contains("chests." + name + ".blacklist")){
                 chestData.setBlacklisted(new KeySet(cfg.getStringList("chests." + name + ".blacklist")));
             }
