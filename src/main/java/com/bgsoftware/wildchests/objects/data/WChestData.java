@@ -33,7 +33,7 @@ public final class WChestData implements ChestData {
     private int defaultSize;
     private String defaultTitle;
     private boolean sellMode;
-    private String depositMethod;
+    private DepositMethod depositMethod;
     private boolean hopperFilter;
     private Map<Recipe, List<RecipeUtils.RecipeIngredient>> recipes;
     private Map<Integer, InventoryData> pagesData;
@@ -55,7 +55,7 @@ public final class WChestData implements ChestData {
         this.defaultSize = 9 * 3;
         this.defaultTitle = "Chest";
         this.sellMode = false;
-        this.depositMethod = DepositMethod.VAULT.name();
+        this.depositMethod = DepositMethod.Vault;
         this.hopperFilter = false;
         this.recipes = new HashMap<>();
         this.pagesData = new HashMap<>();
@@ -180,7 +180,7 @@ public final class WChestData implements ChestData {
 
     @Override
     public DepositMethod getDepositMethod() {
-        return DepositMethod.valueOf(depositMethod);
+        return depositMethod;
     }
 
     @Override
@@ -223,7 +223,7 @@ public final class WChestData implements ChestData {
 
     @Override
     public void setDepositMethod(DepositMethod depositMethod){
-        this.depositMethod = depositMethod.name();
+        this.depositMethod = depositMethod;
     }
 
     @Override
