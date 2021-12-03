@@ -80,6 +80,8 @@ maximum-pickup-delay: 32767
 # item.name: Custom name for the chest (STRING)
 # item.lore: Custom lore for the chest (LIST)
 # multiplier: Money multiplier for sell chests. (DOUBLE)
+# deposit-method: Transfer the money received by the sell chest to a skyblock/faction bank
+#     Currently supported: Vault, SuperiorSkyblock2
 # auto-collect: Should items get directly into inventory after breaking? (BOOLEAN)
 # auto-suction.range: Should items inside the specified range will get suctioned into the chest? (INTEGER)
 # auto-suction.chunk: Should items inside the chunk will get suctioned into the chest? (BOOLEAN)

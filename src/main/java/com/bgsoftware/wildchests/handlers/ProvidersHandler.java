@@ -1,7 +1,16 @@
 package com.bgsoftware.wildchests.handlers;
+
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
+import com.bgsoftware.wildchests.api.hooks.BankProvider;
+import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.api.hooks.StackerProvider;
+import com.bgsoftware.wildchests.api.objects.DepositMethod;
+import com.bgsoftware.wildchests.hooks.BankProvider_SuperiorSkyblock;
+import com.bgsoftware.wildchests.hooks.BankProvider_Vault;
 import com.bgsoftware.wildchests.hooks.ChestShopHook;
+import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
+import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
 import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
 import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
@@ -12,8 +21,6 @@ import com.bgsoftware.wildchests.utils.Executor;
 import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
-import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -21,68 +28,31 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.hooks.PricesProvider;
-import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
-import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
-import org.bukkit.plugin.RegisteredServiceProvider;
-
+import java.math.BigDecimal;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler implements ProvidersManager {
 
-    private boolean isVaultEnabled;
-    private Economy economy;
+    private final Map<DepositMethod, BankProvider> bankProviderMap = new EnumMap<>(DepositMethod.class);
+    private final Map<UUID, PendingTransaction> pendingTransactions = new HashMap<>();
 
-    private final Map<UUID, MutableDouble> pendingTransactions = new HashMap<>();
     private PricesProvider pricesProvider = new PricesProvider_Default();
     private StackerProvider stackerProvider = new StackerProvider_Default();
+    private BankProvider customBankProvider = null;
 
     public ProvidersHandler(WildChestsPlugin plugin){
         Executor.sync(() -> {
-            if(pricesProvider instanceof PricesProvider_Default) {
-                switch (plugin.getSettings().pricesProvider.toUpperCase()) {
-                    case "SHOPGUIPLUS":
-                        if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-                            try {
-                                //noinspection JavaReflectionMemberAccess
-                                ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
-                                pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
-                            } catch (Throwable ex) {
-                                pricesProvider = new PricesProvider_ShopGUIPlus();
-                            }
-                            break;
-                        }
-                    case "QUANTUMSHOP":
-                        if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
-                            pricesProvider = new PricesProvider_QuantumShop();
-                            break;
-                        }
-                    case "ESSENTIALS":
-                        if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
-                            pricesProvider = new PricesProvider_Essentials();
-                            break;
-                        }
-                    case "ZSHOP":
-                        if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
-                            pricesProvider = new PricesProvider_zShop();
-                            break;
-                        }
-                    default:
-                        WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
-                }
-            }
+            registerPricesProvider(plugin);
+            registerStackersProvider();
+            registerBanksProvider();
 
-            if(stackerProvider instanceof StackerProvider_Default){
-                if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-                    setStackerProvider(new StackerProvider_WildStacker());
-            }
-
-            if(!initVault()){
+            if(bankProviderMap.isEmpty() && customBankProvider == null){
                 WildChestsPlugin.log("");
                 WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
                 WildChestsPlugin.log("");
@@ -104,6 +74,11 @@ public final class ProvidersHandler implements ProvidersManager {
     @Override
     public void setStackerProvider(StackerProvider stackerProvider) {
         this.stackerProvider = stackerProvider;
+    }
+
+    @Override
+    public void setBanksProvider(BankProvider banksProvider) {
+        this.customBankProvider = banksProvider;
     }
 
     /*
@@ -130,80 +105,106 @@ public final class ProvidersHandler implements ProvidersManager {
      * Handler's methods
      */
 
-    public void enableVault(){
-        isVaultEnabled = true;
-        economy = Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
-    }
-
-    private boolean initVault() {
-        if (Bukkit.getPluginManager().getPlugin("Vault") == null)
-            return false;
-
-        RegisteredServiceProvider<Economy> rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
-
-        if (rsp == null || rsp.getProvider() == null)
-            return false;
-
-        enableVault();
-
-        return true;
-    }
-
     public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack){
         double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack);
-        return TransactionResult.of(price, _price -> isVaultEnabled && price > 0);
+        return TransactionResult.of(price, _price -> _price > 0);
     }
 
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){
-        try {
-            if (!economy.hasAccount(offlinePlayer))
-                economy.createPlayerAccount(offlinePlayer);
+        BankProvider vaultProvider = bankProviderMap.get(DepositMethod.VAULT);
 
-            return economy.withdrawPlayer(offlinePlayer, money).transactionSuccess();
-        }catch(Throwable ex){
+        if(vaultProvider == null)
             return false;
-        }
+
+        return ((BankProvider_Vault) vaultProvider).withdrawPlayer(offlinePlayer, money);
     }
 
     public void startSellingTask(OfflinePlayer offlinePlayer){
         if(!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
-            pendingTransactions.put(offlinePlayer.getUniqueId(), new MutableDouble());
+            pendingTransactions.put(offlinePlayer.getUniqueId(), new PendingTransaction());
     }
 
     public void stopSellingTask(OfflinePlayer offlinePlayer){
-        MutableDouble sellTaskValue = pendingTransactions.remove(offlinePlayer.getUniqueId());
-        if(sellTaskValue != null)
-            depositPlayer(offlinePlayer, sellTaskValue.value);
+        PendingTransaction pendingTransaction = pendingTransactions.remove(offlinePlayer.getUniqueId());
+        if(pendingTransaction != null)
+            pendingTransaction.forEach(((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value)));
     }
 
-    public boolean depositPlayer(OfflinePlayer offlinePlayer, double money){
-        try {
-            MutableDouble sellTaskValue = pendingTransactions.get(offlinePlayer.getUniqueId());
+    public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money){
+        BankProvider bankProvider = bankProviderMap.getOrDefault(depositMethod, customBankProvider);
 
-            if(sellTaskValue != null){
-                sellTaskValue.value += money;
-                return true;
-            }
-
-            if (!economy.hasAccount(offlinePlayer))
-                economy.createPlayerAccount(offlinePlayer);
-
-            economy.depositPlayer(offlinePlayer, money);
-
-            return true;
-        }catch(Throwable ex){
+        if(bankProvider == null)
             return false;
-        }
-    }
 
-    public boolean isVaultEnabled(){
-        return isVaultEnabled;
+        PendingTransaction pendingTransaction = pendingTransactions.get(offlinePlayer.getUniqueId());
+
+        if(pendingTransaction != null){
+            pendingTransaction.depositMoney(depositMethod, money);
+            return true;
+        }
+
+        return bankProvider.depositMoney(offlinePlayer, BigDecimal.valueOf(money));
     }
 
     public void depositAllPending(){
-        pendingTransactions.forEach((uuid, sellTaskValue) ->
-                depositPlayer(Bukkit.getOfflinePlayer(uuid), sellTaskValue.value));
+        pendingTransactions.forEach((uuid, pendingTransaction) -> {
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+            pendingTransaction.forEach((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value));
+        });
         pendingTransactions.clear();
+    }
+
+    private void registerPricesProvider(WildChestsPlugin plugin) {
+        if(!(pricesProvider instanceof PricesProvider_Default))
+            return;
+
+        switch (plugin.getSettings().pricesProvider.toUpperCase()) {
+            case "SHOPGUIPLUS":
+                if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+                    try {
+                        //noinspection JavaReflectionMemberAccess
+                        ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
+                        pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
+                    } catch (Throwable ex) {
+                        pricesProvider = new PricesProvider_ShopGUIPlus();
+                    }
+                    break;
+                }
+            case "QUANTUMSHOP":
+                if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
+                    pricesProvider = new PricesProvider_QuantumShop();
+                    break;
+                }
+            case "ESSENTIALS":
+                if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
+                    pricesProvider = new PricesProvider_Essentials();
+                    break;
+                }
+            case "ZSHOP":
+                if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
+                    pricesProvider = new PricesProvider_zShop();
+                    break;
+                }
+            default:
+                WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
+        }
+
+    }
+
+    private void registerStackersProvider() {
+        if(!(stackerProvider instanceof StackerProvider_Default))
+            return;
+
+        if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+            setStackerProvider(new StackerProvider_WildStacker());
+    }
+
+    private void registerBanksProvider() {
+        if(Bukkit.getPluginManager().isPluginEnabled("Vault"))
+            bankProviderMap.put(DepositMethod.VAULT, new BankProvider_Vault());
+
+        if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
+            bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, new BankProvider_SuperiorSkyblock());
     }
 
     public static final class TransactionResult<T>{
@@ -230,9 +231,24 @@ public final class ProvidersHandler implements ProvidersManager {
 
     }
 
-    private static final class MutableDouble{
+    private static final class PendingTransaction {
 
-        private double value = 0;
+        private final Map<DepositMethod, MutableDouble> pendingDeposits = new EnumMap<>(DepositMethod.class);
+
+        void depositMoney(DepositMethod depositMethod, double money) {
+            pendingDeposits.computeIfAbsent(depositMethod, d -> new MutableDouble()).value += money;
+        }
+
+        void forEach(BiConsumer<DepositMethod, Double> consumer) {
+            for(Map.Entry<DepositMethod, MutableDouble> entry : pendingDeposits.entrySet())
+                consumer.accept(entry.getKey(), entry.getValue().value);
+        }
+
+        private static final class MutableDouble{
+
+            private double value = 0;
+
+        }
 
     }
 

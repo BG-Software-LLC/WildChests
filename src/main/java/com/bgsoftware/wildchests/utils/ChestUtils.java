@@ -17,12 +17,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 public final class ChestUtils {
@@ -126,7 +121,9 @@ public final class ChestUtils {
         if (!transactionResult.isSuccess())
             return false;
 
-        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chest.getData().getMultiplier());
+        ChestData chestData = chest.getData();
+
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chestData.getMultiplier());
         Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
 
         double finalPrice = transactionResult.getData() * sellChestTaskEvent.getMultiplier();
@@ -134,17 +131,21 @@ public final class ChestUtils {
         if(finalPrice <= 0)
             return false;
 
+        boolean successDeposit;
+
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            plugin.getProviders().depositPlayer(player, finalPrice);
+            successDeposit = plugin.getProviders().depositPlayer(player, chestData.getDepositMethod(), finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
                     .replace("{player-name}", player.getName())
                     .replace("{price}", String.valueOf(finalPrice)));
+            successDeposit = true;
         }
 
-        NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
+        if(successDeposit)
+            NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
 
-        return true;
+        return successDeposit;
     }
 
     public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
