@@ -6,7 +6,6 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
-import com.bgsoftware.wildchests.hooks.DepositMethod;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.task.NotifierTask;
 
@@ -122,7 +121,9 @@ public final class ChestUtils {
         if (!transactionResult.isSuccess())
             return false;
 
-        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chest.getData().getMultiplier());
+        ChestData chestData = chest.getData();
+
+        SellChestTaskEvent sellChestTaskEvent = new SellChestTaskEvent(chest, toSell, chestData.getMultiplier());
         Bukkit.getPluginManager().callEvent(sellChestTaskEvent);
 
         double finalPrice = transactionResult.getData() * sellChestTaskEvent.getMultiplier();
@@ -131,7 +132,7 @@ public final class ChestUtils {
             return false;
 
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            new DepositMethod().Deposit(chest, player, finalPrice);
+            plugin.getProviders().depositPlayer(player, chestData.getDepositMethod(), finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
                     .replace("{player-name}", player.getName())
