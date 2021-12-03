@@ -199,7 +199,7 @@ public final class NMSInventory_v1_18_R1 implements NMSInventory {
         }
 
         @Override
-        public ItemStack b(int i) {
+        public ItemStack a(int i) {
             return (ItemStack) ((WChest) chest).getWildItem(i).getItemStack();
         }
 
