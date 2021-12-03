@@ -131,17 +131,17 @@ public final class ProvidersHandler implements ProvidersManager {
     }
 
     public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money){
+        BankProvider bankProvider = bankProviderMap.getOrDefault(depositMethod, customBankProvider);
+
+        if(bankProvider == null)
+            return false;
+
         PendingTransaction pendingTransaction = pendingTransactions.get(offlinePlayer.getUniqueId());
 
         if(pendingTransaction != null){
             pendingTransaction.depositMoney(depositMethod, money);
             return true;
         }
-
-        BankProvider bankProvider = bankProviderMap.getOrDefault(depositMethod, customBankProvider);
-
-        if(bankProvider == null)
-            return false;
 
         return bankProvider.depositMoney(offlinePlayer, BigDecimal.valueOf(money));
     }

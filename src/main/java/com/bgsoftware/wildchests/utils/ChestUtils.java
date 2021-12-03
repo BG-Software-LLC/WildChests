@@ -131,17 +131,21 @@ public final class ChestUtils {
         if(finalPrice <= 0)
             return false;
 
+        boolean successDeposit;
+
         if (plugin.getSettings().sellCommand.isEmpty()) {
-            plugin.getProviders().depositPlayer(player, chestData.getDepositMethod(), finalPrice);
+            successDeposit = plugin.getProviders().depositPlayer(player, chestData.getDepositMethod(), finalPrice);
         } else {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), plugin.getSettings().sellCommand
                     .replace("{player-name}", player.getName())
                     .replace("{price}", String.valueOf(finalPrice)));
+            successDeposit = true;
         }
 
-        NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
+        if(successDeposit)
+            NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
 
-        return true;
+        return successDeposit;
     }
 
     public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
