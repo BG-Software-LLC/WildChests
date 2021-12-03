@@ -135,13 +135,14 @@ public final class SettingsHandler {
             if(cfg.getBoolean("chests." + name + ".sell-mode", false)){
                 chestData.setSellMode(true);
             }
-            try{
-                if(cfg.contains("chests." + name + ".deposit-method")){
-                    chestData.setDepositMethod(DepositMethod.valueOf(cfg.getString("chests." + name + ".deposit-method")));
+
+            if(cfg.contains("chests." + name + ".deposit-method")){
+                String depositMethod = cfg.getString("chests." + name + ".deposit-method").toUpperCase();
+                try {
+                    chestData.setDepositMethod(DepositMethod.valueOf(depositMethod));
+                } catch (IllegalArgumentException error) {
+                    WildChestsPlugin.log("Found an invalid deposit-method for " + name + " - skipping...");
                 }
-            }catch(IllegalArgumentException ex){
-                WildChestsPlugin.log("Found an invalid deposit-method for " + name + " - skipping...");
-                continue;
             }
 
             if(cfg.contains("chests." + name + ".crafter-chest")){

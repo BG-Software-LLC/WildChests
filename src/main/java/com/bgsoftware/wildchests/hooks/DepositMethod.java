@@ -16,10 +16,10 @@ public final class DepositMethod {
 
     public void Deposit(Chest chest, OfflinePlayer player, double finalPrice) {
         switch (chest.getData().getDepositMethod()) {
-            case Vault:
+            case VAULT:
                 plugin.getProviders().depositPlayer(player, finalPrice);
                 break;
-            case SuperiorSkyblock2:
+            case SUPERIORSKYBLOCK2:
                 SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(player.getUniqueId());
                 superiorPlayer.getIsland().getIslandBank().depositAdminMoney(Bukkit.getConsoleSender(), BigDecimal.valueOf(finalPrice));
                 break;

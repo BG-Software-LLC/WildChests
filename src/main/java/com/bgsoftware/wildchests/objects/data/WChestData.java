@@ -55,7 +55,7 @@ public final class WChestData implements ChestData {
         this.defaultSize = 9 * 3;
         this.defaultTitle = "Chest";
         this.sellMode = false;
-        this.depositMethod = DepositMethod.Vault;
+        this.depositMethod = DepositMethod.VAULT;
         this.hopperFilter = false;
         this.recipes = new HashMap<>();
         this.pagesData = new HashMap<>();
