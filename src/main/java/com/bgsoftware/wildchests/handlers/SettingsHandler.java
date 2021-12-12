@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
@@ -135,6 +136,15 @@ public final class SettingsHandler {
 
             if(cfg.getBoolean("chests." + name + ".sell-mode", false)){
                 chestData.setSellMode(true);
+            }
+
+            if(cfg.contains("chests." + name + ".deposit-method")){
+                String depositMethod = cfg.getString("chests." + name + ".deposit-method").toUpperCase();
+                try {
+                    chestData.setDepositMethod(DepositMethod.valueOf(depositMethod));
+                } catch (IllegalArgumentException error) {
+                    WildChestsPlugin.log("Found an invalid deposit-method for " + name + " - skipping...");
+                }
             }
 
             if(cfg.contains("chests." + name + ".crafter-chest")){

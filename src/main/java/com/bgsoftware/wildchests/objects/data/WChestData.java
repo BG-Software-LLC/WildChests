@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.objects.data;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.key.Key;
+import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.utils.RecipeUtils;
 import com.google.common.collect.Iterators;
 import org.bukkit.Bukkit;
@@ -32,6 +33,7 @@ public final class WChestData implements ChestData {
     private int defaultSize;
     private String defaultTitle;
     private boolean sellMode;
+    private DepositMethod depositMethod;
     private boolean hopperFilter;
     private Map<Recipe, List<RecipeUtils.RecipeIngredient>> recipes;
     private Map<Integer, InventoryData> pagesData;
@@ -53,6 +55,7 @@ public final class WChestData implements ChestData {
         this.defaultSize = 9 * 3;
         this.defaultTitle = "Chest";
         this.sellMode = false;
+        this.depositMethod = DepositMethod.VAULT;
         this.hopperFilter = false;
         this.recipes = new HashMap<>();
         this.pagesData = new HashMap<>();
@@ -176,6 +179,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public DepositMethod getDepositMethod() {
+        return depositMethod;
+    }
+
+    @Override
     public Set<Key> getBlacklisted() {
         return blacklisted;
     }
@@ -211,6 +219,11 @@ public final class WChestData implements ChestData {
     @Override
     public void setSellMode(boolean sellMode){
         this.sellMode = sellMode;
+    }
+
+    @Override
+    public void setDepositMethod(DepositMethod depositMethod){
+        this.depositMethod = depositMethod;
     }
 
     @Override
