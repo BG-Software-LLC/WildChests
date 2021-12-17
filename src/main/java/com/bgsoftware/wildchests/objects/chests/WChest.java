@@ -161,6 +161,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
             ItemStack cloned = itemStack.clone();
             cloned.setAmount(toRemove);
             page.removeItem(cloned);
+            itemsRemoved += toRemove;
         }
     }
 
