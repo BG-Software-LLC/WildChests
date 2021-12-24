@@ -8,7 +8,7 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'com.bgsoftware'
-            artifactId = 'WildBusterAPI'
+            artifactId = 'WildChestsAPI'
             version = System.getenv("BUILD_NUMBER") == null ? parent.version : parent.version + "." + System.getenv("BUILD_NUMBER")
 
             from components.java
