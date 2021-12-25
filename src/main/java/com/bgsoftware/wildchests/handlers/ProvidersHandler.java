@@ -181,6 +181,12 @@ public final class ProvidersHandler implements ProvidersManager {
                     //pricesProvider = new PricesProvider_zShop();
                     break;
                 }
+            case "ECONOMYSHOPGUI":
+                if (Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI") ||
+                        Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI-Premium")) {
+                    pricesProvider = createInstance("PricesProvider_EconomyShopGUI");
+                    break;
+                }
         }
 
         if (!pricesProvider.isPresent()) {
