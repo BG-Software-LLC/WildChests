@@ -1,13 +1,7 @@
 group 'Hook_WildStacker'
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-}
-
 dependencies {
-    compileOnly "com.bgsoftware:WildStackerAPI:3.6.1.252"
+    compileOnly "com.bgsoftware:WildStackerAPI:3.6.1"
     compileOnly "org.spigotmc:v1_16_R3:latest"
     compileOnly project(":API")
     compileOnly parent
