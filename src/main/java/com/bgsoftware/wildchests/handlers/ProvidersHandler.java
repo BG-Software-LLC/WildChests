@@ -8,7 +8,6 @@ import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
-import com.bgsoftware.wildchests.hooks.StackerProvider_WildStacker;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -196,8 +195,10 @@ public final class ProvidersHandler implements ProvidersManager {
         if (!(stackerProvider instanceof StackerProvider_Default))
             return;
 
-        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
-            setStackerProvider(new StackerProvider_WildStacker());
+        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
+            Optional<StackerProvider> stackerProvider = createInstance("StackerProvider_WildStacker");
+            stackerProvider.ifPresent(this::setStackerProvider);
+        }
     }
 
     private void registerBanksProvider() {

@@ -1,0 +1,19 @@
+group 'Hook_WildStacker'
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+dependencies {
+    compileOnly "com.bgsoftware:WildStackerAPI:3.6.1.252"
+    compileOnly "org.spigotmc:v1_16_R3:latest"
+    compileOnly project(":API")
+    compileOnly parent
+}
+
+if (project.hasProperty('hook.compile_wildstacker') &&
+        !Boolean.valueOf(project.findProperty("hook.compile_wildstacker").toString())) {
+    project.tasks.all { task -> task.enabled = false }
+}

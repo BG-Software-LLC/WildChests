@@ -23,4 +23,5 @@ include 'Hook_ShopGUIPlus12'
 include 'Hook_SuperiorSkyblock'
 include 'Hook_Vault'
 include 'Hook_zShop'
+include 'Hook_WildStacker'
 
