@@ -1,28 +1,28 @@
 package com.bgsoftware.wildchests.hooks;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.utils.Pair;
 import net.brcdev.shopgui.ShopGuiPlugin;
 import net.brcdev.shopgui.player.PlayerData;
 import net.brcdev.shopgui.shop.Shop;
 import net.brcdev.shopgui.shop.ShopItem;
-
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import com.bgsoftware.wildchests.WildChestsPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class PricesProvider_ShopGUIPlusOld implements PricesProvider {
+@SuppressWarnings("unused")
+public final class PricesProvider_ShopGUIPlus12 implements PricesProvider {
 
     // Added cache for shop items for better performance
     private final Map<WrappedItemStack, Pair<ShopItem, Shop>> cachedShopItems = new HashMap<>();
     private final ShopGuiPlugin plugin;
 
-    public PricesProvider_ShopGUIPlusOld(){
+    public PricesProvider_ShopGUIPlus12() {
         WildChestsPlugin.log("- Using ShopGUIPlus as PricesProvider");
         plugin = ShopGuiPlugin.getInstance();
     }
@@ -47,12 +47,11 @@ public final class PricesProvider_ShopGUIPlusOld implements PricesProvider {
             return null;
         });
 
-        if(shopPair != null){
-            if(onlinePlayer == null) {
+        if (shopPair != null) {
+            if (onlinePlayer == null) {
                 //noinspection deprecation
                 price = Math.max(price, shopPair.key.getSellPriceForAmount(itemStack.getAmount()));
-            }
-            else{
+            } else {
                 PlayerData playerData = ShopGuiPlugin.getInstance().getPlayerManager().getPlayerData(onlinePlayer);
                 price = Math.max(price, shopPair.key.getSellPriceForAmount(shopPair.value, onlinePlayer, playerData, itemStack.getAmount()));
             }
@@ -61,11 +60,11 @@ public final class PricesProvider_ShopGUIPlusOld implements PricesProvider {
         return price;
     }
 
-    private static final class WrappedItemStack{
+    private static final class WrappedItemStack {
 
         private final ItemStack value;
 
-        WrappedItemStack(ItemStack value){
+        WrappedItemStack(ItemStack value) {
             this.value = value;
         }
 

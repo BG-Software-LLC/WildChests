@@ -18,6 +18,6 @@ repositories {
 dependencies {
     implementation project(":API")
     compileOnly "org.spigotmc:v1_7_R3:latest"
-    compileOnly 'net.brcdev:ShopGUIPlus-1.20:latest'
+
     compileOnly parent
 }

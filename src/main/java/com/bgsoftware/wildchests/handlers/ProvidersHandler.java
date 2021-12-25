@@ -18,6 +18,7 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -42,7 +43,7 @@ public final class ProvidersHandler implements ProvidersManager {
     private StackerProvider stackerProvider = new StackerProvider_Default();
     private BankProvider customBankProvider = null;
 
-    public ProvidersHandler(WildChestsPlugin plugin){
+    public ProvidersHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
 
         Executor.sync(() -> {
@@ -50,16 +51,16 @@ public final class ProvidersHandler implements ProvidersManager {
             registerStackersProvider();
             registerBanksProvider();
 
-            if(bankProviderMap.isEmpty() && customBankProvider == null){
+            if (bankProviderMap.isEmpty() && customBankProvider == null) {
                 WildChestsPlugin.log("");
                 WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
                 WildChestsPlugin.log("");
             }
 
-            if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
+            if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
                 SuperiorSkyblockHook.register(plugin);
 
-            if(Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
+            if (Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
                 registerHook("ChestShopHook");
         });
     }
@@ -83,7 +84,7 @@ public final class ProvidersHandler implements ProvidersManager {
      * Hooks' methods
      */
 
-    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack){
+    public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         return pricesProvider.getPrice(offlinePlayer, itemStack);
     }
 
@@ -103,40 +104,40 @@ public final class ProvidersHandler implements ProvidersManager {
      * Handler's methods
      */
 
-    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack){
+    public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack);
         return TransactionResult.of(price, _price -> _price > 0);
     }
 
-    public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money){
+    public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money) {
         BankProvider vaultProvider = bankProviderMap.get(DepositMethod.VAULT);
 
-        if(vaultProvider == null)
+        if (vaultProvider == null)
             return false;
 
         return ((BankProvider_Vault) vaultProvider).withdrawPlayer(offlinePlayer, money);
     }
 
-    public void startSellingTask(OfflinePlayer offlinePlayer){
-        if(!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
+    public void startSellingTask(OfflinePlayer offlinePlayer) {
+        if (!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
             pendingTransactions.put(offlinePlayer.getUniqueId(), new PendingTransaction());
     }
 
-    public void stopSellingTask(OfflinePlayer offlinePlayer){
+    public void stopSellingTask(OfflinePlayer offlinePlayer) {
         PendingTransaction pendingTransaction = pendingTransactions.remove(offlinePlayer.getUniqueId());
-        if(pendingTransaction != null)
+        if (pendingTransaction != null)
             pendingTransaction.forEach(((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value)));
     }
 
-    public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money){
+    public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money) {
         BankProvider bankProvider = bankProviderMap.getOrDefault(depositMethod, customBankProvider);
 
-        if(bankProvider == null)
+        if (bankProvider == null)
             return false;
 
         PendingTransaction pendingTransaction = pendingTransactions.get(offlinePlayer.getUniqueId());
 
-        if(pendingTransaction != null){
+        if (pendingTransaction != null) {
             pendingTransaction.depositMoney(depositMethod, money);
             return true;
         }
@@ -144,7 +145,7 @@ public final class ProvidersHandler implements ProvidersManager {
         return bankProvider.depositMoney(offlinePlayer, BigDecimal.valueOf(money));
     }
 
-    public void depositAllPending(){
+    public void depositAllPending() {
         pendingTransactions.forEach((uuid, pendingTransaction) -> {
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
             pendingTransaction.forEach((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value));
@@ -153,23 +154,22 @@ public final class ProvidersHandler implements ProvidersManager {
     }
 
     private void registerPricesProvider(WildChestsPlugin plugin) {
-        if(!(pricesProvider instanceof PricesProvider_Default))
+        if (!(pricesProvider instanceof PricesProvider_Default))
             return;
 
         Optional<PricesProvider> pricesProvider = Optional.empty();
 
         switch (plugin.getSettings().pricesProvider.toUpperCase()) {
             case "SHOPGUIPLUS":
-//                if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-//                    try {
-//                        //noinspection JavaReflectionMemberAccess
-//                        ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
-//                        pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
-//                    } catch (Throwable ex) {
-//                        pricesProvider = new PricesProvider_ShopGUIPlus();
-//                    }
-//                    break;
-//                }
+                if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+                    Plugin shopGUIPlus = Bukkit.getPluginManager().getPlugin("ShopGUIPlus");
+                    if (shopGUIPlus.getDescription().getVersion().startsWith("1.2")) {
+                        pricesProvider = createInstance("PricesProvider_ShopGUIPlus12");
+                    } else {
+                        pricesProvider = createInstance("PricesProvider_ShopGUIPlus14");
+                    }
+                    break;
+                }
             case "QUANTUMSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
                     pricesProvider = createInstance("PricesProvider_QuantumShop");
@@ -187,7 +187,7 @@ public final class ProvidersHandler implements ProvidersManager {
                 }
         }
 
-        if(!pricesProvider.isPresent()) {
+        if (!pricesProvider.isPresent()) {
             WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
             return;
         }
@@ -196,18 +196,18 @@ public final class ProvidersHandler implements ProvidersManager {
     }
 
     private void registerStackersProvider() {
-        if(!(stackerProvider instanceof StackerProvider_Default))
+        if (!(stackerProvider instanceof StackerProvider_Default))
             return;
 
-        if(Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
+        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker"))
             setStackerProvider(new StackerProvider_WildStacker());
     }
 
     private void registerBanksProvider() {
-        if(Bukkit.getPluginManager().isPluginEnabled("Vault"))
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault"))
             bankProviderMap.put(DepositMethod.VAULT, new BankProvider_Vault());
 
-        if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
+        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
             bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, new BankProvider_SuperiorSkyblock());
     }
 
@@ -246,25 +246,25 @@ public final class ProvidersHandler implements ProvidersManager {
         }
     }
 
-    public static final class TransactionResult<T>{
+    public static final class TransactionResult<T> {
 
         private final T data;
         private final Predicate<T> success;
 
-        private TransactionResult(T data, Predicate<T> success){
+        private TransactionResult(T data, Predicate<T> success) {
             this.data = data;
             this.success = success;
         }
 
-        public boolean isSuccess(){
+        public boolean isSuccess() {
             return success == null || success.test(data);
         }
 
-        public T getData(){
+        public T getData() {
             return data;
         }
 
-        public static <T> TransactionResult<T> of(T data, Predicate<T> success){
+        public static <T> TransactionResult<T> of(T data, Predicate<T> success) {
             return new TransactionResult<>(data, success);
         }
 
@@ -279,11 +279,11 @@ public final class ProvidersHandler implements ProvidersManager {
         }
 
         void forEach(BiConsumer<DepositMethod, Double> consumer) {
-            for(Map.Entry<DepositMethod, MutableDouble> entry : pendingDeposits.entrySet())
+            for (Map.Entry<DepositMethod, MutableDouble> entry : pendingDeposits.entrySet())
                 consumer.accept(entry.getKey(), entry.getValue().value);
         }
 
-        private static final class MutableDouble{
+        private static final class MutableDouble {
 
             private double value = 0;
 

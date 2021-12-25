@@ -13,13 +13,14 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class PricesProvider_ShopGUIPlus implements PricesProvider {
+@SuppressWarnings("unused")
+public final class PricesProvider_ShopGUIPlus14 implements PricesProvider {
 
     // Added cache for shop items for better performance
     private final Map<WrappedItemStack, Pair<ShopItem, Shop>> cachedShopItems = new HashMap<>();
     private final ShopGuiPlugin plugin;
 
-    public PricesProvider_ShopGUIPlus(){
+    public PricesProvider_ShopGUIPlus14() {
         WildChestsPlugin.log("- Using ShopGUIPlus as PricesProvider");
         plugin = ShopGuiPlugin.getInstance();
     }
@@ -35,18 +36,17 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
             Map<String, Shop> shops = plugin.getShopManager().shops;
             for (Shop shop : shops.values()) {
                 for (ShopItem _shopItem : shop.getShopItems())
-                    if(areSimilar(_shopItem.getItem(), itemStack, _shopItem.isCompareMeta()))
+                    if (areSimilar(_shopItem.getItem(), itemStack, _shopItem.isCompareMeta()))
                         return new Pair<>(_shopItem, shop);
             }
 
             return null;
         });
 
-        if(shopPair != null){
-            if(onlinePlayer == null) {
+        if (shopPair != null) {
+            if (onlinePlayer == null) {
                 price = Math.max(price, shopPair.key.getSellPriceForAmount(itemStack.getAmount()));
-            }
-            else{
+            } else {
                 price = Math.max(price, shopPair.key.getSellPriceForAmount(onlinePlayer, itemStack.getAmount()));
             }
         }
@@ -54,16 +54,16 @@ public final class PricesProvider_ShopGUIPlus implements PricesProvider {
         return price;
     }
 
-    private static boolean areSimilar(ItemStack is1, ItemStack is2, boolean compareMetadata){
+    private static boolean areSimilar(ItemStack is1, ItemStack is2, boolean compareMetadata) {
         return compareMetadata ? is1.isSimilar(is2) : is2 != null && is1 != null && is1.getType() == is2.getType() &&
                 is1.getDurability() == is2.getDurability();
     }
 
-    private static final class WrappedItemStack{
+    private static final class WrappedItemStack {
 
         private final ItemStack value;
 
-        WrappedItemStack(ItemStack value){
+        WrappedItemStack(ItemStack value) {
             this.value = value.clone();
             this.value.setAmount(1);
         }

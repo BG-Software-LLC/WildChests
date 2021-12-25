@@ -19,4 +19,6 @@ include 'v1_18_R1'
 include 'Hook_ChestShop'
 include 'Hook_Essentials'
 include 'Hook_QuantumShop'
+include 'Hook_ShopGUIPlus14'
+include 'Hook_ShopGUIPlus12'
 
