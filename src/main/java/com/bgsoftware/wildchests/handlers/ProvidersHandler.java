@@ -9,22 +9,14 @@ import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.hooks.BankProvider_SuperiorSkyblock;
 import com.bgsoftware.wildchests.hooks.BankProvider_Vault;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
-import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
-import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
-import com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlus;
-import com.bgsoftware.wildchests.hooks.PricesProvider_zShop;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProvider_WildStacker;
 import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
-import net.brcdev.shopgui.player.PlayerData;
-import net.brcdev.shopgui.shop.Shop;
-import net.brcdev.shopgui.shop.ShopItem;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Constructor;
@@ -164,37 +156,43 @@ public final class ProvidersHandler implements ProvidersManager {
         if(!(pricesProvider instanceof PricesProvider_Default))
             return;
 
+        Optional<PricesProvider> pricesProvider = Optional.empty();
+
         switch (plugin.getSettings().pricesProvider.toUpperCase()) {
             case "SHOPGUIPLUS":
-                if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-                    try {
-                        //noinspection JavaReflectionMemberAccess
-                        ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
-                        pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
-                    } catch (Throwable ex) {
-                        pricesProvider = new PricesProvider_ShopGUIPlus();
-                    }
-                    break;
-                }
+//                if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
+//                    try {
+//                        //noinspection JavaReflectionMemberAccess
+//                        ShopItem.class.getMethod("getSellPriceForAmount", Shop.class, Player.class, PlayerData.class, int.class);
+//                        pricesProvider = (PricesProvider) Class.forName("com.bgsoftware.wildchests.hooks.PricesProvider_ShopGUIPlusOld").newInstance();
+//                    } catch (Throwable ex) {
+//                        pricesProvider = new PricesProvider_ShopGUIPlus();
+//                    }
+//                    break;
+//                }
             case "QUANTUMSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
-                    pricesProvider = new PricesProvider_QuantumShop();
+                    //pricesProvider = new PricesProvider_QuantumShop();
                     break;
                 }
             case "ESSENTIALS":
                 if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
-                    pricesProvider = new PricesProvider_Essentials();
+                    pricesProvider = createInstance("PricesProvider_Essentials");
                     break;
                 }
             case "ZSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
-                    pricesProvider = new PricesProvider_zShop();
+                    //pricesProvider = new PricesProvider_zShop();
                     break;
                 }
-            default:
-                WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
         }
 
+        if(!pricesProvider.isPresent()) {
+            WildChestsPlugin.log("- Couldn''t find any prices providers, using default one");
+            return;
+        }
+
+        this.pricesProvider = pricesProvider.get();
     }
 
     private void registerStackersProvider() {

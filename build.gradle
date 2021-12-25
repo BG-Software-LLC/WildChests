@@ -80,7 +80,6 @@ dependencies {
     compileOnly 'org.spigotmc:v1_16_R3-Tuinity:latest'
 
     // Plugin Hooks
-    compileOnly "com.earth2me:Essentials-2.15:latest"
     compileOnly "su.fogus:FogusCore:latest"
     compileOnly "su.nightexpress:QuantumShop:latest"
     compileOnly "net.brcdev:ShopGUIPlus-1.43:latest"
