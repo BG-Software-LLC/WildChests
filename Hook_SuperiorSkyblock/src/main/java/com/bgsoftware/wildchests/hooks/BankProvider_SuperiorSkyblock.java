@@ -17,10 +17,11 @@ public final class BankProvider_SuperiorSkyblock implements BankProvider {
         SuperiorPlayer superiorPlayer = SuperiorSkyblockAPI.getPlayer(offlinePlayer.getUniqueId());
         Island island = superiorPlayer.getIsland();
 
-        if(island == null)
+        if (island == null)
             return false;
 
         BankTransaction bankTransaction = island.getIslandBank().depositAdminMoney(Bukkit.getConsoleSender(), money);
         return bankTransaction.getFailureReason().isEmpty();
     }
+
 }

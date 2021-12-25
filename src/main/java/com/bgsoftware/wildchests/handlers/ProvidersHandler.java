@@ -6,12 +6,10 @@ import com.bgsoftware.wildchests.api.hooks.BankProvider;
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
-import com.bgsoftware.wildchests.hooks.BankProvider_SuperiorSkyblock;
 import com.bgsoftware.wildchests.hooks.BankProvider_Vault;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProvider_WildStacker;
-import com.bgsoftware.wildchests.hooks.SuperiorSkyblockHook;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -58,7 +56,7 @@ public final class ProvidersHandler implements ProvidersManager {
             }
 
             if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
-                SuperiorSkyblockHook.register(plugin);
+                registerHook("SuperiorSkyblockHook");
 
             if (Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
                 registerHook("ChestShopHook");
@@ -207,8 +205,10 @@ public final class ProvidersHandler implements ProvidersManager {
         if (Bukkit.getPluginManager().isPluginEnabled("Vault"))
             bankProviderMap.put(DepositMethod.VAULT, new BankProvider_Vault());
 
-        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
-            bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, new BankProvider_SuperiorSkyblock());
+        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
+            Optional<BankProvider> bankProvider = createInstance("BankProvider_SuperiorSkyblock");
+            bankProvider.ifPresent(provider -> bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, provider));
+        }
     }
 
     private void registerHook(String className) {

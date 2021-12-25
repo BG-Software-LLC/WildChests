@@ -20,4 +20,5 @@ include 'Hook_Essentials'
 include 'Hook_QuantumShop'
 include 'Hook_ShopGUIPlus14'
 include 'Hook_ShopGUIPlus12'
+include 'Hook_SuperiorSkyblock'
 
