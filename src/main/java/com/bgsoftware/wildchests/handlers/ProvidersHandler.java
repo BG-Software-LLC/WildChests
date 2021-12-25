@@ -8,7 +8,6 @@ import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.hooks.BankProvider_SuperiorSkyblock;
 import com.bgsoftware.wildchests.hooks.BankProvider_Vault;
-import com.bgsoftware.wildchests.hooks.ChestShopHook;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Essentials;
 import com.bgsoftware.wildchests.hooks.PricesProvider_QuantumShop;
@@ -28,16 +27,21 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public final class ProvidersHandler implements ProvidersManager {
+
+    private final WildChestsPlugin plugin;
 
     private final Map<DepositMethod, BankProvider> bankProviderMap = new EnumMap<>(DepositMethod.class);
     private final Map<UUID, PendingTransaction> pendingTransactions = new HashMap<>();
@@ -47,6 +51,8 @@ public final class ProvidersHandler implements ProvidersManager {
     private BankProvider customBankProvider = null;
 
     public ProvidersHandler(WildChestsPlugin plugin){
+        this.plugin = plugin;
+
         Executor.sync(() -> {
             registerPricesProvider(plugin);
             registerStackersProvider();
@@ -62,7 +68,7 @@ public final class ProvidersHandler implements ProvidersManager {
                 SuperiorSkyblockHook.register(plugin);
 
             if(Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
-                ChestShopHook.register(plugin);
+                registerHook("ChestShopHook");
         });
     }
 
@@ -205,6 +211,41 @@ public final class ProvidersHandler implements ProvidersManager {
 
         if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
             bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, new BankProvider_SuperiorSkyblock());
+    }
+
+    private void registerHook(String className) {
+        try {
+            Class<?> clazz = Class.forName("com.bgsoftware.wildchests.hooks." + className);
+            Method registerMethod = clazz.getMethod("register", WildChestsPlugin.class);
+            registerMethod.invoke(null, plugin);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private <T> Optional<T> createInstance(String className) {
+        try {
+            Class<?> clazz = Class.forName("com.bgsoftware.superiorskyblock.hooks.provider." + className);
+            try {
+                Method compatibleMethod = clazz.getDeclaredMethod("isCompatible");
+                if (!(boolean) compatibleMethod.invoke(null))
+                    return Optional.empty();
+            } catch (Exception ignored) {
+            }
+
+            try {
+                Constructor<?> constructor = clazz.getConstructor(WildChestsPlugin.class);
+                // noinspection unchecked
+                return Optional.of((T) constructor.newInstance(plugin));
+            } catch (Exception error) {
+                // noinspection unchecked
+                return Optional.of((T) clazz.newInstance());
+            }
+        } catch (ClassNotFoundException ignored) {
+            return Optional.empty();
+        } catch (Exception error) {
+            error.printStackTrace();
+            return Optional.empty();
+        }
     }
 
     public static final class TransactionResult<T>{
