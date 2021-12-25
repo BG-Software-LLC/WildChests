@@ -178,7 +178,7 @@ public final class ProvidersHandler implements ProvidersManager {
                 }
             case "ZSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
-                    //pricesProvider = new PricesProvider_zShop();
+                    pricesProvider = createInstance("PricesProvider_zShop");
                     break;
                 }
             case "ECONOMYSHOPGUI":
