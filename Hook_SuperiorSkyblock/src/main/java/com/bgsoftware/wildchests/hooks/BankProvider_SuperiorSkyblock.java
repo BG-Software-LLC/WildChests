@@ -24,4 +24,9 @@ public final class BankProvider_SuperiorSkyblock implements BankProvider {
         return bankTransaction.getFailureReason().isEmpty();
     }
 
+    @Override
+    public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money) {
+        throw new UnsupportedOperationException("This method is not supported for SuperiorSkyblock bank.");
+    }
+
 }

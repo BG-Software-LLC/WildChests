@@ -32,6 +32,7 @@ public final class BankProvider_Vault implements BankProvider {
         }
     }
 
+    @Override
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money) {
         if (!economy.hasAccount(offlinePlayer))
             economy.createPlayerAccount(offlinePlayer);

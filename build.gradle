@@ -80,7 +80,6 @@ dependencies {
     compileOnly 'org.spigotmc:v1_16_R3-Tuinity:latest'
 
     // Plugin Hooks
-    compileOnly "net.milkbowl:Vault:latest"
     compileOnly "com.bgsoftware:WildStackerAPI:latest"
     compileOnly "fr.maxlego08:zShop:latest"
 }

@@ -14,4 +14,12 @@ public interface BankProvider {
      */
     boolean depositMoney(OfflinePlayer offlinePlayer, BigDecimal money);
 
+    /**
+     * Withdraw money from a player.
+     * @param offlinePlayer The player to withdraw money from.
+     * @param money The amount of money to withdraw.
+     * @return Whether the transaction was successful or not.
+     */
+    boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money);
+
 }
