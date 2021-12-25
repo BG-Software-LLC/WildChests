@@ -172,7 +172,7 @@ public final class ProvidersHandler implements ProvidersManager {
 //                }
             case "QUANTUMSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
-                    //pricesProvider = new PricesProvider_QuantumShop();
+                    pricesProvider = createInstance("PricesProvider_QuantumShop");
                     break;
                 }
             case "ESSENTIALS":

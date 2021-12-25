@@ -80,8 +80,6 @@ dependencies {
     compileOnly 'org.spigotmc:v1_16_R3-Tuinity:latest'
 
     // Plugin Hooks
-    compileOnly "su.fogus:FogusCore:latest"
-    compileOnly "su.nightexpress:QuantumShop:latest"
     compileOnly "net.brcdev:ShopGUIPlus-1.43:latest"
     compileOnly "com.bgsoftware:SuperiorSkyblockAPI:latest"
     compileOnly "net.milkbowl:Vault:latest"

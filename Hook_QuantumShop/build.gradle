@@ -1,0 +1,14 @@
+group 'Hook_QuantumShop'
+
+dependencies {
+    compileOnly "su.fogus:FogusCore:latest"
+    compileOnly "su.nightexpress:QuantumShop:latest"
+    compileOnly "org.spigotmc:v1_16_R3:latest"
+    compileOnly project(":API")
+    compileOnly parent
+}
+
+if (project.hasProperty('hook.compile_quantumshop') &&
+        !Boolean.valueOf(project.findProperty("hook.compile_quantumshop").toString())) {
+    project.tasks.all { task -> task.enabled = false }
+}
