@@ -9,7 +9,6 @@
 
 rootProject.name = 'WildChests'
 include 'API'
-include 'Hook_ShopGUIPlusOld'
 include 'v1_8_R3'
 include 'v1_12_R1'
 include 'v1_15_R1'
