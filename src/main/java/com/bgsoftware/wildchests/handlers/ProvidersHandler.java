@@ -230,7 +230,7 @@ public final class ProvidersHandler implements ProvidersManager {
 
     private <T> Optional<T> createInstance(String className) {
         try {
-            Class<?> clazz = Class.forName("com.bgsoftware.superiorskyblock.hooks.provider." + className);
+            Class<?> clazz = Class.forName("com.bgsoftware.wildchests.hooks." + className);
             try {
                 Method compatibleMethod = clazz.getDeclaredMethod("isCompatible");
                 if (!(boolean) compatibleMethod.invoke(null))
