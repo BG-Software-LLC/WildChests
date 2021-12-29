@@ -5,7 +5,16 @@ main: com.bgsoftware.wildchests.WildChestsPlugin
 description: Sell wildchests, auto-crafters, pouches and more in one plugin!
 website: https://bg-software.com/
 author: Ome_R
-softdepend: [Essentials, ShopGUIPlus, Vault]
+
+softdepend:
+  - ChestShop
+  - EconomyShopGUI
+  - EconomyShopGUI-Premium
+  - Essentials
+  - QuantumShop
+  - ShopGUIPlus
+  - SuperiorSkyblock2
+
 commands:
   chests:
     description: Main command for the plugin
