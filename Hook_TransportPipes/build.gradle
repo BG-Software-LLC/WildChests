@@ -1,0 +1,13 @@
+group 'Hook_TransportPipes'
+
+dependencies {
+    compileOnly "de.robotricker.transportpipes:TransportPipes:5.4.0"
+    compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
+    compileOnly project(":API")
+    compileOnly parent
+}
+
+if (project.hasProperty('hook.compile_transportpipes') &&
+        !Boolean.valueOf(project.findProperty("hook.compile_transportpipes").toString())) {
+    project.tasks.all { task -> task.enabled = false }
+}

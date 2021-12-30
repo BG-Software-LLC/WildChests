@@ -6,8 +6,11 @@ import com.bgsoftware.wildchests.api.hooks.BankProvider;
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
+import com.bgsoftware.wildchests.hooks.listener.IChestBreakListener;
+import com.bgsoftware.wildchests.hooks.listener.IChestPlaceListener;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,8 +22,10 @@ import org.bukkit.plugin.Plugin;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,6 +44,9 @@ public final class ProvidersHandler implements ProvidersManager {
     private StackerProvider stackerProvider = new StackerProvider_Default();
     private BankProvider customBankProvider = null;
 
+    private final List<IChestPlaceListener> chestPlaceListeners = new ArrayList<>();
+    private final List<IChestBreakListener> chestBreakListeners = new ArrayList<>();
+
     public ProvidersHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
 
@@ -46,18 +54,13 @@ public final class ProvidersHandler implements ProvidersManager {
             registerPricesProvider(plugin);
             registerStackersProvider();
             registerBanksProvider();
+            registerGeneralHooks();
 
             if (bankProviderMap.isEmpty() && customBankProvider == null) {
                 WildChestsPlugin.log("");
                 WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
                 WildChestsPlugin.log("");
             }
-
-            if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
-                registerHook("SuperiorSkyblockHook");
-
-            if (Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
-                registerHook("ChestShopHook");
         });
     }
 
@@ -149,6 +152,22 @@ public final class ProvidersHandler implements ProvidersManager {
         pendingTransactions.clear();
     }
 
+    public void registerChestPlaceListener(IChestPlaceListener chestPlaceListener) {
+        this.chestPlaceListeners.add(chestPlaceListener);
+    }
+
+    public void notifyChestPlaceListeners(Chest chest) {
+        this.chestPlaceListeners.forEach(chestPlaceListener -> chestPlaceListener.placeChest(chest));
+    }
+
+    public void registerChestBreakListener(IChestBreakListener chestBreakListener) {
+        this.chestBreakListeners.add(chestBreakListener);
+    }
+
+    public void notifyChestBreakListeners(Chest chest) {
+        this.chestBreakListeners.forEach(chestBreakListener -> chestBreakListener.breakChest(chest));
+    }
+
     private void registerPricesProvider(WildChestsPlugin plugin) {
         if (!(pricesProvider instanceof PricesProvider_Default))
             return;
@@ -217,6 +236,17 @@ public final class ProvidersHandler implements ProvidersManager {
             Optional<BankProvider> bankProvider = createInstance("BankProvider_SuperiorSkyblock");
             bankProvider.ifPresent(provider -> bankProviderMap.put(DepositMethod.SUPERIORSKYBLOCK2, provider));
         }
+    }
+
+    private void registerGeneralHooks() {
+        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2"))
+            registerHook("SuperiorSkyblockHook");
+
+        if (Bukkit.getPluginManager().isPluginEnabled("ChestShop"))
+            registerHook("ChestShopHook");
+
+        if (Bukkit.getPluginManager().isPluginEnabled("TransportPipes"))
+            registerHook("TransportPipesHook");
     }
 
     private void registerHook(String className) {
