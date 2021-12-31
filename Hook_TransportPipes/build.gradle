@@ -1,5 +1,11 @@
 group 'Hook_TransportPipes'
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(16))
+    }
+}
+
 dependencies {
     compileOnly "de.robotricker.transportpipes:TransportPipes:5.4.0"
     compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
