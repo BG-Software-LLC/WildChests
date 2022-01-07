@@ -175,6 +175,11 @@ public final class ProvidersHandler implements ProvidersManager {
         Optional<PricesProvider> pricesProvider = Optional.empty();
 
         switch (plugin.getSettings().pricesProvider.toUpperCase()) {
+            case "CMI":
+                if (Bukkit.getPluginManager().isPluginEnabled("CMI")) {
+                    pricesProvider = createInstance("PricesProvider_CMI");
+                }
+                break;
             case "SHOPGUIPLUS":
                 if (Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
                     Plugin shopGUIPlus = Bukkit.getPluginManager().getPlugin("ShopGUIPlus");
@@ -183,29 +188,29 @@ public final class ProvidersHandler implements ProvidersManager {
                     } else {
                         pricesProvider = createInstance("PricesProvider_ShopGUIPlus14");
                     }
-                    break;
                 }
+                break;
             case "QUANTUMSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
                     pricesProvider = createInstance("PricesProvider_QuantumShop");
-                    break;
                 }
+                break;
             case "ESSENTIALS":
                 if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
                     pricesProvider = createInstance("PricesProvider_Essentials");
-                    break;
                 }
+                break;
             case "ZSHOP":
                 if (Bukkit.getPluginManager().isPluginEnabled("zShop")) {
                     pricesProvider = createInstance("PricesProvider_zShop");
-                    break;
                 }
+                break;
             case "ECONOMYSHOPGUI":
                 if (Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI") ||
                         Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI-Premium")) {
                     pricesProvider = createInstance("PricesProvider_EconomyShopGUI");
-                    break;
                 }
+                break;
         }
 
         if (!pricesProvider.isPresent()) {
