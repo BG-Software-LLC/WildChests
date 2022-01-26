@@ -7,6 +7,8 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.Optional;
+
 @SuppressWarnings("unused")
 public final class PricesProvider_EconomyShopGUI implements PricesProvider {
 
@@ -17,8 +19,8 @@ public final class PricesProvider_EconomyShopGUI implements PricesProvider {
     @Override
     public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
         Player player = offlinePlayer.getPlayer();
-        return player == null ? EconomyShopGUIHook.getItemSellPrice(itemStack) :
-                EconomyShopGUIHook.getItemSellPrice(player, itemStack);
+        return Optional.ofNullable(player == null ? EconomyShopGUIHook.getItemSellPrice(itemStack) :
+                EconomyShopGUIHook.getItemSellPrice(player, itemStack)).orElse(0D);
     }
 
 }
