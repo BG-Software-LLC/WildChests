@@ -252,6 +252,9 @@ public final class ProvidersHandler implements ProvidersManager {
 
         if (Bukkit.getPluginManager().isPluginEnabled("TransportPipes"))
             registerHook("TransportPipesHook");
+
+        if (Bukkit.getPluginManager().isPluginEnabled("CoreProtect"))
+            registerHook("CoreProtectHook");
     }
 
     private void registerHook(String className) {
