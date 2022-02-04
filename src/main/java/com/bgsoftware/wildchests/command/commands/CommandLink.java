@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.command.commands;
 
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
 import com.bgsoftware.wildchests.Locale;
@@ -83,12 +84,14 @@ public final class CommandLink implements ICommand {
             return;
         }
 
-        LinkedChest linkedChest = plugin.getChestsManager().getLinkedChest(targetBlock.getLocation());
+        Chest chest = plugin.getChestsManager().getChest(targetBlock.getLocation());
 
-        if(linkedChest == null){
+        if(!(chest instanceof LinkedChest)){
             Locale.NOT_LINKED_CHEST.send(player);
             return;
         }
+
+        LinkedChest linkedChest = (LinkedChest) chest;
 
         if(players.containsKey(player.getUniqueId())){
             LinkedChest originalChest = plugin.getChestsManager().getLinkedChest(players.get(player.getUniqueId()));
