@@ -9,6 +9,8 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -26,7 +28,7 @@ public final class BlockListener implements Listener {
     private final WildChestsPlugin plugin;
     private final BlockFace[] blockFaces = new BlockFace[]{BlockFace.WEST, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH};
 
-    public BlockListener(WildChestsPlugin plugin){
+    public BlockListener(WildChestsPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -37,10 +39,10 @@ public final class BlockListener implements Listener {
 
         boolean hasNearbyChest = false;
 
-        for(BlockFace blockFace : blockFaces){
+        for (BlockFace blockFace : blockFaces) {
             Block block = e.getBlockPlaced().getRelative(blockFace);
             Material blockMaterial = block.getType();
-            if(blockMaterial == Material.CHEST || blockMaterial == Material.TRAPPED_CHEST) {
+            if (blockMaterial == Material.CHEST || blockMaterial == Material.TRAPPED_CHEST) {
                 hasNearbyChest = true;
                 if (plugin.getChestsManager().getChest(block.getLocation()) != null) {
                     e.setCancelled(true);
@@ -51,15 +53,17 @@ public final class BlockListener implements Listener {
 
         ChestData chestData = plugin.getChestsManager().getChestData(e.getItemInHand());
 
-        if(chestData == null)
+        if (chestData == null)
             return;
 
-        if(hasNearbyChest){
+        if (hasNearbyChest) {
             e.setCancelled(true);
             return;
         }
 
         Chest chest = plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
+
+        plugin.getProviders().notifyChestPlaceListeners(chest);
 
         //chest.onPlace(e);
 
@@ -67,7 +71,7 @@ public final class BlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestBreak(BlockBreakEvent e){
+    public void onChestBreak(BlockBreakEvent e) {
         Chest chest = plugin.getChestsManager().getChest(e.getBlock().getLocation());
 
         if (chest == null)
@@ -75,21 +79,30 @@ public final class BlockListener implements Listener {
 
         e.setCancelled(true);
 
-        if(e.getPlayer().getGameMode() != GameMode.CREATIVE) {
+        if (e.getPlayer().getGameMode() != GameMode.CREATIVE) {
             ChestData chestData = chest.getData();
             ItemUtils.dropOrCollect(e.getPlayer(), chestData.getItemStack(), chestData.isAutoCollect(), chest.getLocation());
         }
 
         chest.onBreak(e);
 
+        plugin.getProviders().notifyChestBreakListeners(e.getPlayer(), chest);
+
         chest.remove();
         e.getBlock().setType(Material.AIR);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestExplode(EntityExplodeEvent e){
+    public void onChestExplode(EntityExplodeEvent e) {
         List<Block> blockList = new ArrayList<>(e.blockList());
-        for(Block block : blockList) {
+
+        Player sourcePlayer = null;
+
+        if (e.getEntity() instanceof TNTPrimed && ((TNTPrimed) e.getEntity()).getSource() instanceof Player) {
+            sourcePlayer = (Player) ((TNTPrimed) e.getEntity()).getSource();
+        }
+
+        for (Block block : blockList) {
             Chest chest = plugin.getChestsManager().getChest(block.getLocation());
 
             if (chest == null)
@@ -97,13 +110,15 @@ public final class BlockListener implements Listener {
 
             e.blockList().remove(block);
 
-            if(plugin.getSettings().explodeDropChance > 0 && (plugin.getSettings().explodeDropChance == 100 ||
+            if (plugin.getSettings().explodeDropChance > 0 && (plugin.getSettings().explodeDropChance == 100 ||
                     ThreadLocalRandom.current().nextInt(101) <= plugin.getSettings().explodeDropChance)) {
                 ChestData chestData = chest.getData();
                 ItemUtils.dropOrCollect(null, chestData.getItemStack(), false, chest.getLocation());
             }
 
-            chest.onBreak(new BlockBreakEvent(block, null));
+            chest.onBreak(new BlockBreakEvent(block, sourcePlayer));
+
+            plugin.getProviders().notifyChestBreakListeners(sourcePlayer, chest);
 
             chest.remove();
             block.setType(Material.AIR);
