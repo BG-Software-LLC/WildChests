@@ -164,8 +164,8 @@ public final class ProvidersHandler implements ProvidersManager {
         this.chestBreakListeners.add(chestBreakListener);
     }
 
-    public void notifyChestBreakListeners(Chest chest) {
-        this.chestBreakListeners.forEach(chestBreakListener -> chestBreakListener.breakChest(chest));
+    public void notifyChestBreakListeners(OfflinePlayer offlinePlayer, Chest chest) {
+        this.chestBreakListeners.forEach(chestBreakListener -> chestBreakListener.breakChest(offlinePlayer, chest));
     }
 
     private void registerPricesProvider(WildChestsPlugin plugin) {

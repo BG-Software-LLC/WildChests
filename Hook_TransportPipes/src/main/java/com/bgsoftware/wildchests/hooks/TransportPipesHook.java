@@ -10,6 +10,7 @@ import de.robotricker.transportpipes.location.BlockLocation;
 import de.robotricker.transportpipes.location.TPDirection;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
 import java.math.BigInteger;
@@ -29,18 +30,18 @@ public final class TransportPipesHook {
                     new WildChestTransportPipesContainer(chest),
                     new BlockLocation(chestLocation),
                     chestLocation.getWorld());
-        } catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
     }
 
-    private static void breakChest(Chest chest) {
+    private static void breakChest(OfflinePlayer offlinePlayer, Chest chest) {
         Location chestLocation = chest.getLocation();
         try {
             TransportPipesAPI.getInstance().unregisterTransportPipesContainer(
                     new BlockLocation(chestLocation),
                     chestLocation.getWorld());
-        } catch (Exception ignored){
+        } catch (Exception ignored) {
 
         }
     }
@@ -55,27 +56,25 @@ public final class TransportPipesHook {
 
         @Override
         public ItemStack extractItem(TPDirection tpDirection, int amount, ItemFilter itemFilter) {
-            if(chest instanceof StorageChest) {
+            if (chest instanceof StorageChest) {
                 BigInteger bigAmount = BigInteger.valueOf(amount);
                 ItemStack chestItem = ((StorageChest) chest).getItemStack().clone();
                 BigInteger chestAmount = ((StorageChest) chest).getAmount();
-                if(chestAmount.compareTo(bigAmount) >= 0 && itemFilter.applyFilter(chestItem).getWeight() > 0) {
+                if (chestAmount.compareTo(bigAmount) >= 0 && itemFilter.applyFilter(chestItem).getWeight() > 0) {
                     ((StorageChest) chest).setAmount(chestAmount.subtract(bigAmount));
                     chestItem.setAmount(amount);
                     return chestItem;
                 }
-            }
-            else {
+            } else {
                 ItemStack[] chestItems = chest.getContents();
-                for(int i = 0; i < chestItems.length; ++i) {
+                for (int i = 0; i < chestItems.length; ++i) {
                     ItemStack itemStack = chestItems[i];
-                    if(itemStack != null && itemFilter.applyFilter(itemStack).getWeight() > 0) {
-                        if(itemStack.getAmount() <= amount) {
+                    if (itemStack != null && itemFilter.applyFilter(itemStack).getWeight() > 0) {
+                        if (itemStack.getAmount() <= amount) {
                             ItemStack clonedItem = itemStack.clone();
                             chest.setItem(i, new ItemStack(Material.AIR));
                             return clonedItem;
-                        }
-                        else {
+                        } else {
                             ItemStack clonedItem = itemStack.clone();
                             clonedItem.setAmount(amount);
                             itemStack.setAmount(itemStack.getAmount() - amount);
