@@ -12,7 +12,7 @@ public final class LinkedChestsContainer {
     private final Set<LinkedChest> linkedChests = new HashSet<>();
     private final LinkedChest sourceChest;
 
-    public LinkedChestsContainer(LinkedChest sourceChest){
+    public LinkedChestsContainer(LinkedChest sourceChest) {
         this.sourceChest = sourceChest;
         linkedChests.add(sourceChest);
     }
@@ -21,20 +21,25 @@ public final class LinkedChestsContainer {
         return sourceChest;
     }
 
-    public void linkChest(LinkedChest linkedChest){
+    public void linkChest(LinkedChest linkedChest) {
         linkedChests.add(linkedChest);
     }
 
-    public void unlinkChest(LinkedChest linkedChest){
-        if(linkedChest == sourceChest){
+    public void unlinkChest(LinkedChest linkedChest) {
+        if (linkedChest == sourceChest) {
             linkedChests.forEach(_linkedChest -> _linkedChest.linkIntoChest(null));
-        }
-        else {
+            linkedChests.clear();
+        } else {
             linkedChests.remove(linkedChest);
         }
     }
 
     public List<LinkedChest> getLinkedChests() {
-        return new ArrayList<>(linkedChests);
+        return new ArrayList<>(this.linkedChests);
     }
+
+    public boolean isLinkedChest(LinkedChest linkedChest) {
+        return linkedChest == sourceChest || this.linkedChests.contains(linkedChest);
+    }
+
 }
