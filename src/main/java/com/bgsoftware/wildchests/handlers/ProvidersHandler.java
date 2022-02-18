@@ -12,6 +12,7 @@ import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
 import com.bgsoftware.wildchests.hooks.listener.IChestBreakListener;
 import com.bgsoftware.wildchests.hooks.listener.IChestPlaceListener;
 import com.bgsoftware.wildchests.utils.Executor;
+import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -42,7 +43,6 @@ public final class ProvidersHandler implements ProvidersManager {
 
     private PricesProvider pricesProvider = new PricesProvider_Default();
     private StackerProvider stackerProvider = new StackerProvider_Default();
-    private BankProvider customBankProvider = null;
 
     private final List<IChestPlaceListener> chestPlaceListeners = new ArrayList<>();
     private final List<IChestBreakListener> chestBreakListeners = new ArrayList<>();
@@ -56,7 +56,7 @@ public final class ProvidersHandler implements ProvidersManager {
             registerBanksProvider();
             registerGeneralHooks();
 
-            if (bankProviderMap.isEmpty() && customBankProvider == null) {
+            if (bankProviderMap.isEmpty()) {
                 WildChestsPlugin.log("");
                 WildChestsPlugin.log("If you want sell-chests to be enabled, please install Vault & Economy plugin.");
                 WildChestsPlugin.log("");
@@ -76,7 +76,8 @@ public final class ProvidersHandler implements ProvidersManager {
 
     @Override
     public void setBanksProvider(BankProvider banksProvider) {
-        this.customBankProvider = banksProvider;
+        Preconditions.checkNotNull(banksProvider, "bankProvider parameter cannot be null.");
+        bankProviderMap.put(DepositMethod.CUSTOM, banksProvider);
     }
 
     /*
@@ -129,7 +130,7 @@ public final class ProvidersHandler implements ProvidersManager {
     }
 
     public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money) {
-        BankProvider bankProvider = bankProviderMap.getOrDefault(depositMethod, customBankProvider);
+        BankProvider bankProvider = bankProviderMap.get(depositMethod);
 
         if (bankProvider == null)
             return false;
