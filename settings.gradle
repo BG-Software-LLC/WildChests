@@ -18,4 +18,5 @@ include 'v1_18_R1'
 include 'Hook_TransportPipes'
 include 'Hook_CMI'
 include 'Hook_CoreProtect'
+include 'v1_18_R2'
 
