@@ -41,6 +41,22 @@ public final class NMSMappings_v1_18_R2 {
         return itemStack.b(nbtTagCompound);
     }
 
+    public static NBTTagCompound getTag(ItemStack itemStack) {
+        return itemStack.t();
+    }
+
+    public static NBTTagCompound getOrCreateTag(ItemStack itemStack) {
+        return itemStack.t();
+    }
+
+    public static int getCount(ItemStack itemStack) {
+        return itemStack.I();
+    }
+
+    public static void subtract(ItemStack itemStack, int amount) {
+        itemStack.g(amount);
+    }
+
     public static void setInt(NBTTagCompound nbtTagCompound, String key, int value) {
         nbtTagCompound.a(key, value);
     }
@@ -61,32 +77,8 @@ public final class NMSMappings_v1_18_R2 {
         return nbtTagCompound.p(key);
     }
 
-    public static TileEntity getTileEntity(World world, BlockPosition blockPosition) {
-        return world.c_(blockPosition);
-    }
-
-    public static void playBlockAction(World world, BlockPosition blockPosition, Block block, int i, int j) {
-        world.a(blockPosition, block, i, j);
-    }
-
-    public static IBlockData getBlock(TileEntity tileEntity) {
-        return tileEntity.q();
-    }
-
-    public static Block getBlock(IBlockData blockData) {
-        return blockData.b();
-    }
-
-    public static NBTTagCompound getTag(ItemStack itemStack) {
-        return itemStack.t();
-    }
-
     public static String getString(NBTTagCompound nbtTagCompound, String key) {
         return nbtTagCompound.l(key);
-    }
-
-    public static NBTTagCompound getOrCreateTag(ItemStack itemStack) {
-        return itemStack.t();
     }
 
     public static void setString(NBTTagCompound nbtTagCompound, String key, String value) {
@@ -101,36 +93,64 @@ public final class NMSMappings_v1_18_R2 {
         return nbtTagCompound.c(key, type);
     }
 
-    public static NBTTagCompound getCompound(NBTTagList nbtTagList, int index) {
-        return nbtTagList.a(index);
-    }
-
     public static byte getByte(NBTTagCompound nbtTagCompound, String key) {
         return nbtTagCompound.f(key);
     }
 
-    public static void drop(EntityHuman entityHuman, ItemStack itemStack, boolean flag) {
-        entityHuman.a(itemStack, flag);
+    public static TileEntity getTileEntity(World world, BlockPosition blockPosition) {
+        return world.c_(blockPosition);
+    }
+
+    public static void playBlockAction(World world, BlockPosition blockPosition, Block block, int i, int j) {
+        world.a(blockPosition, block, i, j);
     }
 
     public static void removeTileEntity(World world, BlockPosition blockPosition) {
         world.m(blockPosition);
     }
 
-    public static void setTileEntity(WorldServer worldServer, TileEntity tileEntity) {
-        worldServer.a(tileEntity);
-    }
-
     public static Chunk getChunkAtWorldCoords(World world, BlockPosition blockPosition) {
         return world.l(blockPosition);
     }
 
-    public static void sendPacket(PlayerConnection playerConnection, Packet<?> packet) {
-        playerConnection.a(packet);
+    public static IBlockData getType(World world, BlockPosition blockPosition) {
+        return world.a_(blockPosition);
+    }
+
+    public static void applyPhysics(World world, BlockPosition blockPosition, Block block) {
+        world.b(blockPosition, block);
+    }
+
+    public static IBlockData getBlock(TileEntity tileEntity) {
+        return tileEntity.q();
+    }
+
+    public static Block getBlock(IBlockData blockData) {
+        return blockData.b();
+    }
+
+    public static NBTTagCompound getCompound(NBTTagList nbtTagList, int index) {
+        return nbtTagList.a(index);
+    }
+
+    public static void drop(EntityHuman entityHuman, ItemStack itemStack, boolean flag) {
+        entityHuman.a(itemStack, flag);
     }
 
     public static PlayerInventory getInventory(EntityHuman entityHuman) {
         return entityHuman.fr();
+    }
+
+    public static boolean isSpectator(EntityHuman entityHuman) {
+        return entityHuman.B_();
+    }
+
+    public static void setTileEntity(WorldServer worldServer, TileEntity tileEntity) {
+        worldServer.a(tileEntity);
+    }
+
+    public static void sendPacket(PlayerConnection playerConnection, Packet<?> packet) {
+        playerConnection.a(packet);
     }
 
     public static Containers<?> getType(Container container) {
@@ -139,14 +159,6 @@ public final class NMSMappings_v1_18_R2 {
 
     public static void initMenu(EntityPlayer entityPlayer, Container container) {
         entityPlayer.a(container);
-    }
-
-    public static IBlockData getType(World world, BlockPosition blockPosition) {
-        return world.a_(blockPosition);
-    }
-
-    public static boolean isSpectator(EntityHuman entityHuman) {
-        return entityHuman.B_();
     }
 
     public static int getX(BaseBlockPosition baseBlockPosition) {
@@ -183,18 +195,6 @@ public final class NMSMappings_v1_18_R2 {
 
     public static double locZ(Entity entity) {
         return getPositionVector(entity).d;
-    }
-
-    public static void applyPhysics(World world, BlockPosition blockPosition, Block block) {
-        world.b(blockPosition, block);
-    }
-
-    public static int getCount(ItemStack itemStack) {
-        return itemStack.I();
-    }
-
-    public static void subtract(ItemStack itemStack, int amount) {
-        itemStack.g(amount);
     }
 
 }
