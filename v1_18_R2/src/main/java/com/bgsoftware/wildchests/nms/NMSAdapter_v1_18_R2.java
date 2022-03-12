@@ -78,12 +78,12 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
         DataOutput dataOutput = new DataOutputStream(outputStream);
 
         NBTTagCompound tagCompound = new NBTTagCompound();
-        setInt(tagCompound, "Length", inventories.length);
+        putInt(tagCompound, "Length", inventories.length);
 
         for(int slot = 0; slot < inventories.length; slot++) {
             NBTTagCompound inventoryCompound = new NBTTagCompound();
             serialize(inventories[slot], inventoryCompound);
-            set(tagCompound, slot + "", inventoryCompound);
+            put(tagCompound, slot + "", inventoryCompound);
         }
 
         try {
@@ -115,7 +115,7 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
             inventories = new InventoryHolder[length];
 
             for(int i = 0; i < length; i++){
-                if(hasKey(tagCompound, i + "")) {
+                if(contains(tagCompound, i + "")) {
                     NBTTagCompound nbtTagCompound = getCompound(tagCompound, i + "");
                     inventories[i] = deserialize(nbtTagCompound);
                 }
@@ -169,9 +169,9 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
     public void playChestAction(Location location, boolean open) {
         World world = ((CraftWorld) location.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
-        TileEntityChest tileChest = (TileEntityChest) getTileEntity(world, blockPosition);
+        TileEntityChest tileChest = (TileEntityChest) getBlockEntity(world, blockPosition);
         if(tileChest != null)
-            playBlockAction(world, blockPosition, getBlock(getBlock(tileChest)), 1, open ? 1 : 0);
+            blockEvent(world, blockPosition, getBlock(NMSMappings_v1_18_R2.getBlockState(tileChest)), 1, open ? 1 : 0);
     }
 
     @Override
@@ -188,7 +188,7 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
     public String getChestName(org.bukkit.inventory.ItemStack itemStack) {
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound tagCompound = getTag(nmsItem);
-        return tagCompound == null || !hasKey(tagCompound, "chest-name") ? null :
+        return tagCompound == null || !contains(tagCompound, "chest-name") ? null :
                 getString(tagCompound, "chest-name");
     }
 
@@ -202,7 +202,7 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack itemStack, String key, String value){
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
         NBTTagCompound tagCompound = getOrCreateTag(nmsItem);
-        setString(tagCompound, key, value);
+        putString(tagCompound, key, value);
         return CraftItemStack.asCraftMirror(nmsItem);
     }
 
@@ -213,14 +213,14 @@ public final class NMSAdapter_v1_18_R2 implements NMSAdapter {
         for(int i = 0; i < items.length; ++i) {
             if (items[i] != null) {
                 NBTTagCompound nbtTagCompound = new NBTTagCompound();
-                setByte(nbtTagCompound, "Slot", (byte) i);
+                putByte(nbtTagCompound, "Slot", (byte) i);
                 save(CraftItemStack.asNMSCopy(items[i]), nbtTagCompound);
                 itemsList.add(nbtTagCompound);
             }
         }
 
-        setInt(tagCompound, "Size", inventory.getSize());
-        set(tagCompound, "Items", itemsList);
+        putInt(tagCompound, "Size", inventory.getSize());
+        put(tagCompound, "Items", itemsList);
     }
 
     private static InventoryHolder deserialize(NBTTagCompound tagCompound){

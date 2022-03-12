@@ -80,7 +80,7 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         Location loc = chest.getLocation();
         WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        TileEntity tileEntity = getTileEntity(world, blockPosition);
+        TileEntity tileEntity = getBlockEntity(world, blockPosition);
 
         TileEntityWildChest tileEntityWildChest;
 
@@ -90,9 +90,9 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         }
         else {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
-            NMSMappings_v1_18_R2.removeTileEntity(world, blockPosition);
-            setTileEntity(world, tileEntityWildChest);
-            Chunk chunk = getChunkAtWorldCoords(world, blockPosition);
+            NMSMappings_v1_18_R2.removeBlockEntity(world, blockPosition);
+            setBlockEntity(world, tileEntityWildChest);
+            Chunk chunk = getChunkAt(world, blockPosition);
             world.a(CREATE_TICKING_BLOCK.invoke(chunk, tileEntityWildChest, tileEntityWildChest));
         }
     }
@@ -102,9 +102,9 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         Location loc = chest.getLocation();
         WorldServer world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-        TileEntity currentTileEntity = getTileEntity(world, blockPosition);
+        TileEntity currentTileEntity = getBlockEntity(world, blockPosition);
         if(currentTileEntity instanceof TileEntityWildChest)
-            NMSMappings_v1_18_R2.removeTileEntity(world, blockPosition);
+            NMSMappings_v1_18_R2.removeBlockEntity(world, blockPosition);
     }
 
     @Override
@@ -136,7 +136,7 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         // Cursor item is not updated, so we need to update it manually
         org.bukkit.inventory.ItemStack cursorItem = player.getItemOnCursor();
 
-        sendPacket(entityPlayer.b, new PacketPlayOutOpenWindow(container.j, getType(container), container.getTitle()));
+        send(entityPlayer.b, new PacketPlayOutOpenWindow(container.j, getType(container), container.getTitle()));
         entityPlayer.bV = container;
         initMenu(entityPlayer, container);
 
@@ -179,11 +179,11 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         private boolean autoSellMode = false;
 
         private TileEntityWildChest(Chest chest, World world, BlockPosition blockPosition){
-            super(blockPosition, getType(world, blockPosition));
+            super(blockPosition, getBlockState(world, blockPosition));
             this.chest = chest;
             this.n = world;
-            this.tileEntityChest = new TileEntityChest(blockPosition, getBlock(this));
-            isTrappedChest = getBlock(getBlock(this)) == Blocks.fE;
+            this.tileEntityChest = new TileEntityChest(blockPosition, NMSMappings_v1_18_R2.getBlockState(this));
+            isTrappedChest = getBlock(NMSMappings_v1_18_R2.getBlockState(this)) == Blocks.fE;
             ((WChest) chest).setTileEntityContainer(this);
             updateData();
         }
@@ -324,10 +324,10 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
             if(--currentCooldown >= 0)
                 return;
 
-            Block currentBlock = getBlock(getType(this.n, this.o));
+            Block currentBlock = getBlock(getBlockState(this.n, this.o));
 
             if(((WChest) chest).isRemoved() || (currentBlock != Blocks.bX && currentBlock != Blocks.fE)){
-                NMSMappings_v1_18_R2.removeTileEntity(this.n, this.o);
+                NMSMappings_v1_18_R2.removeBlockEntity(this.n, this.o);
                 return;
             }
 
@@ -336,7 +336,7 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
             if(suctionItems != null) {
                 for (EntityItem entityItem : this.n.a(EntityItem.class, suctionItems, entityItem ->
                         ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData))) {
-                    org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(getItemStack(entityItem));
+                    org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(getItem(entityItem));
                     Item item = (Item) entityItem.getBukkitEntity();
 
                     itemStack.setAmount(plugin.getProviders().getItemAmount(item));
@@ -345,9 +345,9 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
 
                     if (remainingItem == null) {
                         ((WorldServer) this.n).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
-                                locX(entityItem), locY(entityItem), locZ(entityItem),
+                                NMSMappings_v1_18_R2.getX(entityItem), NMSMappings_v1_18_R2.getY(entityItem), NMSMappings_v1_18_R2.getZ(entityItem),
                                 0, 0.0, 0.0, 0.0, 1.0, false);
-                        die(entityItem);
+                        discard(entityItem);
                     } else {
                         plugin.getProviders().setItemAmount(item, remainingItem.getAmount());
                     }
@@ -426,17 +426,17 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
         }
 
         private void playOpenSound(SoundEffect soundEffect){
-            a(this.n, this.o, getBlock(this), soundEffect);
+            a(this.n, this.o, NMSMappings_v1_18_R2.getBlockState(this), soundEffect);
         }
 
         private void onOpen() {
-            Block block = getBlock(getBlock(this));
+            Block block = getBlock(NMSMappings_v1_18_R2.getBlockState(this));
             if (block instanceof BlockChest) {
                 if (!this.f.opened) {
-                    playBlockAction(this.n, this.o, block, 1, this.viewingCount);
+                    blockEvent(this.n, this.o, block, 1, this.viewingCount);
                 }
 
-                applyPhysics(this.n, this.o, block);
+                updateNeighborsAt(this.n, this.o, block);
             }
         }
 
@@ -493,7 +493,7 @@ public final class NMSInventory_v1_18_R2 implements NMSInventory {
                     result = stack;
                 } else {
                     result = CraftItemStack.copyNMSStack(stack, amount);
-                    subtract(stack, amount);
+                    shrink(stack, amount);
                 }
 
                 if(update)
