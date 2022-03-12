@@ -37,7 +37,7 @@ public final class CoreProtectHook {
 
         if (coreProtectAPI.APIVersion() == 5) {
             coreProtectAPI.logRemoval(offlinePlayer.getName(), location, Material.CHEST, (byte) 0);
-        } else if (coreProtectAPI.APIVersion() <= 8) {
+        } else if (coreProtectAPI.APIVersion() <= 9) {
             coreProtectAPI.logRemoval(offlinePlayer.getName(), location, Material.CHEST,
                     Material.CHEST.createBlockData());
         } else if (!warningDisplayed) {
