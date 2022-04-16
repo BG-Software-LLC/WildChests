@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public final class TransportPipesHook {
         }
     }
 
-    private static void breakChest(OfflinePlayer offlinePlayer, Chest chest) {
+    private static void breakChest(@Nullable OfflinePlayer offlinePlayer, Chest chest) {
         Location chestLocation = chest.getLocation();
         try {
             TransportPipesAPI.getInstance().unregisterTransportPipesContainer(

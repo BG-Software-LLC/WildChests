@@ -11,6 +11,8 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nullable;
+
 @SuppressWarnings({"deprecation", "unused"})
 public final class CoreProtectHook {
 
@@ -25,7 +27,10 @@ public final class CoreProtectHook {
         plugin.getProviders().registerChestBreakListener(CoreProtectHook::recordBlockBreak);
     }
 
-    public static void recordBlockBreak(OfflinePlayer offlinePlayer, Chest chest) {
+    public static void recordBlockBreak(@Nullable OfflinePlayer offlinePlayer, Chest chest) {
+        if(offlinePlayer == null) // We don't want entities to record block breaks
+            return;
+
         if (!Bukkit.isPrimaryThread()) {
             Executor.sync(() -> recordBlockBreak(offlinePlayer, chest));
             return;

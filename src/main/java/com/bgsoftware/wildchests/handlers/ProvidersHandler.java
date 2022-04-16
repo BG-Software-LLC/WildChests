@@ -20,6 +20,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -165,7 +166,7 @@ public final class ProvidersHandler implements ProvidersManager {
         this.chestBreakListeners.add(chestBreakListener);
     }
 
-    public void notifyChestBreakListeners(OfflinePlayer offlinePlayer, Chest chest) {
+    public void notifyChestBreakListeners(@Nullable OfflinePlayer offlinePlayer, Chest chest) {
         this.chestBreakListeners.forEach(chestBreakListener -> chestBreakListener.breakChest(offlinePlayer, chest));
     }
 
