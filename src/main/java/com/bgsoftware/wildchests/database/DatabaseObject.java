@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.database;
 
 import java.util.EnumMap;
+import java.util.Optional;
 
 public abstract class DatabaseObject {
 
@@ -41,12 +42,7 @@ public abstract class DatabaseObject {
     }
 
     public void setUpdated(Query query){
-        int calls = modifiedCalls.getOrDefault(query, 0) - 1;
-
-        if(calls <= 0)
-            modifiedCalls.remove(query);
-        else
-            modifiedCalls.put(query, calls);
+        Optional.of(modifiedCalls.get(query)).ifPresent(calls -> modifiedCalls.put(query, calls - 1));
     }
 
     public boolean isModified(){
