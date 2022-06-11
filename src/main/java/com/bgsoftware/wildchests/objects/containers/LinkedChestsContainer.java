@@ -3,18 +3,16 @@ package com.bgsoftware.wildchests.objects.containers;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public final class LinkedChestsContainer {
 
-    private final Set<LinkedChest> linkedChests = new HashSet<>();
+    private final List<LinkedChest> linkedChests = new ArrayList<>();
     private final LinkedChest sourceChest;
 
     public LinkedChestsContainer(LinkedChest sourceChest) {
         this.sourceChest = sourceChest;
-        linkedChests.add(sourceChest);
     }
 
     public LinkedChest getSourceChest() {
@@ -35,7 +33,7 @@ public final class LinkedChestsContainer {
     }
 
     public List<LinkedChest> getLinkedChests() {
-        return new ArrayList<>(this.linkedChests);
+        return Collections.unmodifiableList(this.linkedChests);
     }
 
     public boolean isLinkedChest(LinkedChest linkedChest) {
