@@ -1,9 +1,11 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
+import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.DatabaseObject;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.SQLHelper;
@@ -20,8 +22,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.objects.data.ChestData;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -41,21 +41,21 @@ public final class DataHandler {
 
     private final WildChestsPlugin plugin;
 
-    public DataHandler(WildChestsPlugin plugin){
+    public DataHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
         Executor.sync(() -> {
             try {
                 SQLHelper.createConnection(plugin);
                 loadDatabase();
                 loadOldDatabase();
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
                 Executor.sync(() -> Bukkit.getPluginManager().disablePlugin(plugin));
             }
         }, 2L);
     }
 
-    public void saveDatabase(Chunk chunk, boolean async){
+    public void saveDatabase(Chunk chunk, boolean async) {
         List<Chest> chestList = chunk == null ? plugin.getChestsManager().getChests() : plugin.getChestsManager().getChests(chunk);
 
         List<Chest> regularModifiedChests = chestList.stream()
@@ -68,21 +68,21 @@ public final class DataHandler {
                 .filter(chest -> chest.getChestType() == ChestType.LINKED_CHEST)
                 .collect(Collectors.toList());
 
-        if(!regularModifiedChests.isEmpty()){
+        if (!regularModifiedChests.isEmpty()) {
             StatementHolder chestsUpdateHolder = Query.REGULAR_CHEST_UPDATE_INVENTORIES.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             regularModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
             chestsUpdateHolder.execute(async);
         }
 
-        if(!storageModifiedChests.isEmpty()){
+        if (!storageModifiedChests.isEmpty()) {
             StatementHolder chestsUpdateHolder = Query.STORAGE_UNIT_UPDATE_ITEM.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             storageModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
             chestsUpdateHolder.execute(async);
         }
 
-        if(!linkedChestsModifiedChests.isEmpty()){
+        if (!linkedChestsModifiedChests.isEmpty()) {
             StatementHolder chestsUpdateHolder = Query.LINKED_CHEST_UPDATE_INVENTORIES.getStatementHolder(null);
             chestsUpdateHolder.prepareBatch();
             linkedChestsModifiedChests.forEach(chest -> ((DatabaseObject) chest).setUpdateStatement(chestsUpdateHolder).addBatch());
@@ -91,11 +91,11 @@ public final class DataHandler {
 
     }
 
-    public void insertChest(WChest chest){
+    public void insertChest(WChest chest) {
         chest.executeInsertStatement(true);
     }
 
-    private void loadDatabase(){
+    private void loadDatabase() {
         //Creating default tables
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR);");
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS linked_chests (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, inventories VARCHAR, linked_chest VARCHAR);");
@@ -112,14 +112,14 @@ public final class DataHandler {
         updateContentsChests.forEach(chest -> ((WChest) chest).executeUpdateStatement(false));
 
         Executor.sync(() -> {
-            for(World world : Bukkit.getWorlds()){
-                for(Chunk chunk : world.getLoadedChunks())
+            for (World world : Bukkit.getWorlds()) {
+                for (Chunk chunk : world.getLoadedChunks())
                     ChunksListener.handleChunkLoad(plugin, chunk);
             }
         }, 1L);
     }
 
-    private void loadResultSet(ResultSet resultSet, String tableName, List<Chest> updateContentsChests) throws SQLException{
+    private void loadResultSet(ResultSet resultSet, String tableName, List<Chest> updateContentsChests) throws SQLException {
         while (resultSet.next()) {
             UUID placer = UUID.fromString(resultSet.getString("placer"));
             String stringLocation = resultSet.getString("location");
@@ -133,34 +133,32 @@ public final class DataHandler {
                     ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
                     WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
 
-                    if(chest instanceof StorageChest){
+                    if (chest instanceof StorageChest) {
                         String item = resultSet.getString("item");
                         String amount = resultSet.getString("amount");
                         String maxAmount = resultSet.getString("max_amount");
                         ((WStorageChest) chest).loadFromData(item, amount, maxAmount);
-                    }
-                    else{
+                    } else {
                         String serialized = resultSet.getString("inventories");
-                        if(chest instanceof LinkedChest){
+                        if (chest instanceof LinkedChest) {
                             String linkedChest = resultSet.getString("linked_chest");
                             ((WLinkedChest) chest).loadFromData(serialized, linkedChest);
-                        }
-                        else{
+                        } else {
                             ((WRegularChest) chest).loadFromData(serialized);
                         }
 
-                        if(serialized.toCharArray()[0] != '*')
+                        if (!serialized.isEmpty() && serialized.toCharArray()[0] != '*')
                             updateContentsChests.add(chest);
                     }
                 }
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 errorMessage = ex.getMessage();
             }
 
-            if(errorMessage != null) {
+            if (errorMessage != null) {
                 WildChestsPlugin.log("Couldn't load the location " + stringLocation);
                 WildChestsPlugin.log(errorMessage);
-                if(errorMessage.contains("Null") && plugin.getSettings().invalidWorldDelete){
+                if (errorMessage.contains("Null") && plugin.getSettings().invalidWorldDelete) {
                     SQLHelper.executeUpdate("DELETE FROM " + tableName + " WHERE location = '" + stringLocation + "';");
                     WildChestsPlugin.log("Deleted spawner (" + stringLocation + ") from database.");
                 }
@@ -168,15 +166,15 @@ public final class DataHandler {
         }
     }
 
-    private void loadOldDatabase(){
+    private void loadOldDatabase() {
         File dataFolder = new File(plugin.getDataFolder(), "data");
 
-        if(!dataFolder.exists())
+        if (!dataFolder.exists())
             return;
 
         YamlConfiguration cfg;
 
-        for(File chestFile : dataFolder.listFiles()){
+        for (File chestFile : dataFolder.listFiles()) {
             try {
                 cfg = YamlConfiguration.loadConfiguration(chestFile);
 
@@ -188,7 +186,7 @@ public final class DataHandler {
                 chest.loadFromFile(cfg);
 
                 chestFile.delete();
-            }catch(Exception ex){
+            } catch (Exception ex) {
                 WildChestsPlugin.log("Looks like the file " + chestFile.getName() + " is corrupted. Creating a backup file...");
                 File backupFile = new File(plugin.getDataFolder(), "data-backup/" + chestFile.getName());
                 copyFiles(chestFile, backupFile);
@@ -196,15 +194,15 @@ public final class DataHandler {
             }
         }
 
-        if(dataFolder.listFiles().length == 0)
+        if (dataFolder.listFiles().length == 0)
             dataFolder.delete();
     }
 
-    private void copyFiles(File src, File dst){
+    private void copyFiles(File src, File dst) {
         try {
-            if(!src.exists())
+            if (!src.exists())
                 return;
-            if(!dst.exists()){
+            if (!dst.exists()) {
                 dst.getParentFile().mkdirs();
                 dst.createNewFile();
             }
@@ -213,14 +211,14 @@ public final class DataHandler {
             BufferedWriter writer = new BufferedWriter(new FileWriter(dst));
 
             String line;
-            while((line = reader.readLine()) != null){
+            while ((line = reader.readLine()) != null) {
                 writer.write(line);
                 writer.write(System.getProperty("line.separator"));
             }
 
             reader.close();
             writer.close();
-        }catch(IOException ex){
+        } catch (IOException ex) {
             WildChestsPlugin.log("Couldn't create a backup file of " + src.getName() + "...");
             ex.printStackTrace();
         }
