@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +30,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     @Override
     public void linkIntoChest(LinkedChest linkedChest) {
         if (linkedChest == null) {
-            if(linkedChestsContainer != null)
+            if (linkedChestsContainer != null)
                 linkedChestsContainer.unlinkChest(this);
             linkedChestsContainer = null;
             saveLinkedChest();
@@ -49,16 +48,20 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
             ((WLinkedChest) linkedChest).linkedChestsContainer = linkedChestsContainer;
 
             linkedChestsContainer.linkChest(linkedChest);
+
+            ((WLinkedChest) linkedChest).inventories = this.inventories;
         } else {
-            if(otherContainer.isLinkedChest(this))
+            if (otherContainer.isLinkedChest(this))
                 return;
 
             otherContainer.linkChest(this);
 
-            if(linkedChestsContainer != null)
+            if (linkedChestsContainer != null)
                 linkedChestsContainer.unlinkChest(this);
 
             linkedChestsContainer = otherContainer;
+
+            this.inventories = ((WLinkedChest) linkedChest).inventories;
         }
 
         ((WLinkedChest) linkedChest).saveLinkedChest();
@@ -90,25 +93,6 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     }
 
     @Override
-    public Inventory setPage(int page, int size, String title) {
-        if (isLinkedIntoChest()) {
-            return getLinkedChest().setPage(page, size, title);
-        } else {
-            return super.setPage(page, size, title);
-        }
-    }
-
-    @Override
-    public Inventory getPage(int index) {
-        return !isLinkedIntoChest() ? super.getPage(index) : getLinkedChest().getPage(index);
-    }
-
-    @Override
-    public int getPagesAmount() {
-        return !isLinkedIntoChest() ? super.getPagesAmount() : getLinkedChest().getPagesAmount();
-    }
-
-    @Override
     public void remove() {
         super.remove();
         //We want to unlink all linked chests only if that's the original chest
@@ -132,6 +116,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
                 getAllLinkedChests().forEach(linkedChest -> plugin.getNMSAdapter().playChestAction(linkedChest.getLocation(), true));
             return true;
         }
+
         return false;
     }
 
@@ -142,6 +127,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
                 getAllLinkedChests().forEach(linkedChest -> plugin.getNMSAdapter().playChestAction(linkedChest.getLocation(), false));
             return true;
         }
+
         return true;
     }
 
@@ -157,6 +143,8 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
                     this.linkedChestsContainer = ((WLinkedChest) sourceChest).linkedChestsContainer;
                     this.linkedChestsContainer.linkChest(this);
+
+                    this.inventories = ((WLinkedChest) sourceChest).inventories;
                 }
             }, 1L);
         }
