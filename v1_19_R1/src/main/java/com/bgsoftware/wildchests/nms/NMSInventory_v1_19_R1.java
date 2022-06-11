@@ -183,7 +183,7 @@ public final class NMSInventory_v1_19_R1 implements NMSInventory {
             this.chest = chest;
             this.n = world;
             this.tileEntityChest = new TileEntityChest(blockPosition, NMSMappings_v1_19_R1.getBlockState(this));
-            isTrappedChest = getBlock(NMSMappings_v1_19_R1.getBlockState(this)) == Blocks.fE;
+            isTrappedChest = getBlock(NMSMappings_v1_19_R1.getBlockState(this)) == Blocks.fW;
             ((WChest) chest).setTileEntityContainer(this);
             updateData();
         }
@@ -326,7 +326,7 @@ public final class NMSInventory_v1_19_R1 implements NMSInventory {
 
             Block currentBlock = getBlock(getBlockState(this.n, this.o));
 
-            if(((WChest) chest).isRemoved() || (currentBlock != Blocks.bX && currentBlock != Blocks.fE)){
+            if(((WChest) chest).isRemoved() || (currentBlock != Blocks.cg && currentBlock != Blocks.fW)){
                 NMSMappings_v1_19_R1.removeBlockEntity(this.n, this.o);
                 return;
             }
