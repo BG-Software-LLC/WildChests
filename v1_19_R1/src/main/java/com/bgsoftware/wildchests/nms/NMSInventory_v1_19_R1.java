@@ -255,7 +255,7 @@ public final class NMSInventory_v1_19_R1 implements NMSInventory {
 
                 onOpen();
                 if(viewingCount <= 0)
-                    playOpenSound(SoundEffects.cO);
+                    playOpenSound(SoundEffects.cX);
             }
         }
 
@@ -290,7 +290,7 @@ public final class NMSInventory_v1_19_R1 implements NMSInventory {
 
                 onOpen();
                 if(viewingCount == 1)
-                    playOpenSound(SoundEffects.cQ);
+                    playOpenSound(SoundEffects.cZ);
             }
         }
 
