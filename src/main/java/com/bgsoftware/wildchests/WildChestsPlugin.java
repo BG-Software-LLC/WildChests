@@ -2,8 +2,8 @@ package com.bgsoftware.wildchests;
 
 import com.bgsoftware.common.updater.Updater;
 import com.bgsoftware.wildchests.api.WildChests;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.command.CommandsHandler;
 import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
@@ -18,7 +18,6 @@ import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.nms.NMSInventory;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -46,15 +45,22 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     private NMSAdapter nmsAdapter;
     private NMSInventory nmsInventory;
 
+    private boolean shouldEnable = true;
+
+    @Override
+    public void onLoad() {
+        plugin = this;
+        shouldEnable = loadNMSAdapter();
+    }
+
     @Override
     public void onEnable() {
-        plugin = this;
-        log("******** ENABLE START ********");
-
-        if(!loadNMSAdapter()){
+        if (!shouldEnable) {
             setEnabled(false);
             return;
         }
+
+        log("******** ENABLE START ********");
 
         chestsManager = new ChestsHandler();
         settingsHandler = new SettingsHandler(this);
@@ -74,7 +80,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         loadAPI();
         NotifierTask.start();
 
-        if(updater.isOutdated()) {
+        if (updater.isOutdated()) {
             log("");
             log("A new version is available (v" + updater.getLatestVersion() + ")!");
             log("Version's description: \"" + updater.getVersionDescription() + "\"");
@@ -84,33 +90,34 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         log("******** ENABLE DONE ********");
     }
 
-    public boolean debug = false;
-
     @Override
     public void onDisable() {
+        if (!shouldEnable)
+            return;
+
         Bukkit.getScheduler().cancelTasks(this);
 
         //Closing all inventories & closing chests
-        for(Chest chest : chestsManager.getChests()){
+        for (Chest chest : chestsManager.getChests()) {
             boolean needClose = false;
-            for(Inventory inventory : chest.getPages()){
+            for (Inventory inventory : chest.getPages()) {
                 List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
-                for(HumanEntity humanEntity : viewers){
+                for (HumanEntity humanEntity : viewers) {
                     humanEntity.closeInventory();
                     needClose = true;
                 }
             }
-            if(needClose)
+            if (needClose)
                 nmsAdapter.playChestAction(chest.getLocation(), false);
         }
 
-        for(Player player : Bukkit.getOnlinePlayers())
+        for (Player player : Bukkit.getOnlinePlayers())
             player.closeInventory();
 
         int loadedChunks = 0;
 
-        for(World world : Bukkit.getWorlds()){
-            for(Chunk chunk : world.getLoadedChunks()) {
+        for (World world : Bukkit.getWorlds()) {
+            for (Chunk chunk : world.getLoadedChunks()) {
                 dataHandler.saveDatabase(chunk, false);
                 loadedChunks++;
             }
@@ -124,12 +131,12 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         SQLHelper.close();
     }
 
-    private void loadAPI(){
-        try{
+    private void loadAPI() {
+        try {
             Field instance = WildChestsAPI.class.getDeclaredField("instance");
             instance.setAccessible(true);
             instance.set(null, this);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             log("Failed to set-up API - disabling plugin...");
             setEnabled(false);
             Executor.sync(() -> getServer().getPluginManager().disablePlugin(this));
@@ -137,16 +144,17 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         }
     }
 
-    private boolean loadNMSAdapter(){
+    private boolean loadNMSAdapter() {
         String version = getServer().getClass().getPackage().getName().split("\\.")[3];
         try {
-            nmsAdapter = (NMSAdapter) Class.forName("com.bgsoftware.wildchests.nms.NMSAdapter_" + version).newInstance();
-            nmsInventory = (NMSInventory) Class.forName("com.bgsoftware.wildchests.nms.NMSInventory_" + version).newInstance();
-            return true;
-        } catch (Exception ex){
+            nmsAdapter = (NMSAdapter) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSAdapter", version)).newInstance();
+            nmsInventory = (NMSInventory) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSInventory", version)).newInstance();
+        } catch (Exception ex) {
             log("Error while loading adapter - unknown adapter " + version + "... Please contact @Ome_R");
             return false;
         }
+
+        return true;
     }
 
     public NMSAdapter getNMSAdapter() {
@@ -172,7 +180,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         return settingsHandler;
     }
 
-    public void setSettings(SettingsHandler settingsHandler){
+    public void setSettings(SettingsHandler settingsHandler) {
         this.settingsHandler = settingsHandler;
     }
 
@@ -185,12 +193,12 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         return updater;
     }
 
-    public static void log(String message){
+    public static void log(String message) {
         message = ChatColor.translateAlternateColorCodes('&', message);
         boolean colored = message.contains(ChatColor.COLOR_CHAR + "");
         String lastColor = colored ? ChatColor.getLastColors(message.substring(0, 2)) : "";
-        for(String line : message.split("\n")){
-            if(colored)
+        for (String line : message.split("\n")) {
+            if (colored)
                 Bukkit.getConsoleSender().sendMessage(lastColor + "[" + plugin.getDescription().getName() + "] " + line);
             else
                 plugin.getLogger().info(line);
