@@ -14,10 +14,6 @@ import java.util.stream.Stream;
 
 public interface NMSAdapter {
 
-    int getHopperTransfer(World world);
-
-    int getHopperAmount(World world);
-
     String serialize(ItemStack itemStack);
 
     String serialize(Inventory[] inventories);
@@ -25,10 +21,6 @@ public interface NMSAdapter {
     InventoryHolder[] deserialze(String serialized);
 
     ItemStack deserialzeItem(String serialized);
-
-    Stream<Item> getNearbyItems(Location location, int range, boolean onlyChunk, KeySet blacklisted, KeySet whitelisted);
-
-    void spawnSuctionParticle(Location location);
 
     void playChestAction(Location location, boolean open);
 
