@@ -148,6 +148,12 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         String version = getServer().getClass().getPackage().getName().split("\\.")[3];
         try {
             nmsAdapter = (NMSAdapter) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSAdapter", version)).newInstance();
+
+            if(!nmsAdapter.isMappingsSupported()) {
+                log("Error while loading adapter - your version mappings are not supported... Please contact @Ome_R");
+                return false;
+            }
+
             nmsInventory = (NMSInventory) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSInventory", version)).newInstance();
         } catch (Exception ex) {
             log("Error while loading adapter - unknown adapter " + version + "... Please contact @Ome_R");

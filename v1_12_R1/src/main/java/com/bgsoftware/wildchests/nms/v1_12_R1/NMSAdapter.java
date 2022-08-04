@@ -30,6 +30,11 @@ import java.util.Base64;
 public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
 
     @Override
+    public boolean isMappingsSupported() {
+        return true;
+    }
+
+    @Override
     public String serialize(org.bukkit.inventory.ItemStack itemStack) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         DataOutput dataOutput = new DataOutputStream(outputStream);

@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 
 public interface NMSAdapter {
 
+    boolean isMappingsSupported();
+
     String serialize(ItemStack itemStack);
 
     String serialize(Inventory[] inventories);
