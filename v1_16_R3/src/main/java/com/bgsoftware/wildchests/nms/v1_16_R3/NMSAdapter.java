@@ -31,8 +31,8 @@ import java.util.Base64;
 public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
 
     @Override
-    public boolean isMappingsSupported() {
-        return true;
+    public String getMappingsHash() {
+        return null;
     }
 
     @Override
