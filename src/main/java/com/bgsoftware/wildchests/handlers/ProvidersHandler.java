@@ -187,7 +187,10 @@ public final class ProvidersHandler implements ProvidersManager {
                     Plugin shopGUIPlus = Bukkit.getPluginManager().getPlugin("ShopGUIPlus");
                     if (shopGUIPlus.getDescription().getVersion().startsWith("1.2")) {
                         pricesProvider = createInstance("PricesProvider_ShopGUIPlus12");
-                    } else {
+                    } else try {
+                        Class.forName("net.brcdev.shopgui.shop.item.ShopItem");
+                        pricesProvider = createInstance("PricesProvider_ShopGUIPlus78");
+                    } catch (ClassNotFoundException error) {
                         pricesProvider = createInstance("PricesProvider_ShopGUIPlus14");
                     }
                 }
