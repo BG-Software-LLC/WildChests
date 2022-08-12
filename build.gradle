@@ -1,3 +1,5 @@
+import org.gradle.api.GradleException
+
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
@@ -35,7 +37,17 @@ allprojects {
         compileOnly "com.bgsoftware.common.reflection:ReflectionUtils:latest"
     }
 
+    task checkDebug() {
+        Set<File> filesWithDebug = fileTree('src/main/java').filter { file ->
+            file.text.contains('Bukkit.broadcastMessage')
+        }.getFiles()
+
+        if(!filesWithDebug.isEmpty())
+            throw new GradleException("Found debug messages: " + filesWithDebug)
+    }
+
     build {
+        dependsOn checkDebug
         dependsOn shadowJar
     }
 }
