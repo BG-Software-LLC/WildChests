@@ -160,7 +160,11 @@ public abstract class WChest extends DatabaseObject implements Chest {
             int toRemove = Math.min(amountToRemove - itemsRemoved, ItemUtils.countItems(itemStack, page));
             ItemStack cloned = itemStack.clone();
             cloned.setAmount(toRemove);
-            page.removeItem(cloned);
+            ItemStack leftOver = page.removeItem(cloned).get(0);
+
+            if(leftOver != null)
+                toRemove -= leftOver.getAmount();
+
             itemsRemoved += toRemove;
         }
     }

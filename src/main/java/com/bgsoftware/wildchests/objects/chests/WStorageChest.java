@@ -220,26 +220,40 @@ public final class WStorageChest extends WChest implements StorageChest {
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
 
-        ItemStack storageItem = getItemStack();
+        BigInteger amountToAdd = BigInteger.ZERO;
 
         for (int i = 0; i < itemStacks.length; i++) {
-            ItemStack itemStack = itemStacks[i];
+            if (itemStacks[i] == null)
+                continue;
 
-            if (storageItem.getType() == Material.AIR) {
-                setItemStack(itemStack);
-                storageItem = itemStack.clone();
-            }
-
-            if (storageItem.isSimilar(itemStack)) {
-                setAmount(getAmount().add(BigInteger.valueOf(itemStack.getAmount())));
+            if (!canPlaceItemThroughFace(itemStacks[i])) {
+                additionalItems.put(i, itemStacks[i]);
             } else {
-                additionalItems.put(i, itemStack);
+                if (getItemStack().getType() == Material.AIR)
+                    setItemStack(itemStacks[i]);
+
+                amountToAdd = amountToAdd.add(BigInteger.valueOf(itemStacks[i].getAmount()));
             }
         }
 
-        updateInventory(getPage(0));
+        if (amountToAdd.compareTo(getAmount()) != 0) {
+            setAmount(getAmount().add(amountToAdd));
+            updateInventory(getPage(0));
+        }
 
         return additionalItems;
+    }
+
+    @Override
+    public void removeItem(int amountToRemove, ItemStack itemStack) {
+        ItemStack storageItem = getItemStack();
+
+        if (storageItem.getType() == Material.AIR || !storageItem.isSimilar(itemStack))
+            return; // Storage unit is empty
+
+        setAmount(getAmount().subtract(BigInteger.valueOf(amountToRemove)));
+
+        updateInventory(getPage(0));
     }
 
     @Override
