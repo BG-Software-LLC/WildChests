@@ -17,7 +17,7 @@ import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.listeners.PlayerListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.nms.NMSInventory;
-import com.bgsoftware.wildchests.nms.mapping.TestRemaps;
+import com.bgsoftware.common.remaps.TestRemaps;
 import com.bgsoftware.wildchests.task.NotifierTask;
 import com.bgsoftware.wildchests.utils.Executor;
 import org.bukkit.Bukkit;

@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_18_R1.mappings.net.minecraft.world.item;
 
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.nms.v1_18_R1.mappings.MappedObject;
 import com.bgsoftware.wildchests.nms.v1_18_R1.mappings.net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTBase;

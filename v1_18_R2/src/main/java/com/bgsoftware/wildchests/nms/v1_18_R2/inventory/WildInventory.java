@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.nms.v1_18_R2.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.nms.v1_18_R2.mappings.net.minecraft.world.item.ItemStack;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;

@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_18_R2.mappings.net.minecraft.world.level.block.state;
 
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.nms.v1_18_R2.mappings.MappedObject;
 import net.minecraft.world.level.block.Block;
 

@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.nms.v1_19_R1.mappings.net.minecraft.world.entity;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.nms.v1_19_R1.mappings.MappedObject;
 import com.bgsoftware.wildchests.nms.v1_19_R1.mappings.net.minecraft.server.network.PlayerConnection;
 import net.minecraft.server.level.EntityPlayer;

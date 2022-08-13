@@ -1,6 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_18_R1.inventory;
 
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import net.minecraft.world.entity.player.EntityHuman;
 import net.minecraft.world.entity.player.PlayerInventory;

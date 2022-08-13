@@ -4,7 +4,7 @@ import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
-import com.bgsoftware.wildchests.nms.mapping.Remap;
+import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.nms.v1_18_R2.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.nms.v1_18_R2.inventory.TileEntityWildChest;
 import com.bgsoftware.wildchests.nms.v1_18_R2.inventory.WildContainerChest;
