@@ -84,9 +84,9 @@ public final class NMSInventory implements com.bgsoftware.wildchests.nms.NMSInve
         }
         else {
             tileEntityWildChest = new TileEntityWildChest(chest, world, blockPosition);
+            world.t(blockPosition);
+            world.setTileEntity(blockPosition, tileEntityWildChest);
         }
-
-        world.setTileEntity(blockPosition, tileEntityWildChest);
     }
 
     @Override
