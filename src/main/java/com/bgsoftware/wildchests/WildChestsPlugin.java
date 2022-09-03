@@ -154,7 +154,10 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
             String mappingVersionHash = nmsAdapter.getMappingsHash();
 
-            if (mappingVersionHash != null && !MappingsChecker.checkMappings(mappingVersionHash, version)) {
+            if (mappingVersionHash != null && !MappingsChecker.checkMappings(mappingVersionHash, version, error -> {
+                log("&cFailed to retrieve allowed mappings for your server, skipping...");
+                return true;
+            })) {
                 log("Error while loading adapter - your version mappings are not supported... Please contact @Ome_R");
                 log("Your mappings version: " + mappingVersionHash);
                 return false;
