@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests.nms.v119.inventory;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
-import com.bgsoftware.common.remaps.Remap;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
@@ -68,10 +67,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
     private boolean autoCraftMode = false;
     private boolean autoSellMode = false;
 
-    @Remap(classPath = "net.minecraft.world.level.block.entity.BlockEntity",
-            name = "level",
-            type = Remap.Type.FIELD,
-            remappedName = "n")
     public WildChestBlockEntity(Chest chest, ServerLevel serverLevel, BlockPos blockPos) {
         super(blockPos, serverLevel.getBlockState(blockPos));
         this.chest = chest;
@@ -112,10 +107,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
         return nonNullList;
     }
 
-    @Remap(classPath = "net.minecraft.world.level.block.entity.BlockEntity",
-            name = "saveAdditional",
-            type = Remap.Type.METHOD,
-            remappedName = "b")
     @Override
     protected void saveAdditional(CompoundTag compoundTag) {
         TILE_ENTITY_SAVE.invoke(chestBlockEntity, compoundTag);
