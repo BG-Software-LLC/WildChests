@@ -108,6 +108,8 @@ shadowJar {
         exclude archiveName
     }
 
+    exclude '*exclude.jar'
+
     destinationDir = file("./target/")
     from sourceSets.getByName("main").output
     configurations = [project.configurations.getByName("runtimeClasspath")]

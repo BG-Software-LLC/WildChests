@@ -11,9 +11,6 @@ import javax.annotation.Nullable;
 
 public interface NMSAdapter {
 
-    @Nullable
-    String getMappingsHash();
-
     String serialize(ItemStack itemStack);
 
     String serialize(Inventory[] inventories);
@@ -28,6 +25,7 @@ public interface NMSAdapter {
 
     ItemStack setChestName(ItemStack itemStack, String chestName);
 
+    @Nullable
     String getChestName(ItemStack itemStack);
 
     void dropItemAsPlayer(HumanEntity humanEntity, ItemStack bukkitItem);
