@@ -1,16 +1,17 @@
-package com.bgsoftware.wildchests.nms.v1_17_R1.inventory;
+package com.bgsoftware.wildchests.nms.v117.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
-import net.minecraft.world.IInventory;
+import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftInventory;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 
-public class CraftWildInventory extends CraftInventory implements com.bgsoftware.wildchests.objects.inventory.CraftWildInventory {
+public class CraftWildInventoryImpl extends CraftInventory implements CraftWildInventory {
 
-    public CraftWildInventory(IInventory inventory) {
-        super(inventory);
+    public CraftWildInventoryImpl(Container container) {
+        super(container);
     }
 
     @Override
@@ -34,8 +35,8 @@ public class CraftWildInventory extends CraftInventory implements com.bgsoftware
     }
 
     @Override
-    public WildInventory getInventory() {
-        return (WildInventory) super.getInventory();
+    public WildContainer getInventory() {
+        return (WildContainer) super.getInventory();
     }
 
     @Override
@@ -55,7 +56,7 @@ public class CraftWildInventory extends CraftInventory implements com.bgsoftware
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof CraftWildInventory && getInventory() == ((CraftWildInventory) obj).getInventory();
+        return obj instanceof CraftWildInventoryImpl && getInventory() == ((CraftWildInventoryImpl) obj).getInventory();
     }
 
 }
