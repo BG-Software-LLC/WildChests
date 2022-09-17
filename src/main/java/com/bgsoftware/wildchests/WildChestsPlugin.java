@@ -194,7 +194,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         log("&cThe plugin doesn't support your minecraft version.");
         log("&cPlease try a different version.");
 
-        return true;
+        return false;
     }
 
     public NMSAdapter getNMSAdapter() {
