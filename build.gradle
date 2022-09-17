@@ -7,7 +7,7 @@ plugins {
 }
 
 group 'WildChests'
-version = "2.4.1"
+version = "2022.7"
 
 allprojects {
     apply plugin: 'java'
@@ -82,7 +82,7 @@ jar {
 
 processResources {
     outputs.upToDateWhen { false }
-    String versionNumber = System.getenv("BUILD_NUMBER") == null ? version : version + "." + System.getenv("BUILD_NUMBER")
+    String versionNumber = System.getenv("BUILD_NUMBER") == null ? version : version + "-b" + System.getenv("BUILD_NUMBER")
     eachFile { details ->
         if (details.name.contentEquals('plugin.yml')) {
             filter { String line ->
