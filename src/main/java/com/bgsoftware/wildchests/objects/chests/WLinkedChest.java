@@ -13,11 +13,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import java.util.ArrayList;
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@SuppressWarnings("ConstantConditions")
 public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
     private LinkedChestsContainer linkedChestsContainer;
@@ -27,45 +27,74 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         this.linkedChestsContainer = null;
     }
 
+    public void setLinkedChestsContainerRaw(@Nullable LinkedChestsContainer linkedChestsContainer) {
+        this.linkedChestsContainer = linkedChestsContainer;
+        if (linkedChestsContainer == null) {
+            initContainer(getData());
+        } else {
+            this.inventories = linkedChestsContainer.getInventories();
+        }
+    }
+
+    public void setLinkedChestsContainer(@Nullable LinkedChestsContainer linkedChestsContainer) {
+        if (this.linkedChestsContainer == linkedChestsContainer)
+            return;
+
+        if (linkedChestsContainer == null) {
+            this.linkedChestsContainer.unlinkChest(this);
+        } else {
+            if (this.linkedChestsContainer != null) {
+                linkedChestsContainer.merge(this.linkedChestsContainer);
+            } else {
+                linkedChestsContainer.linkChest(this);
+            }
+        }
+    }
+
     @Override
-    public void linkIntoChest(LinkedChest linkedChest) {
+    public void linkIntoChest(@Nullable LinkedChest linkedChest) {
         if (linkedChest == null) {
-            if (linkedChestsContainer != null)
-                linkedChestsContainer.unlinkChest(this);
-            linkedChestsContainer = null;
+            setLinkedChestsContainer(null);
             saveLinkedChest();
             return;
         }
 
-        LinkedChestsContainer otherContainer = ((WLinkedChest) linkedChest).linkedChestsContainer;
-
-        if (otherContainer == null) {
+        LinkedChestsContainer newContainer = ((WLinkedChest) linkedChest).linkedChestsContainer;
+        if (newContainer == null) {
             linkedChest.onBreak(new BlockBreakEvent(null, null));
-
-            if (linkedChestsContainer == null)
-                linkedChestsContainer = new LinkedChestsContainer(this);
-
-            ((WLinkedChest) linkedChest).linkedChestsContainer = linkedChestsContainer;
-
-            linkedChestsContainer.linkChest(linkedChest);
-
-            ((WLinkedChest) linkedChest).inventories = this.inventories;
-        } else {
-            if (otherContainer.isLinkedChest(this))
-                return;
-
-            otherContainer.linkChest(this);
-
-            if (linkedChestsContainer != null)
-                linkedChestsContainer.unlinkChest(this);
-
-            linkedChestsContainer = otherContainer;
-
-            this.inventories = ((WLinkedChest) linkedChest).inventories;
+            newContainer = new LinkedChestsContainer(linkedChest, ((WLinkedChest) linkedChest).inventories);
         }
 
-        ((WLinkedChest) linkedChest).saveLinkedChest();
+        setLinkedChestsContainer(newContainer);
 
+//        LinkedChestsContainer otherContainer = ((WLinkedChest) linkedChest).linkedChestsContainer;
+//
+//        if (otherContainer == null) {
+//            linkedChest.onBreak(new BlockBreakEvent(null, null));
+//
+//            if (linkedChestsContainer == null)
+//                linkedChestsContainer = new LinkedChestsContainer(this);
+//
+//            ((WLinkedChest) linkedChest).linkedChestsContainer = linkedChestsContainer;
+//
+//            linkedChestsContainer.linkChest(linkedChest);
+//
+//            ((WLinkedChest) linkedChest).inventories = this.inventories;
+//        } else {
+//            if (otherContainer.isLinkedChest(this))
+//                return;
+//
+//            otherContainer.linkChest(this);
+//
+//            if (linkedChestsContainer != null)
+//                linkedChestsContainer.unlinkChest(this);
+//
+//            linkedChestsContainer = otherContainer;
+//
+//            this.inventories = ((WLinkedChest) linkedChest).inventories;
+//        }
+
+        ((WLinkedChest) linkedChest).saveLinkedChest();
         saveLinkedChest();
     }
 
@@ -89,7 +118,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
     @Override
     public List<LinkedChest> getAllLinkedChests() {
-        return linkedChestsContainer == null ? new ArrayList<>() : linkedChestsContainer.getLinkedChests();
+        return linkedChestsContainer == null ? Collections.emptyList() : linkedChestsContainer.getLinkedChests();
     }
 
     @Override
@@ -139,7 +168,8 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
                 LinkedChest sourceChest = plugin.getChestsManager().getLinkedChest(linkedChestLocation);
                 if (sourceChest != null) {
                     if (((WLinkedChest) sourceChest).linkedChestsContainer == null)
-                        ((WLinkedChest) sourceChest).linkedChestsContainer = new LinkedChestsContainer(sourceChest);
+                        ((WLinkedChest) sourceChest).linkedChestsContainer = new LinkedChestsContainer(sourceChest,
+                                ((WLinkedChest) sourceChest).inventories);
 
                     this.linkedChestsContainer = ((WLinkedChest) sourceChest).linkedChestsContainer;
                     this.linkedChestsContainer.linkChest(this);

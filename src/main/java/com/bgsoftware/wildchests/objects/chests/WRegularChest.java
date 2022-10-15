@@ -1,8 +1,8 @@
 package com.bgsoftware.wildchests.objects.chests;
 
-import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
@@ -21,9 +21,8 @@ public class WRegularChest extends WChest implements RegularChest {
     protected SyncedArray<CraftWildInventory> inventories;
     private String serializedData = null;
 
-    public WRegularChest(UUID placer, Location location, ChestData chestData){
+    public WRegularChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
-        this.inventories = new SyncedArray<>(chestData.getDefaultPagesAmount());
         initContainer(chestData);
     }
 
@@ -67,10 +66,10 @@ public class WRegularChest extends WChest implements RegularChest {
         WildItemStack<?, ?>[] contents = new WildItemStack[0];
         int pagesAmount = getPagesAmount();
 
-        if(pagesAmount == 0)
+        if (pagesAmount == 0)
             return contents;
 
-        for(int page = 0; page < pagesAmount; page++){
+        for (int page = 0; page < pagesAmount; page++) {
             CraftWildInventory inventory = inventories.get(page);
             int oldLength = contents.length;
             contents = Arrays.copyOf(contents, contents.length + inventory.getSize());
@@ -84,7 +83,7 @@ public class WRegularChest extends WChest implements RegularChest {
     public WildItemStack<?, ?> getWildItem(int i) {
         Inventory firstPage = getPage(0);
 
-        if(firstPage == null)
+        if (firstPage == null)
             return WildItemStack.AIR.cloneItemStack();
 
         int pageSize = firstPage.getSize();
@@ -93,7 +92,7 @@ public class WRegularChest extends WChest implements RegularChest {
 
         CraftWildInventory actualPage = (CraftWildInventory) getPage(page);
 
-        if(actualPage == null)
+        if (actualPage == null)
             return WildItemStack.AIR.cloneItemStack();
 
         return actualPage.getWildItem(slot);
@@ -103,7 +102,7 @@ public class WRegularChest extends WChest implements RegularChest {
     public void setItem(int i, WildItemStack<?, ?> itemStack) {
         Inventory firstPage = getPage(0);
 
-        if(firstPage == null)
+        if (firstPage == null)
             return;
 
         int pageSize = firstPage.getSize();
@@ -112,7 +111,7 @@ public class WRegularChest extends WChest implements RegularChest {
 
         CraftWildInventory actualPage = (CraftWildInventory) getPage(page);
 
-        if(actualPage == null)
+        if (actualPage == null)
             return;
 
         actualPage.setItem(slot, itemStack);
@@ -121,7 +120,7 @@ public class WRegularChest extends WChest implements RegularChest {
     @Override
     public void onChunkLoad() {
         super.onChunkLoad();
-        if(serializedData != null) {
+        if (serializedData != null) {
             InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serializedData);
             for (int i = 0; i < inventories.length; i++)
                 setPage(i, inventories[i]);
@@ -129,7 +128,7 @@ public class WRegularChest extends WChest implements RegularChest {
         }
     }
 
-    public void loadFromData(String serialized){
+    public void loadFromData(String serialized) {
         this.serializedData = !serialized.isEmpty() ? serialized : null;
     }
 
@@ -160,27 +159,29 @@ public class WRegularChest extends WChest implements RegularChest {
                 .execute(async);
     }
 
-    private void checkCapacity(int size, int inventorySize, String inventoryTitle){
+    private void checkCapacity(int size, int inventorySize, String inventoryTitle) {
         int oldSize = getPagesAmount();
-        if(size > oldSize){
+        if (size > oldSize) {
             inventories.increaseCapacity(size);
-            for(int i = oldSize; i < size; i++)
+            for (int i = oldSize; i < size; i++)
                 inventories.set(i, plugin.getNMSInventory().createInventory(this, inventorySize, inventoryTitle, i));
         }
     }
 
-    private void initContainer(ChestData chestData){
+    protected void initContainer(ChestData chestData) {
+        this.inventories = new SyncedArray<>(chestData.getDefaultPagesAmount());
+
         int size = chestData.getDefaultSize();
         Map<Integer, InventoryData> pagesData = chestData.getPagesData();
 
-        for(int i = 0; i < getPagesAmount(); i++){
+        for (int i = 0; i < getPagesAmount(); i++) {
             String title = pagesData.containsKey(i + 1) ? pagesData.get(i + 1).getTitle() : chestData.getDefaultTitle();
             inventories.set(i, plugin.getNMSInventory().createInventory(this, size, title, i));
         }
     }
 
-    private void updateTitles(){
-        for(int i = 0; i < inventories.length(); i++){
+    private void updateTitles() {
+        for (int i = 0; i < inventories.length(); i++) {
             inventories.get(i).setTitle(getData().getTitle(i + 1).replace("{0}", getPagesAmount() + ""));
         }
     }
