@@ -7,12 +7,13 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.SyncedArray;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -62,29 +63,25 @@ public class WRegularChest extends WChest implements RegularChest {
     }
 
     @Override
-    public WildItemStack<?, ?>[] getWildContents() {
-        WildItemStack<?, ?>[] contents = new WildItemStack[0];
-        int pagesAmount = getPagesAmount();
+    public List<WildContainerItem> getWildContents() {
+        List<WildContainerItem> contents = new ArrayList<>();
 
-        if (pagesAmount == 0)
-            return contents;
+        int pagesAmount = getPagesAmount();
 
         for (int page = 0; page < pagesAmount; page++) {
             CraftWildInventory inventory = inventories.get(page);
-            int oldLength = contents.length;
-            contents = Arrays.copyOf(contents, contents.length + inventory.getSize());
-            System.arraycopy(inventory.getWildContents(), 0, contents, oldLength, inventory.getSize());
+            contents.addAll(inventory.getWildContents());
         }
 
         return contents;
     }
 
     @Override
-    public WildItemStack<?, ?> getWildItem(int i) {
+    public WildContainerItem getWildItem(int i) {
         Inventory firstPage = getPage(0);
 
         if (firstPage == null)
-            return WildItemStack.AIR.cloneItemStack();
+            return WildContainerItem.AIR.copy();
 
         int pageSize = firstPage.getSize();
         int page = i / pageSize;
@@ -93,13 +90,13 @@ public class WRegularChest extends WChest implements RegularChest {
         CraftWildInventory actualPage = (CraftWildInventory) getPage(page);
 
         if (actualPage == null)
-            return WildItemStack.AIR.cloneItemStack();
+            return WildContainerItem.AIR.copy();
 
         return actualPage.getWildItem(slot);
     }
 
     @Override
-    public void setItem(int i, WildItemStack<?, ?> itemStack) {
+    public void setItem(int i, WildContainerItem itemStack) {
         Inventory firstPage = getPage(0);
 
         if (firstPage == null)

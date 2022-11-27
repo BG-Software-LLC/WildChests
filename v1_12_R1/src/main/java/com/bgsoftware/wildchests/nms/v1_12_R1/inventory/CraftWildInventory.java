@@ -1,11 +1,11 @@
 package com.bgsoftware.wildchests.nms.v1_12_R1.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import net.minecraft.server.v1_12_R1.IInventory;
-import net.minecraft.server.v1_12_R1.ItemStack;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftInventory;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
+
+import java.util.List;
 
 public class CraftWildInventory extends CraftInventory implements com.bgsoftware.wildchests.objects.inventory.CraftWildInventory {
 
@@ -19,18 +19,18 @@ public class CraftWildInventory extends CraftInventory implements com.bgsoftware
     }
 
     @Override
-    public WildItemStack<ItemStack, CraftItemStack> getWildItem(int slot) {
+    public WildContainerItemImpl getWildItem(int slot) {
         return getInventory().getWildItem(slot);
     }
 
     @Override
-    public void setItem(int i, WildItemStack<?, ?> itemStack) {
-        getInventory().setItem(i, itemStack, true);
+    public void setItem(int i, WildContainerItem itemStack) {
+        getInventory().setItem(i, (WildContainerItemImpl) itemStack, true);
     }
 
     @Override
-    public WildItemStack<?, ?>[] getWildContents() {
-        return getInventory().items.toArray(new WildItemStack[0]);
+    public List<WildContainerItem> getWildContents() {
+        return getInventory().items;
     }
 
     @Override

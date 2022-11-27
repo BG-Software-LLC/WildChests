@@ -7,10 +7,10 @@ import com.bgsoftware.wildchests.nms.v1181.inventory.CraftWildInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1181.inventory.WildChestBlockEntity;
 import com.bgsoftware.wildchests.nms.v1181.inventory.WildChestMenu;
 import com.bgsoftware.wildchests.nms.v1181.inventory.WildContainer;
+import com.bgsoftware.wildchests.nms.v1181.inventory.WildContainerItemImpl;
 import com.bgsoftware.wildchests.nms.v1181.inventory.WildHopperMenu;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -76,9 +76,8 @@ public final class NMSInventory implements com.bgsoftware.wildchests.nms.NMSInve
     }
 
     @Override
-    public WildItemStack<?, ?> createItemStack(org.bukkit.inventory.ItemStack bukkitItem) {
-        ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
-        return new WildItemStack<>(itemStack, CraftItemStack.asCraftMirror(itemStack));
+    public WildContainerItemImpl createItemStack(org.bukkit.inventory.ItemStack bukkitItem) {
+        return new WildContainerItemImpl(CraftItemStack.asNMSCopy(bukkitItem));
     }
 
     @Override

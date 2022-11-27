@@ -67,33 +67,6 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
         setLinkedChestsContainer(newContainer);
 
-//        LinkedChestsContainer otherContainer = ((WLinkedChest) linkedChest).linkedChestsContainer;
-//
-//        if (otherContainer == null) {
-//            linkedChest.onBreak(new BlockBreakEvent(null, null));
-//
-//            if (linkedChestsContainer == null)
-//                linkedChestsContainer = new LinkedChestsContainer(this);
-//
-//            ((WLinkedChest) linkedChest).linkedChestsContainer = linkedChestsContainer;
-//
-//            linkedChestsContainer.linkChest(linkedChest);
-//
-//            ((WLinkedChest) linkedChest).inventories = this.inventories;
-//        } else {
-//            if (otherContainer.isLinkedChest(this))
-//                return;
-//
-//            otherContainer.linkChest(this);
-//
-//            if (linkedChestsContainer != null)
-//                linkedChestsContainer.unlinkChest(this);
-//
-//            linkedChestsContainer = otherContainer;
-//
-//            this.inventories = ((WLinkedChest) linkedChest).inventories;
-//        }
-
         ((WLinkedChest) linkedChest).saveLinkedChest();
         saveLinkedChest();
     }

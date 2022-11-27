@@ -8,7 +8,7 @@ import com.bgsoftware.wildchests.nms.v1_16_R3.NMSInventory;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import net.minecraft.server.v1_16_R3.AxisAlignedBB;
 import net.minecraft.server.v1_16_R3.Block;
@@ -73,22 +73,19 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     @Override
     public void setItem(int i, ItemStack itemStack) {
-        ((WChest) chest).setItem(i, new WildItemStack<>(itemStack, CraftItemStack.asCraftMirror(itemStack)));
+        ((WChest) chest).setItem(i, new WildContainerItemImpl(itemStack));
     }
 
     @Override
     public ItemStack getItem(int i) {
-        return (ItemStack) ((WChest) chest).getWildItem(i).getItemStack();
+        return ((WildContainerItemImpl) ((WChest) chest).getWildItem(i)).getHandle();
     }
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        WildItemStack<?, ?>[] contents = ((WChest) chest).getWildContents();
-        NonNullList<ItemStack> nonNullList = NonNullList.a(contents.length, ItemStack.b);
-
-        for (int i = 0; i < contents.length; i++)
-            nonNullList.set(i, (ItemStack) contents[i].getItemStack());
-
+        List<WildContainerItem> contents = ((WChest) chest).getWildContents();
+        NonNullList<ItemStack> nonNullList = NonNullList.a(contents.size(), ItemStack.b);
+        contents.forEach(wildContainerItem -> nonNullList.add(((WildContainerItemImpl) wildContainerItem).getHandle()));
         return nonNullList;
     }
 
@@ -289,7 +286,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
     @Override
     public ItemStack splitStack(int slot, int amount) {
         return slot != -2 || !(chest instanceof StorageChest) ? super.splitStack(slot, amount) :
-                (ItemStack) ((WStorageChest) chest).splitItem(amount).getItemStack();
+                ((WildContainerItemImpl) ((WStorageChest) chest).splitItem(amount)).getHandle();
     }
 
     @Override

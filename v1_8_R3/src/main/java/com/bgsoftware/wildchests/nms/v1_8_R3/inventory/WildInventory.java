@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.nms.v1_8_R3.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import net.minecraft.server.v1_8_R3.ChatComponentText;
 import net.minecraft.server.v1_8_R3.EntityHuman;
 import net.minecraft.server.v1_8_R3.IChatBaseComponent;
@@ -13,15 +13,13 @@ import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class WildInventory implements IInventory {
 
-    private static final WildItemStack<ItemStack, CraftItemStack> AIR = new WildItemStack<>(null, CraftItemStack.asCraftMirror(null));
-
-    public final WildItemStack<ItemStack, CraftItemStack>[] items;
+    public final List<WildContainerItem> items;
     public final Chest chest;
     private final int index;
 
@@ -32,23 +30,24 @@ public class WildInventory implements IInventory {
 
     public WildInventory(int size, String title, Chest chest, int index) {
         this.title = title == null ? "Chest" : title;
-        //noinspection all
-        this.items = new WildItemStack[size];
-        Arrays.fill(this.items, AIR);
         this.chest = chest;
         this.index = index;
+
+        this.items = new ArrayList<>(size);
+        for (int i = 0; i < size; ++i)
+            this.items.add(WildContainerItem.AIR);
     }
 
     public int getSize() {
-        return this.items.length;
+        return this.items.size();
     }
 
     public ItemStack getItem(int i) {
-        return getWildItem(i).getItemStack();
+        return getWildItem(i).getHandle();
     }
 
-    public WildItemStack<ItemStack, CraftItemStack> getWildItem(int i) {
-        return this.items[i] == null ? AIR : this.items[i];
+    public WildContainerItemImpl getWildItem(int i) {
+        return (WildContainerItemImpl) Optional.ofNullable(this.items.get(i)).orElse(WildContainerItem.AIR);
     }
 
     public ItemStack splitStack(int slot, int amount) {
@@ -85,21 +84,21 @@ public class WildInventory implements IInventory {
     }
 
     public void setItem(int i, ItemStack itemStack, boolean setItemFunction) {
-        setItem(i, new WildItemStack<>(itemStack, CraftItemStack.asCraftMirror(itemStack)), setItemFunction);
+        setItem(i, new WildContainerItemImpl(itemStack), setItemFunction);
     }
 
-    public void setItem(int i, WildItemStack<?, ?> wildItemStack, boolean setItemFunction) {
-        ItemStack itemstack = (ItemStack) wildItemStack.getItemStack();
+    public void setItem(int i, WildContainerItemImpl wildContainerItem, boolean setItemFunction) {
+        ItemStack itemstack = wildContainerItem.getHandle();
 
         if (setItemFunction && this.setItemFunction != null) {
             this.setItemFunction.accept(i, itemstack);
             return;
         }
 
-        WildItemStack<ItemStack, CraftItemStack> original = getWildItem(i);
-        this.items[i] = new WildItemStack<>(itemstack, CraftItemStack.asCraftMirror(itemstack));
+        WildContainerItemImpl original = getWildItem(i);
+        this.items.set(i, new WildContainerItemImpl(itemstack));
 
-        if (!ItemStack.matches(original.getItemStack(), itemstack)) {
+        if (!ItemStack.matches(original.getHandle(), itemstack)) {
             if (itemstack == null)
                 nonEmptyItems--;
             else
@@ -127,7 +126,7 @@ public class WildInventory implements IInventory {
     }
 
     public ItemStack[] getContents() {
-        ItemStack[] contents = new ItemStack[this.items.length];
+        ItemStack[] contents = new ItemStack[this.items.size()];
         for (int i = 0; i < contents.length; i++)
             contents[i] = getItem(i);
         return contents;

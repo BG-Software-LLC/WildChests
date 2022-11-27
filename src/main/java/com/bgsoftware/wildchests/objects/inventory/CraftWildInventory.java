@@ -2,17 +2,18 @@ package com.bgsoftware.wildchests.objects.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 public interface CraftWildInventory extends Inventory {
 
     Chest getOwner();
 
-    WildItemStack<?, ? extends ItemStack> getWildItem(int slot);
+    WildContainerItem getWildItem(int slot);
 
-    void setItem(int i, WildItemStack<?, ?> itemStack);
+    void setItem(int i, WildContainerItem itemStack);
 
-    WildItemStack<?, ?>[] getWildContents();
+    List<WildContainerItem> getWildContents();
 
     void setTitle(String title);
 

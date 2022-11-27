@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.nms.v119.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -19,10 +19,7 @@ import java.util.function.BiConsumer;
 
 public class WildContainer implements Container {
 
-    private static final WildItemStack<ItemStack, CraftItemStack> EMPTY = new WildItemStack<>(
-            ItemStack.EMPTY, CraftItemStack.asCraftMirror(ItemStack.EMPTY));
-
-    public final NonNullList<WildItemStack<ItemStack, CraftItemStack>> items;
+    public final NonNullList<WildContainerItem> items;
     public final Chest chest;
     private final int index;
 
@@ -33,7 +30,7 @@ public class WildContainer implements Container {
 
     public WildContainer(int size, String title, Chest chest, int index) {
         this.title = title == null ? "Chest" : title;
-        this.items = NonNullList.withSize(size, EMPTY);
+        this.items = NonNullList.withSize(size, WildContainerItem.AIR);
         this.chest = chest;
         this.index = index;
     }
@@ -46,11 +43,11 @@ public class WildContainer implements Container {
 
     @Override
     public ItemStack getItem(int i) {
-        return getWildItem(i).getItemStack();
+        return getWildItem(i).getHandle();
     }
 
-    public WildItemStack<ItemStack, CraftItemStack> getWildItem(int i) {
-        return this.items.get(i);
+    public WildContainerItemImpl getWildItem(int i) {
+        return (WildContainerItemImpl) this.items.get(i);
     }
 
     @Override
@@ -90,22 +87,20 @@ public class WildContainer implements Container {
     }
 
     public void setItem(int slot, ItemStack itemStack, boolean setItemFunction) {
-        setItem(slot, new WildItemStack<>(itemStack, CraftItemStack.asCraftMirror(itemStack)), setItemFunction);
+        setItem(slot, new WildContainerItemImpl(itemStack), setItemFunction);
     }
 
-    public void setItem(int slot, WildItemStack<?, ?> wildItemStack, boolean setItemFunction) {
-        ItemStack itemStack = (ItemStack) wildItemStack.getItemStack();
+    public void setItem(int slot, WildContainerItemImpl wildContainerItem, boolean setItemFunction) {
+        ItemStack itemStack = wildContainerItem.getHandle();
 
         if (setItemFunction && this.setItemFunction != null) {
             this.setItemFunction.accept(slot, itemStack);
             return;
         }
 
-        //noinspection unchecked
-        WildItemStack<ItemStack, CraftItemStack> original =
-                this.items.set(slot, (WildItemStack<ItemStack, CraftItemStack>) wildItemStack);
+        WildContainerItemImpl original = (WildContainerItemImpl) this.items.set(slot, wildContainerItem);
 
-        if (!ItemStack.matches(original.getItemStack(), itemStack)) {
+        if (!ItemStack.matches(original.getHandle(), itemStack)) {
             if (itemStack.isEmpty())
                 nonEmptyItems--;
             else

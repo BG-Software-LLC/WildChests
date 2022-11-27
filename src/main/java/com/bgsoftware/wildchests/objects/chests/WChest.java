@@ -1,10 +1,18 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.Locale;
+import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.database.DatabaseObject;
+import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
-import com.bgsoftware.wildchests.objects.inventory.WildItemStack;
+import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
+import com.bgsoftware.wildchests.utils.ItemUtils;
 import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -24,14 +32,6 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import com.bgsoftware.wildchests.Locale;
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.api.objects.ChestType;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.api.objects.data.InventoryData;
-import com.bgsoftware.wildchests.listeners.InventoryListener;
-import com.bgsoftware.wildchests.utils.ItemUtils;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,54 +84,54 @@ public abstract class WChest extends DatabaseObject implements Chest {
     }
 
     @Override
-    public void remove(){
+    public void remove() {
         plugin.getChestsManager().removeChest(this);
 
         new HashSet<>(WChest.viewers.entrySet()).stream().filter(entry -> entry.getValue().equals(this)).forEach(entry -> {
             Player player = Bukkit.getPlayer(entry.getKey());
 
-            if(player != null)
+            if (player != null)
                 player.closeInventory();
 
             WChest.viewers.remove(entry.getKey());
         });
     }
 
-    public boolean isRemoved(){
+    public boolean isRemoved() {
         return removed;
     }
 
-    public void markAsRemoved(){
+    public void markAsRemoved() {
         removed = true;
     }
 
     /* INVENTORIES / PAGES RELATED METHODS */
 
     @Override
-    public ItemStack[] getContents(){
-        WildItemStack<?, ?>[] originalContents = getWildContents();
-        ItemStack[] contents = new ItemStack[originalContents.length];
+    public ItemStack[] getContents() {
+        List<WildContainerItem> originalContents = getWildContents();
+        ItemStack[] contents = new ItemStack[originalContents.size()];
 
-        for(int i = 0; i < contents.length; i++)
-            contents[i] = originalContents[i].getCraftItemStack();
+        for (int i = 0; i < contents.length; i++)
+            contents[i] = originalContents.get(i).getBukkitItem();
 
         return contents;
     }
 
-    public abstract WildItemStack<?, ?>[] getWildContents();
+    public abstract List<WildContainerItem> getWildContents();
 
     @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
         Map<Integer, ItemStack> itemAdditionalItems = new HashMap<>();
 
-        for(ItemStack itemStack : itemStacks) {
+        for (ItemStack itemStack : itemStacks) {
             if (itemStack != null) {
                 int currentInventory = 0;
 
                 do {
                     Inventory inventory = getPage(currentInventory);
-                    if(inventory != null) {
+                    if (inventory != null) {
                         itemAdditionalItems = inventory.addItem(itemStack);
                     }
                     currentInventory++;
@@ -155,14 +155,14 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
         int itemsRemoved = 0;
 
-        for(int i = 0; i < pages.length && itemsRemoved < amountToRemove; i++){
+        for (int i = 0; i < pages.length && itemsRemoved < amountToRemove; i++) {
             Inventory page = pages[i];
             int toRemove = Math.min(amountToRemove - itemsRemoved, ItemUtils.countItems(itemStack, page));
             ItemStack cloned = itemStack.clone();
             cloned.setAmount(toRemove);
             ItemStack leftOver = page.removeItem(cloned).get(0);
 
-            if(leftOver != null)
+            if (leftOver != null)
                 toRemove -= leftOver.getAmount();
 
             itemsRemoved += toRemove;
@@ -170,18 +170,18 @@ public abstract class WChest extends DatabaseObject implements Chest {
     }
 
     @Override
-    public ItemStack getItem(int i){
-        return getWildItem(i).getCraftItemStack();
+    public ItemStack getItem(int i) {
+        return getWildItem(i).getBukkitItem();
     }
 
-    public abstract WildItemStack<?, ?> getWildItem(int i);
+    public abstract WildContainerItem getWildItem(int i);
 
     @Override
-    public void setItem(int i, ItemStack itemStack){
-        setItem(i, WildItemStack.of(itemStack));
+    public void setItem(int i, ItemStack itemStack) {
+        setItem(i, plugin.getNMSInventory().createItemStack(itemStack));
     }
 
-    public abstract void setItem(int i, WildItemStack<?, ?> itemStack);
+    public abstract void setItem(int i, WildContainerItem itemStack);
 
     @Override
     public abstract Inventory getPage(int page);
@@ -197,7 +197,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public abstract Inventory setPage(int page, int size, String title);
 
-    public void setPage(int page, InventoryHolder inventoryHolder){
+    public void setPage(int page, InventoryHolder inventoryHolder) {
         Inventory inventory = setPage(page, inventoryHolder.getSize(), inventoryHolder.getTitle());
         inventory.setContents(inventoryHolder.getContents());
     }
@@ -222,11 +222,11 @@ public abstract class WChest extends DatabaseObject implements Chest {
     /* BLOCK-ACTIONS RELATED METHODS */
 
     @Override
-    public boolean onBreak(BlockBreakEvent event){
+    public boolean onBreak(BlockBreakEvent event) {
         Location loc = getLocation();
-        for(int page = 0; page < getPagesAmount(); page++){
+        for (int page = 0; page < getPagesAmount(); page++) {
             Inventory inventory = getPage(page);
-            for(ItemStack itemStack : inventory.getContents())
+            for (ItemStack itemStack : inventory.getContents())
                 if (itemStack != null && itemStack.getType() != Material.AIR) {
                     ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
                 }
@@ -237,7 +237,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
     }
 
     @Override
-    public boolean onOpen(PlayerInteractEvent event){
+    public boolean onOpen(PlayerInteractEvent event) {
         viewers.put(event.getPlayer().getUniqueId(), this);
         return true;
     }
@@ -247,17 +247,17 @@ public abstract class WChest extends DatabaseObject implements Chest {
         HumanEntity player = event.getPlayer();
 
         //Checking if player is buying new page
-        if(InventoryListener.buyNewPage.containsKey(player.getUniqueId()))
+        if (InventoryListener.buyNewPage.containsKey(player.getUniqueId()))
             return false;
 
         viewers.remove(player.getUniqueId());
 
         // Remove item in cursor and drop it on ground
         ItemStack itemCursor = player.getItemOnCursor();
-        if(itemCursor != null && itemCursor.getType() != Material.AIR) {
+        if (itemCursor != null && itemCursor.getType() != Material.AIR) {
             player.setItemOnCursor(new ItemStack(Material.AIR));
             ItemStack leftOvers = player.getInventory().addItem(itemCursor).get(0);
-            if(leftOvers != null)
+            if (leftOvers != null)
                 plugin.getNMSAdapter().dropItemAsPlayer(player, leftOvers);
         }
 
@@ -267,36 +267,34 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public boolean onInteract(InventoryClickEvent event) {
-        if(event.getSlotType() != InventoryType.SlotType.OUTSIDE)
+        if (event.getSlotType() != InventoryType.SlotType.OUTSIDE)
             return false;
 
         ChestData chestData = getData();
         int index = getPageIndex(event.getWhoClicked().getOpenInventory().getTopInventory());
 
-        if(event.getClick() == ClickType.LEFT){
+        if (event.getClick() == ClickType.LEFT) {
             //Making sure he's not in the first page
-            if(index != 0){
+            if (index != 0) {
                 //movingBetweenPages.add(event.getWhoClicked().getUniqueId());
                 openPage((Player) event.getWhoClicked(), index - 1);
                 //movingBetweenPages.remove(event.getWhoClicked().getUniqueId());
             }
-        }
-
-        else if(event.getClick() == ClickType.RIGHT){
+        } else if (event.getClick() == ClickType.RIGHT) {
             //Making sure it's not the last page
-            if(index + 1 < getPagesAmount()){
+            if (index + 1 < getPagesAmount()) {
                 //movingBetweenPages.add(event.getWhoClicked().getUniqueId());
                 openPage((Player) event.getWhoClicked(), index + 1);
             }
 
             //Making sure next page is purchasble
-            else if(chestData.getPagesData().containsKey(++index + 1)){
+            else if (chestData.getPagesData().containsKey(++index + 1)) {
                 InventoryData inventoryData = chestData.getPagesData().get(index + 1);
                 InventoryListener.buyNewPage.put(event.getWhoClicked().getUniqueId(), inventoryData);
 
-                if(plugin.getSettings().confirmGUI){
+                if (plugin.getSettings().confirmGUI) {
                     event.getWhoClicked().openInventory(guiConfirm);
-                }else {
+                } else {
                     Locale.EXPAND_CHEST.send(event.getWhoClicked(), inventoryData.getPrice());
                     event.getWhoClicked().closeInventory();
                 }
@@ -326,7 +324,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
         throw new UnsupportedOperationException("onHopperItemTake for chests is not supported anymore.");
     }
 
-    public void onChunkLoad(){
+    public void onChunkLoad() {
         plugin.getNMSInventory().updateTileEntity(this);
     }
 
@@ -359,12 +357,12 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     /* DATA RELATED METHODS */
 
-    public void loadFromFile(YamlConfiguration cfg){
+    public void loadFromFile(YamlConfiguration cfg) {
         if (cfg.contains("inventory")) {
             ChestData chestData = getData();
             for (String inventoryIndex : cfg.getConfigurationSection("inventory").getKeys(false)) {
                 Inventory inventory = setPage(Integer.parseInt(inventoryIndex), chestData.getDefaultSize(), chestData.getTitle(Integer.parseInt(inventoryIndex) + 1));
-                if(cfg.isConfigurationSection("inventory." + inventoryIndex)){
+                if (cfg.isConfigurationSection("inventory." + inventoryIndex)) {
                     for (String slot : cfg.getConfigurationSection("inventory." + inventoryIndex).getKeys(false)) {
                         try {
                             inventory.setItem(Integer.parseInt(slot), cfg.getItemStack("inventory." + inventoryIndex + "." + slot));
@@ -391,11 +389,11 @@ public abstract class WChest extends DatabaseObject implements Chest {
         return Objects.hash(location);
     }
 
-    private int getViewersAmount(List<HumanEntity> viewersList){
+    private int getViewersAmount(List<HumanEntity> viewersList) {
         int viewers = 0;
 
-        for(HumanEntity viewer : viewersList){
-            if(viewer.getGameMode() != GameMode.SPECTATOR)
+        for (HumanEntity viewer : viewersList) {
+            if (viewer.getGameMode() != GameMode.SPECTATOR)
                 viewers++;
         }
 
