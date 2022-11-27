@@ -99,7 +99,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
     @Override
     public NonNullList<ItemStack> getContents() {
         WildItemStack<?, ?>[] contents = ((WChest) chest).getWildContents();
-        NonNullList<ItemStack> nonNullList = NonNullList.withSize(contents.length, ItemStack.EMPTY);
+        NonNullList<ItemStack> nonNullList = NonNullList.createWithCapacity(contents.length);
 
         for (int i = 0; i < contents.length; i++)
             nonNullList.set(i, (ItemStack) contents[i].getItemStack());
