@@ -27,10 +27,12 @@ import java.util.UUID;
 
 public final class WStorageChest extends WChest implements StorageChest {
 
+    private static final int INVENTORY_SIZE = 5;
+
     private final CraftWildInventory inventory;
 
     private BigInteger amount = BigInteger.ZERO, maxAmount;
-    private final List<WildContainerItem> contents = new ArrayList<>(5);
+    private final List<WildContainerItem> contents = new ArrayList<>(INVENTORY_SIZE);
     private int maxStackSize = 64;
 
     private boolean broken = false;
@@ -39,10 +41,10 @@ public final class WStorageChest extends WChest implements StorageChest {
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
         maxAmount = chestData.getStorageUnitMaxAmount();
-        inventory = plugin.getNMSInventory().createInventory(this, 5,
+        inventory = plugin.getNMSInventory().createInventory(this, INVENTORY_SIZE,
                 chestData.getTitle(1).replace("{0}", amount + ""), 0);
 
-        for (int i = 0; i < contents.size(); ++i)
+        for (int i = 0; i < INVENTORY_SIZE; ++i)
             contents.add(WildContainerItem.AIR);
 
         setItemStack(null);
@@ -296,7 +298,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         ItemStack cursor = event.getCursor() == null ? new ItemStack(Material.AIR) : event.getCursor();
         ItemStack clickedItem = event.getCurrentItem() == null ? new ItemStack(Material.AIR) : event.getCurrentItem();
 
-        if (event.getRawSlot() != 2 && event.getRawSlot() < 5) {
+        if (event.getRawSlot() != 2 && event.getRawSlot() < INVENTORY_SIZE) {
             event.setCancelled(true);
             return false;
         }
