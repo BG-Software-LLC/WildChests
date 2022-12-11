@@ -1,8 +1,8 @@
 group 'Hook_QuantumShop'
 
 dependencies {
-    compileOnly "su.fogus:FogusCore:latest"
-    compileOnly "su.nightexpress:QuantumShop:latest"
+    compileOnly "su.fogus:FogusCore:1.9.9"
+    compileOnly "su.nightexpress:QuantumShop:3.8.0"
     compileOnly "org.spigotmc:v1_16_R3:latest"
     compileOnly project(":API")
     compileOnly parent

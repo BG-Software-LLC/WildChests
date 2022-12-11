@@ -16,19 +16,6 @@ You can compile the project using gradlew.<br>
 Run `gradlew build` in console to build the project.<br>
 You can find already compiled jars on our [Jenkins](https://hub.bg-software.com/) hub!<br>
 
-When compiling you will receive errors about missing dependencies.<br>
-These dependencies are premium plugins that cannot be published on a public repository.<br>
-You can do either of the followings in order to solve it:
-- Add manually all the jar files of the premium plugins.
-- Purchase access to our private repository.
-- Disabling compiling of the modules of these dependencies in the `gradle.properties` file.
-
-<br>
-
-##### Private Jars:
-- QuantumShop by NightExpress [[link]](https://www.spigotmc.org/resources/50696/)
-- ShopGUIPlus (v1.20 & v1.43) by brcdev [[link]](https://www.spigotmc.org/resources/6515/)
-
 ## API
 
 The plugin is packed with a rich API for interacting with chests and more. When hooking into the plugin, it's highly recommended to only use the API and not the compiled plugin, as the API methods are not only commented, but also will not get removed or changed unless they are marked as deprecated. This means that by using the API, you won't have to do any additional changes to your code between updates.

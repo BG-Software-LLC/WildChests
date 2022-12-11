@@ -7,7 +7,7 @@ java {
 }
 
 dependencies {
-    compileOnly "de.robotricker.transportpipes:TransportPipes:5.4.0"
+    compileOnly "de.robotricker:TransportPipes:5.4.0"
     compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
     compileOnly project(":API")
     compileOnly parent
