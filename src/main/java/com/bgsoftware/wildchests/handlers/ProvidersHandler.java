@@ -213,7 +213,7 @@ public final class ProvidersHandler implements ProvidersManager {
         } else if ((autoDetection || pricesProviderType == PricesProviderType.ECONOMYSHOPGUI) &&
                 (Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI") ||
                         Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI-Premium"))) {
-            pricesProvider = createInstance("PricesProvider_zShop");
+            pricesProvider = createInstance("PricesProvider_EconomyShopGUI");
         }
 
         if (!pricesProvider.isPresent()) {
