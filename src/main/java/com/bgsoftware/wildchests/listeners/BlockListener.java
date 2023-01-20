@@ -32,9 +32,11 @@ public final class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestPlace(BlockPlaceEvent e) {
-        if (e.getBlockPlaced().getType() != Material.CHEST && e.getBlockPlaced().getType() != Material.TRAPPED_CHEST)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onChestPlaceNearAnother(BlockPlaceEvent e) {
+        Material placedBlockType = e.getBlockPlaced().getType();
+
+        if (placedBlockType != Material.CHEST && placedBlockType != Material.TRAPPED_CHEST)
             return;
 
         boolean hasNearbyChest = false;
@@ -56,10 +58,21 @@ public final class BlockListener implements Listener {
         if (chestData == null)
             return;
 
-        if (hasNearbyChest) {
+        if (hasNearbyChest)
             e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onChestPlace(BlockPlaceEvent e) {
+        Material placedBlockType = e.getBlockPlaced().getType();
+
+        if (placedBlockType != Material.CHEST && placedBlockType != Material.TRAPPED_CHEST)
             return;
-        }
+
+        ChestData chestData = plugin.getChestsManager().getChestData(e.getItemInHand());
+
+        if (chestData == null)
+            return;
 
         Chest chest = plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
 
