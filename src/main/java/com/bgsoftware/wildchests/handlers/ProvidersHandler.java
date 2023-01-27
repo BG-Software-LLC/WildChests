@@ -181,7 +181,7 @@ public final class ProvidersHandler implements ProvidersManager {
         PricesProviderType pricesProviderType = plugin.getSettings().pricesProvider;
 
         if (pricesProviderType == PricesProviderType.WILDCHESTS) {
-            WildChestsPlugin.log("- Couldn't default prices provider.");
+            WildChestsPlugin.log("- Using built-in prices provider.");
             return; // Return early, no need to do any checks.
         }
 
