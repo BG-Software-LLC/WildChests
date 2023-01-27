@@ -85,7 +85,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
     public NonNullList<ItemStack> getContents() {
         List<WildContainerItem> contents = ((WChest) chest).getWildContents();
         NonNullList<ItemStack> nonNullList = NonNullList.a(contents.size(), ItemStack.b);
-        contents.forEach(wildContainerItem -> nonNullList.add(((WildContainerItemImpl) wildContainerItem).getHandle()));
+        contents.forEach(wildContainerItem -> nonNullList.add(nonNullList.size(), ((WildContainerItemImpl) wildContainerItem).getHandle()));
         return nonNullList;
     }
 
