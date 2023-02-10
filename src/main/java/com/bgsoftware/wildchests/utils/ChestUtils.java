@@ -1,14 +1,13 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.api.events.SellChestTaskEvent;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.task.NotifierTask;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -17,7 +16,12 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 
 public final class ChestUtils {
@@ -33,7 +37,34 @@ public final class ChestUtils {
                 !chestData.getBlacklisted().contains(itemKey);
     };
 
-    public static void tryCraftChest(Chest chest){
+    public static ItemStack[] fixItemStackAmount(ItemStack itemStack, int amount) {
+        if (amount <= itemStack.getMaxStackSize())
+            return new ItemStack[]{itemStack};
+
+        int amountOfFullStacks = amount / itemStack.getMaxStackSize();
+        int amountOfLeftOvers = amount % itemStack.getMaxStackSize();
+
+        ItemStack[] totalItems = new ItemStack[amountOfLeftOvers == 0 ? amountOfFullStacks : amountOfFullStacks + 1];
+        int currentCursor = 0;
+
+        if (amountOfFullStacks > 0) {
+            ItemStack fullStackItem = itemStack.clone();
+            fullStackItem.setAmount(itemStack.getMaxStackSize());
+            for (int i = 0; i < amountOfFullStacks; ++i) {
+                totalItems[currentCursor++] = fullStackItem.clone();
+            }
+        }
+
+        if (amountOfLeftOvers > 0) {
+            ItemStack leftOverItem = itemStack.clone();
+            leftOverItem.setAmount(amountOfLeftOvers);
+            totalItems[currentCursor] = leftOverItem;
+        }
+
+        return totalItems;
+    }
+
+    public static void tryCraftChest(Chest chest) {
         Inventory[] pages = chest.getPages();
 
         Iterator<Map.Entry<Recipe, List<RecipeUtils.RecipeIngredient>>> recipes = ((WChestData) chest.getData()).getRecipeIngredients();
@@ -61,19 +92,18 @@ public final class ChestUtils {
             if (amountOfRecipes > 0) {
                 // We can't use chest#removeItem due to a glitch with named items
                 // We manually removing the items
-                for(Map.Entry<RecipeUtils.RecipeIngredient, List<Integer>> entry : slots.entrySet()){
+                for (Map.Entry<RecipeUtils.RecipeIngredient, List<Integer>> entry : slots.entrySet()) {
                     int amountToRemove = entry.getKey().getAmount() * amountOfRecipes;
-                    for(int slot : entry.getValue()){
+                    for (int slot : entry.getValue()) {
                         int page = slot / pageSize;
                         slot = slot % pageSize;
 
                         ItemStack itemStack = pages[page].getItem(slot);
 
-                        if(itemStack.getAmount() > amountToRemove){
+                        if (itemStack.getAmount() > amountToRemove) {
                             itemStack.setAmount(itemStack.getAmount() - amountToRemove);
                             break;
-                        }
-                        else{
+                        } else {
                             amountToRemove -= itemStack.getAmount();
                             pages[page].setItem(slot, new ItemStack(Material.AIR));
                         }
@@ -97,7 +127,7 @@ public final class ChestUtils {
         }
     }
 
-    public static void trySellChest(Chest chest){
+    public static void trySellChest(Chest chest) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(chest.getPlacer());
         try {
             plugin.getProviders().startSellingTask(player);
@@ -112,8 +142,8 @@ public final class ChestUtils {
         }
     }
 
-    public static boolean trySellItem(OfflinePlayer player, Chest chest, ItemStack toSell){
-        if(toSell == null || toSell.getType() == Material.AIR)
+    public static boolean trySellItem(OfflinePlayer player, Chest chest, ItemStack toSell) {
+        if (toSell == null || toSell.getType() == Material.AIR)
             return false;
 
         ProvidersHandler.TransactionResult<Double> transactionResult = plugin.getProviders().canSellItem(player, toSell);
@@ -128,7 +158,7 @@ public final class ChestUtils {
 
         double finalPrice = transactionResult.getData() * sellChestTaskEvent.getMultiplier();
 
-        if(finalPrice <= 0)
+        if (finalPrice <= 0)
             return false;
 
         boolean successDeposit;
@@ -142,13 +172,13 @@ public final class ChestUtils {
             successDeposit = true;
         }
 
-        if(successDeposit)
+        if (successDeposit)
             NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
 
         return successDeposit;
     }
 
-    public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems){
+    public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems) {
         return additionalItems.isEmpty() ? null : new ArrayList<>(additionalItems.values()).get(0);
     }
 

@@ -214,9 +214,10 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
                 org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
                 Item item = (Item) entityItem.getBukkitEntity();
 
-                itemStack.setAmount(plugin.getProviders().getItemAmount(item));
+                org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
+                        itemStack, plugin.getProviders().getItemAmount(item));
 
-                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemsToAdd));
 
                 if (remainingItem == null) {
                     ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),

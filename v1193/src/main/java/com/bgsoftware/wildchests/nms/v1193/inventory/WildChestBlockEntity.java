@@ -215,9 +215,10 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
                 org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem());
                 Item item = (Item) itemEntity.getBukkitEntity();
 
-                itemStack.setAmount(plugin.getProviders().getItemAmount(item));
+                org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
+                        itemStack, plugin.getProviders().getItemAmount(item));
 
-                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemStack));
+                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemsToAdd));
 
                 if (remainingItem == null) {
                     this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
