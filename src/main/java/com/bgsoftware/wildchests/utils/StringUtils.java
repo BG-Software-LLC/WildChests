@@ -36,4 +36,16 @@ public final class StringUtils {
         return format(bigDecimal);
     }
 
+    public static String format(String format) {
+        String[] words = format.split(" ");
+        String[] formattedWords = new String[words.length];
+
+        for (int i = 0; i < words.length; ++i) {
+            String curr = words[i];
+            formattedWords[i] = Character.toUpperCase(curr.charAt(0)) + curr.substring(1).toLowerCase(java.util.Locale.ENGLISH);
+        }
+
+        return String.join(" ", formattedWords);
+    }
+
 }

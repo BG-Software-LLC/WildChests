@@ -46,9 +46,13 @@ public final class NotifierTask extends BukkitRunnable {
 
                     for (TransactionDetails transaction : transactions) {
                         if (plugin.getSettings().detailedNotifier) {
-                            Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), transaction.getAmount(), transaction.getItemStack().getType(),
-                                    plugin.getSettings().sellFormat ? StringUtils.fancyFormat(transaction.getEarnings()) :
-                                            StringUtils.format(transaction.getEarnings()));
+                            String soldItemType = StringUtils.format(transaction.getItemStack().getType().name());
+                            String soldItemEarnings = plugin.getSettings().sellFormat ?
+                                    StringUtils.fancyFormat(transaction.getEarnings()) :
+                                    StringUtils.format(transaction.getEarnings());
+
+                            Locale.SOLD_CHEST_LINE.send(offlinePlayer.getPlayer(), transaction.getAmount(),
+                                    soldItemType, soldItemEarnings);
                         }
                         totalEarned = totalEarned.add(transaction.getEarnings());
                     }
@@ -69,8 +73,10 @@ public final class NotifierTask extends BukkitRunnable {
                     int totalCrafted = 0;
 
                     for (CraftingDetails item : itemsCrafted) {
-                        if (plugin.getSettings().detailedNotifier)
-                            Locale.CRAFTED_ITEMS_LINE.send(offlinePlayer.getPlayer(), item.getAmount(), item.getItemStack().getType());
+                        if (plugin.getSettings().detailedNotifier) {
+                            String craftedItemType = StringUtils.format(item.getItemStack().getType().name());
+                            Locale.CRAFTED_ITEMS_LINE.send(offlinePlayer.getPlayer(), item.getAmount(), craftedItemType);
+                        }
                         totalCrafted += item.getAmount();
                     }
 
