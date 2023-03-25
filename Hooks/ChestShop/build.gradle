@@ -1,0 +1,13 @@
+group 'Hooks:ChestShop'
+
+dependencies {
+    compileOnly "com.acrobot:ChestShop:3.11"
+    compileOnly "org.spigotmc:v1_16_R3:latest"
+    compileOnly project(":API")
+    compileOnly rootProject
+}
+
+if (project.hasProperty('hook.compile_chestshop') &&
+        !Boolean.valueOf(project.findProperty("hook.compile_chestshop").toString())) {
+    project.tasks.all { task -> task.enabled = false }
+}
