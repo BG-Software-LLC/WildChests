@@ -231,7 +231,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
 
-        BigInteger amountToAdd = BigInteger.ZERO;
+        BigInteger amountToAdd = null;
 
         for (int i = 0; i < itemStacks.length; i++) {
             if (itemStacks[i] == null)
@@ -243,11 +243,12 @@ public final class WStorageChest extends WChest implements StorageChest {
                 if (getItemStack().getType() == Material.AIR)
                     setItemStack(itemStacks[i]);
 
-                amountToAdd = amountToAdd.add(BigInteger.valueOf(itemStacks[i].getAmount()));
+                amountToAdd = amountToAdd == null ? BigInteger.valueOf(itemStacks[i].getAmount()) :
+                        amountToAdd.add(BigInteger.valueOf(itemStacks[i].getAmount()));
             }
         }
 
-        if (amountToAdd.compareTo(getAmount()) != 0) {
+        if (amountToAdd != null) {
             setAmount(getAmount().add(amountToAdd));
             updateInventory(getPage(0));
         }
