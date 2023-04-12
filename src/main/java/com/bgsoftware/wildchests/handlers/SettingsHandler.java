@@ -6,7 +6,6 @@ import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
-import com.bgsoftware.wildchests.hooks.PricesProviderType;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
 import com.bgsoftware.wildchests.hooks.StackerProviderType;
 import com.bgsoftware.wildchests.key.KeySet;
@@ -33,7 +32,7 @@ public final class SettingsHandler {
     public final boolean confirmGUI;
     public final String sellCommand;
     public final boolean sellFormat;
-    public final PricesProviderType pricesProvider;
+    public final String pricesProvider;
     public final StackerProviderType stackerProvider;
     public final int explodeDropChance;
     public final boolean invalidWorldDelete;
@@ -63,7 +62,7 @@ public final class SettingsHandler {
         sellCommand = cfg.getString("sell-command", "");
         sellFormat = cfg.getBoolean("sell-format", false);
         explodeDropChance = cfg.getInt("explode-drop-chance", 100);
-        pricesProvider = PricesProviderType.fromName(cfg.getString("prices-provider")).orElse(PricesProviderType.AUTO);
+        pricesProvider = cfg.getString("prices-provider");
         stackerProvider = StackerProviderType.fromName(cfg.getString("stacker-provider")).orElse(StackerProviderType.AUTO);
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
         wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);

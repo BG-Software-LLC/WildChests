@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.handlers;
 
+import com.bgsoftware.common.shopsbridge.ShopsProvider;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
 import com.bgsoftware.wildchests.api.hooks.BankProvider;
@@ -7,8 +8,8 @@ import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import com.bgsoftware.wildchests.api.hooks.StackerProvider;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.hooks.PricesProviderType;
 import com.bgsoftware.wildchests.hooks.PricesProvider_Default;
+import com.bgsoftware.wildchests.hooks.PricesProvider_ShopsBridgeWrapper;
 import com.bgsoftware.wildchests.hooks.StackerProviderType;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
 import com.bgsoftware.wildchests.hooks.listener.IChestBreakListener;
@@ -20,7 +21,6 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
@@ -176,45 +176,12 @@ public final class ProvidersHandler implements ProvidersManager {
         if (!(pricesProvider instanceof PricesProvider_Default))
             return;
 
-        Optional<PricesProvider> pricesProvider = Optional.empty();
+        String pricesProviderPluginName = plugin.getSettings().pricesProvider;
 
-        PricesProviderType pricesProviderType = plugin.getSettings().pricesProvider;
-
-        if (pricesProviderType == PricesProviderType.WILDCHESTS) {
-            WildChestsPlugin.log("- Using built-in prices provider.");
-            return; // Return early, no need to do any checks.
-        }
-
-        boolean autoDetection = pricesProviderType == PricesProviderType.AUTO;
-
-        if ((autoDetection || pricesProviderType == PricesProviderType.SHOPGUIPLUS) &&
-                Bukkit.getPluginManager().isPluginEnabled("ShopGUIPlus")) {
-            Plugin shopGUIPlus = Bukkit.getPluginManager().getPlugin("ShopGUIPlus");
-            if (shopGUIPlus.getDescription().getVersion().startsWith("1.2")) {
-                pricesProvider = createInstance("PricesProvider_ShopGUIPlus12");
-            } else try {
-                Class.forName("net.brcdev.shopgui.shop.item.ShopItem");
-                pricesProvider = createInstance("PricesProvider_ShopGUIPlus78");
-            } catch (ClassNotFoundException error) {
-                pricesProvider = createInstance("PricesProvider_ShopGUIPlus14");
-            }
-        } else if ((autoDetection || pricesProviderType == PricesProviderType.CMI) &&
-                Bukkit.getPluginManager().isPluginEnabled("CMI")) {
-            pricesProvider = createInstance("PricesProvider_CMI");
-        } else if ((autoDetection || pricesProviderType == PricesProviderType.QUANTUMSHOP) &&
-                Bukkit.getPluginManager().isPluginEnabled("QuantumShop")) {
-            pricesProvider = createInstance("PricesProvider_QuantumShop");
-        } else if ((autoDetection || pricesProviderType == PricesProviderType.ESSENTIALS) &&
-                Bukkit.getPluginManager().isPluginEnabled("Essentials")) {
-            pricesProvider = createInstance("PricesProvider_Essentials");
-        } else if ((autoDetection || pricesProviderType == PricesProviderType.ZSHOP) &&
-                Bukkit.getPluginManager().isPluginEnabled("zShop")) {
-            pricesProvider = createInstance("PricesProvider_zShop");
-        } else if ((autoDetection || pricesProviderType == PricesProviderType.ECONOMYSHOPGUI) &&
-                (Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI") ||
-                        Bukkit.getPluginManager().isPluginEnabled("EconomyShopGUI-Premium"))) {
-            pricesProvider = createInstance("PricesProvider_EconomyShopGUI");
-        }
+        Optional<PricesProvider> pricesProvider = (pricesProviderPluginName.equalsIgnoreCase("AUTO") ?
+                ShopsProvider.findAvailableProvider() : ShopsProvider.getShopsProvider(pricesProviderPluginName))
+                .flatMap(shopsProvider -> shopsProvider.createInstance(plugin).map(shopsBridge ->
+                        new PricesProvider_ShopsBridgeWrapper(shopsProvider, shopsBridge)));
 
         if (!pricesProvider.isPresent()) {
             WildChestsPlugin.log("- Couldn't find any prices providers, using default one");
