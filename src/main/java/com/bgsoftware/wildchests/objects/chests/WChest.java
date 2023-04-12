@@ -123,22 +123,25 @@ public abstract class WChest extends DatabaseObject implements Chest {
     @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
-        Map<Integer, ItemStack> itemAdditionalItems = new HashMap<>();
 
-        for (ItemStack itemStack : itemStacks) {
-            if (itemStack != null) {
-                int currentInventory = 0;
+        for(int index = 0; index < itemStacks.length; ++index) {
+            ItemStack itemStack = itemStacks[index];
 
-                do {
-                    Inventory inventory = getPage(currentInventory);
-                    if (inventory != null) {
-                        itemAdditionalItems = inventory.addItem(itemStack);
-                    }
-                    currentInventory++;
-                } while (!itemAdditionalItems.isEmpty() && currentInventory < getPagesAmount());
+            if(itemStack == null)
+                continue;
 
-                additionalItems.putAll(itemAdditionalItems);
-            }
+            Map<Integer, ItemStack> inventoryAdditionalItems = new HashMap<>();
+            int currentInventory = 0;
+
+            do {
+                Inventory inventory = getPage(currentInventory);
+                if (inventory != null) {
+                    inventoryAdditionalItems = inventory.addItem(itemStack);
+                }
+                currentInventory++;
+            } while (!inventoryAdditionalItems.isEmpty() && currentInventory < getPagesAmount());
+
+            additionalItems.put(index, inventoryAdditionalItems.get(0));
         }
 
         return additionalItems;

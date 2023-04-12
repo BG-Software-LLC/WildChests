@@ -178,8 +178,4 @@ public final class ChestUtils {
         return successDeposit;
     }
 
-    public static ItemStack getRemainingItem(Map<Integer, ItemStack> additionalItems) {
-        return additionalItems.isEmpty() ? null : new ArrayList<>(additionalItems.values()).get(0);
-    }
-
 }

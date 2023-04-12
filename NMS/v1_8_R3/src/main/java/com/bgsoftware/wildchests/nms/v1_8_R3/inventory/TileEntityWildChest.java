@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.ChestUtils;
+import com.bgsoftware.wildchests.utils.Counter;
 import com.google.common.base.Predicate;
 import net.minecraft.server.v1_8_R3.AxisAlignedBB;
 import net.minecraft.server.v1_8_R3.Block;
@@ -42,6 +43,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 
 import java.util.List;
+import java.util.Map;
 
 public class TileEntityWildChest extends TileEntityChest implements IWorldInventory, TileEntityContainer, IUpdatePlayerListBox {
 
@@ -223,14 +225,16 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
                 org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
                         itemStack, plugin.getProviders().getItemAmount(item));
 
-                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemsToAdd));
+                Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
 
-                if (remainingItem == null) {
+                if (leftOvers.isEmpty()) {
                     ((WorldServer) world).sendParticles(null, EnumParticle.CLOUD, false,
                             entityItem.locX, entityItem.locY, entityItem.locZ, 0, 0.0, 0.0, 0.0, 1.0);
                     entityItem.die();
-                } else {
-                    plugin.getProviders().setItemAmount(item, remainingItem.getAmount());
+                } else if (leftOvers.size() != itemsToAdd.length) {
+                    Counter leftOverCount = new Counter();
+                    leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
+                    plugin.getProviders().setItemAmount(item, leftOverCount.get());
                 }
             }
         }

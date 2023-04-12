@@ -11,6 +11,7 @@ import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.ChestUtils;
+import com.bgsoftware.wildchests.utils.Counter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -45,6 +46,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 
 import java.util.List;
+import java.util.Map;
 
 public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyContainer, TileEntityContainer,
         BlockEntityTicker<WildChestBlockEntity> {
@@ -218,15 +220,17 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
                 org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
                         itemStack, plugin.getProviders().getItemAmount(item));
 
-                org.bukkit.inventory.ItemStack remainingItem = ChestUtils.getRemainingItem(chest.addItems(itemsToAdd));
+                Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
 
-                if (remainingItem == null) {
+                if (leftOvers.isEmpty()) {
                     this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
                             itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
                             0, 0.0, 0.0, 0.0, 1.0, false);
                     itemEntity.discard();
-                } else {
-                    plugin.getProviders().setItemAmount(item, remainingItem.getAmount());
+                } else if (leftOvers.size() != itemsToAdd.length) {
+                    Counter leftOverCount = new Counter();
+                    leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
+                    plugin.getProviders().setItemAmount(item, leftOverCount.get());
                 }
             }
         }
