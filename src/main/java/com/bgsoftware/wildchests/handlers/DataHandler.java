@@ -130,7 +130,16 @@ public final class DataHandler {
                     errorMessage = "Null world.";
                 } else {
                     Location location = LocationUtils.fromString(stringLocation);
-                    ChestData chestData = plugin.getChestsManager().getChestData(resultSet.getString("chest_data"));
+
+                    String chestDataName = resultSet.getString("chest_data");
+                    ChestData chestData = plugin.getChestsManager().getChestData(chestDataName);
+
+                    if(chestData == null) {
+                        WildChestsPlugin.log("Couldn't load the location " + stringLocation);
+                        WildChestsPlugin.log("The chest data `" + chestDataName + "` does not exist.");
+                        continue;
+                    }
+
                     WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
 
                     if (chest instanceof StorageChest) {
