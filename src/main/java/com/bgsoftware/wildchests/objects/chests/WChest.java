@@ -124,10 +124,10 @@ public abstract class WChest extends DatabaseObject implements Chest {
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
         Map<Integer, ItemStack> additionalItems = new HashMap<>();
 
-        for(int index = 0; index < itemStacks.length; ++index) {
+        for (int index = 0; index < itemStacks.length; ++index) {
             ItemStack itemStack = itemStacks[index];
 
-            if(itemStack == null)
+            if (itemStack == null)
                 continue;
 
             Map<Integer, ItemStack> inventoryAdditionalItems = new HashMap<>();
@@ -141,7 +141,9 @@ public abstract class WChest extends DatabaseObject implements Chest {
                 currentInventory++;
             } while (!inventoryAdditionalItems.isEmpty() && currentInventory < getPagesAmount());
 
-            additionalItems.put(index, inventoryAdditionalItems.get(0));
+            ItemStack additionalItem = inventoryAdditionalItems.get(0);
+            if (additionalItem != null)
+                additionalItems.put(index, additionalItem);
         }
 
         return additionalItems;
