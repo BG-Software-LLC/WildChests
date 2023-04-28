@@ -1,8 +1,15 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.handlers.ChestsManager;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
+import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
+import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
+import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
+import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
@@ -16,17 +23,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import com.bgsoftware.wildchests.api.handlers.ChestsManager;
-import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
-import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
-import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
-import com.bgsoftware.wildchests.objects.chests.WRegularChest;
-
-import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,32 +43,35 @@ public final class ChestsHandler implements ChestsManager {
     private final Map<ChunkPosition, Set<Chest>> chestsByChunks = Maps.newConcurrentMap();
 
     @Override
+    @Nullable
     public Chest getChest(Location location) {
         return getChest(location, RegularChest.class);
     }
 
     @Override
+    @Nullable
     public LinkedChest getLinkedChest(Location location) {
         return getChest(location, LinkedChest.class);
     }
 
     @Override
+    @Nullable
     public StorageChest getStorageChest(Location location) {
         return getChest(location, StorageChest.class);
     }
 
     @Override
-    public Chest addChest(UUID placer, Location location, ChestData chestData){
+    public Chest addChest(UUID placer, Location location, ChestData chestData) {
         WChest chest = loadChest(placer, location, chestData);
         plugin.getDataHandler().insertChest(chest);
         Executor.sync(() -> plugin.getNMSInventory().updateTileEntity(chest));
         return chest;
     }
 
-    public WChest loadChest(UUID placer, Location location, ChestData chestData){
+    public WChest loadChest(UUID placer, Location location, ChestData chestData) {
         WChest chest;
 
-        switch (chestData.getChestType() ){
+        switch (chestData.getChestType()) {
             case CHEST:
                 chest = new WRegularChest(placer, location, chestData);
                 break;
@@ -88,18 +91,17 @@ public final class ChestsHandler implements ChestsManager {
         return chest;
     }
 
-    public void loadChestsData(Map<String, ChestData> chestsData){
-        for(Map.Entry<String, ChestData> entry : chestsData.entrySet()){
-            if(this.chestsData.containsKey(entry.getKey())){
+    public void loadChestsData(Map<String, ChestData> chestsData) {
+        for (Map.Entry<String, ChestData> entry : chestsData.entrySet()) {
+            if (this.chestsData.containsKey(entry.getKey())) {
                 ((WChestData) this.chestsData.get(entry.getKey())).loadFromData((WChestData) entry.getValue());
-            }
-            else{
+            } else {
                 this.chestsData.put(entry.getKey(), entry.getValue());
             }
         }
 
         chests.values().forEach(chest -> {
-            if(((WChest) chest).getTileEntityContainer() != null)
+            if (((WChest) chest).getTileEntityContainer() != null)
                 ((WChest) chest).getTileEntityContainer().updateData();
         });
     }
@@ -109,7 +111,7 @@ public final class ChestsHandler implements ChestsManager {
         chests.remove(chest.getLocation());
 
         Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chest.getLocation()));
-        if(chunkChests != null)
+        if (chunkChests != null)
             chunkChests.remove(chest);
 
         ((WChest) chest).markAsRemoved();
@@ -125,19 +127,21 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     @Override
+    @Nullable
     public ChestData getChestData(String name) {
         return chestsData.get(name.toLowerCase());
     }
 
     @Override
+    @Nullable
     public ChestData getChestData(ItemStack itemStack) {
         String chestName = plugin.getNMSAdapter().getChestName(itemStack);
 
-        if(chestName != null)
+        if (chestName != null)
             return getChestData(chestName);
 
-        for(ChestData chestData : chestsData.values()){
-            if(((WChestData) chestData).getItemRaw().isSimilar(itemStack))
+        for (ChestData chestData : chestsData.values()) {
+            if (((WChestData) chestData).getItemRaw().isSimilar(itemStack))
                 return chestData;
         }
 
@@ -146,13 +150,14 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public List<Chest> getChests() {
-        return Collections.unmodifiableList(new ArrayList<>(chests.values()));
+        return chests.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(new LinkedList<>(chests.values()));
     }
 
     @Override
     public List<Chest> getChests(Chunk chunk) {
         Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chunk));
-        return Collections.unmodifiableList(chunkChests == null ? new ArrayList<>() : new ArrayList<>(chunkChests));
+        return chunkChests == null || chunkChests.isEmpty() ? Collections.emptyList() :
+                Collections.unmodifiableList(new LinkedList<>(chunkChests));
     }
 
     @Override
@@ -160,11 +165,10 @@ public final class ChestsHandler implements ChestsManager {
         return getChests().stream()
                 .filter(chest -> {
                     ChestData chestData = chest.getData();
-                    if(chestData.isAutoSuctionChunk()) {
+                    if (chestData.isAutoSuctionChunk()) {
                         return LocationUtils.isSameChunk(chest.getLocation(), location) &&
                                 Math.abs(location.getBlockY() - chest.getLocation().getBlockY()) <= chest.getData().getAutoSuctionRange();
-                    }
-                    else if(chestData.isAutoSuction()) {
+                    } else if (chestData.isAutoSuction()) {
                         return LocationUtils.isInRange(chest.getLocation(), location, chest.getData().getAutoSuctionRange());
                     }
                     return false;
@@ -177,23 +181,24 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public List<ChestData> getAllChestData() {
-        return new ArrayList<>(chestsData.values());
+        return Collections.unmodifiableList(new LinkedList<>(chestsData.values()));
     }
 
-    private <T extends Chest> T getChest(Location location, Class<T> chestClass){
+    @Nullable
+    private <T extends Chest> T getChest(Location location, Class<T> chestClass) {
         Chest chest = chests.get(location);
 
-        if(chest == null)
+        if (chest == null)
             return null;
 
-        if(Bukkit.isPrimaryThread() && location.getBlock().getType() != Material.CHEST) {
+        if (Bukkit.isPrimaryThread() && location.getBlock().getType() != Material.CHEST) {
             removeChest(chest);
             return null;
         }
 
         try {
             return chestClass.cast(chest);
-        }catch(ClassCastException ex){
+        } catch (ClassCastException ex) {
             WildChestsPlugin.log("&cTried to cast " + chest.getClass() + " into " + chestClass + ". Stack trace:");
             ex.printStackTrace();
             return null;
