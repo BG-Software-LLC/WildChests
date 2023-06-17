@@ -199,8 +199,6 @@ public final class ChestsHandler implements ChestsManager {
         try {
             return chestClass.cast(chest);
         } catch (ClassCastException ex) {
-            WildChestsPlugin.log("&cTried to cast " + chest.getClass() + " into " + chestClass + ". Stack trace:");
-            ex.printStackTrace();
             return null;
         }
     }
