@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms.v1194.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.nms.v1194.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import net.minecraft.core.NonNullList;
@@ -133,10 +134,7 @@ public class WildContainer implements Container {
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        NonNullList<ItemStack> contents = NonNullList.createWithCapacity(this.items.size());
-        this.items.forEach(wildContainerItem ->
-                contents.add(((WildContainerItemImpl) wildContainerItem).getHandle()));
-        return contents;
+        return TransformingNonNullList.transform(this.items, ItemStack.EMPTY, WildContainerItemImpl::transform);
     }
 
     @Override

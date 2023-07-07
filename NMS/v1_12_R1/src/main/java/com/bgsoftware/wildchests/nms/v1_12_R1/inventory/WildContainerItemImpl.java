@@ -32,4 +32,8 @@ public class WildContainerItemImpl implements WildContainerItem {
         return new WildContainerItemImpl(handle.cloneItemStack());
     }
 
+    public static ItemStack transform(WildContainerItem input) {
+        return ((WildContainerItemImpl) input).getHandle();
+    }
+
 }
