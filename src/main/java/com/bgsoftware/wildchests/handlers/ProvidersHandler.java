@@ -124,12 +124,18 @@ public final class ProvidersHandler implements ProvidersManager {
     public void startSellingTask(OfflinePlayer offlinePlayer) {
         if (!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
             pendingTransactions.put(offlinePlayer.getUniqueId(), new PendingTransaction());
+        if (this.pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
+            ((PricesProvider_ShopsBridgeWrapper) this.pricesProvider).startBulkTransaction();
+        }
     }
 
     public void stopSellingTask(OfflinePlayer offlinePlayer) {
         PendingTransaction pendingTransaction = pendingTransactions.remove(offlinePlayer.getUniqueId());
         if (pendingTransaction != null)
             pendingTransaction.forEach(((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value)));
+        if (this.pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
+            ((PricesProvider_ShopsBridgeWrapper) this.pricesProvider).stopBulkTransaction();
+        }
     }
 
     public boolean depositPlayer(OfflinePlayer offlinePlayer, DepositMethod depositMethod, double money) {
