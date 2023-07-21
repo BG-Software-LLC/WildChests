@@ -3,8 +3,10 @@ package com.bgsoftware.wildchests.nms.v1201.inventory;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
+import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftInventory;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
@@ -32,6 +34,16 @@ public class CraftWildInventoryImpl extends CraftInventory implements CraftWildI
     @Override
     public List<WildContainerItem> getWildContents() {
         return getInventory().items;
+    }
+
+    @Override
+    public ItemStack[] getContents() {
+        NonNullList<WildContainerItem> inventoryItems = getInventory().items;
+        ItemStack[] bukkitItems = new ItemStack[inventoryItems.size()];
+        for (int i = 0; i < bukkitItems.length; ++i) {
+            bukkitItems[i] = inventoryItems.get(i).getBukkitItem();
+        }
+        return bukkitItems;
     }
 
     @Override
