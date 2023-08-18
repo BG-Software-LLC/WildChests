@@ -25,6 +25,7 @@ public class WildInventory implements IInventory {
     public final Chest chest;
     private final int index;
 
+    private NonNullList<ItemStack> itemsAsNMSItemsView;
     public BiConsumer<Integer, ItemStack> setItemFunction = null;
     private int maxStack = 64;
     private int nonEmptyItems = 0;
@@ -125,7 +126,9 @@ public class WildInventory implements IInventory {
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        return TransformingNonNullList.transform(this.items, ItemStack.a, WildContainerItemImpl::transform);
+        if (this.itemsAsNMSItemsView == null)
+            this.itemsAsNMSItemsView = TransformingNonNullList.transform(this.items, ItemStack.a, WildContainerItemImpl::transform);
+        return this.itemsAsNMSItemsView;
     }
 
     public void onOpen(CraftHumanEntity who) {
