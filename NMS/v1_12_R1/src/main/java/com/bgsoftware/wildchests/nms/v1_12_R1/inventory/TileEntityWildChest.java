@@ -5,10 +5,10 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.nms.v1_12_R1.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_12_R1.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
-import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.Counter;
 import com.google.common.base.Predicate;
@@ -58,6 +58,8 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
     private final Chest chest;
     private final boolean isTrappedChest;
 
+    private NonNullList<ItemStack> itemsAsNMSItemsView;
+
     private short currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
     private AxisAlignedBB suctionItems = null;
@@ -91,10 +93,9 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        List<WildContainerItem> contents = ((WChest) chest).getWildContents();
-        NonNullList<ItemStack> nonNullList = NonNullList.a(contents.size(), ItemStack.a);
-        contents.forEach(wildContainerItem -> nonNullList.add(((WildContainerItemImpl) wildContainerItem).getHandle()));
-        return nonNullList;
+        if (this.itemsAsNMSItemsView == null)
+            this.itemsAsNMSItemsView = TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.a, WildContainerItemImpl::transform);
+        return this.itemsAsNMSItemsView;
     }
 
     @Override

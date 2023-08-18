@@ -5,10 +5,10 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.nms.v117.NMSInventory;
+import com.bgsoftware.wildchests.nms.v117.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
-import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.Counter;
 import net.minecraft.core.BlockPos;
@@ -57,6 +57,8 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
     private final BlockPos blockPos;
     private final boolean isTrappedChest;
 
+    private NonNullList<ItemStack> itemsAsNMSItemsView;
+
     private short currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
     private int viewingCount = 0;
 
@@ -92,13 +94,11 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
         return ((WildContainerItemImpl) ((WChest) chest).getWildItem(i)).getHandle();
     }
 
-
     @Override
     public NonNullList<ItemStack> getContents() {
-        List<WildContainerItem> contents = ((WChest) chest).getWildContents();
-        NonNullList<ItemStack> nonNullList = NonNullList.createWithCapacity(contents.size());
-        contents.forEach(wildContainerItem -> nonNullList.add(((WildContainerItemImpl) wildContainerItem).getHandle()));
-        return nonNullList;
+        if (this.itemsAsNMSItemsView == null)
+            this.itemsAsNMSItemsView = TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.EMPTY, WildContainerItemImpl::transform);
+        return this.itemsAsNMSItemsView;
     }
 
     @Override
