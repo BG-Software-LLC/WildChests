@@ -246,7 +246,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
                     ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), false,
                             entityItem.locX, entityItem.locY, entityItem.locZ, 0, 0.0, 0.0, 0.0, 1.0);
                     entityItem.die();
-                } else if (leftOvers.size() != itemsToAdd.length) {
+                } else {
                     Counter leftOverCount = new Counter();
                     leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
                     plugin.getProviders().setItemAmount(item, leftOverCount.get());

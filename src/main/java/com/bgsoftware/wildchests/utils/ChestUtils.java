@@ -26,6 +26,8 @@ import java.util.function.BiPredicate;
 
 public final class ChestUtils {
 
+    private static final int DEFAULT_MAX_STACK_SIZE = 64;
+
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     public static final short DEFAULT_COOLDOWN = 20;
 
@@ -38,18 +40,25 @@ public final class ChestUtils {
     };
 
     public static ItemStack[] fixItemStackAmount(ItemStack itemStack, int amount) {
-        if (amount <= itemStack.getMaxStackSize())
+        int maxStackSize = itemStack.getMaxStackSize();
+
+        if (maxStackSize == DEFAULT_MAX_STACK_SIZE) {
+            itemStack.setAmount(amount);
+            return new ItemStack[]{itemStack};
+        }
+
+        if (amount <= maxStackSize)
             return new ItemStack[]{itemStack};
 
-        int amountOfFullStacks = amount / itemStack.getMaxStackSize();
-        int amountOfLeftOvers = amount % itemStack.getMaxStackSize();
+        int amountOfFullStacks = amount / maxStackSize;
+        int amountOfLeftOvers = amount % maxStackSize;
 
         ItemStack[] totalItems = new ItemStack[amountOfLeftOvers == 0 ? amountOfFullStacks : amountOfFullStacks + 1];
         int currentCursor = 0;
 
         if (amountOfFullStacks > 0) {
             ItemStack fullStackItem = itemStack.clone();
-            fullStackItem.setAmount(itemStack.getMaxStackSize());
+            fullStackItem.setAmount(maxStackSize);
             for (int i = 0; i < amountOfFullStacks; ++i) {
                 totalItems[currentCursor++] = fullStackItem.clone();
             }

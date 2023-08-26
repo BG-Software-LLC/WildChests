@@ -227,7 +227,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
                             itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
                             0, 0.0, 0.0, 0.0, 1.0, false);
                     itemEntity.discard();
-                } else if (leftOvers.size() != itemsToAdd.length) {
+                } else {
                     Counter leftOverCount = new Counter();
                     leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
                     plugin.getProviders().setItemAmount(item, leftOverCount.get());
