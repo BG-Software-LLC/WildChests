@@ -57,8 +57,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
     private final BlockPos blockPos;
     private final boolean isTrappedChest;
 
-    private NonNullList<ItemStack> itemsAsNMSItemsView;
-
     private short currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
     private int viewingCount = 0;
 
@@ -96,9 +94,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        if (this.itemsAsNMSItemsView == null)
-            this.itemsAsNMSItemsView = TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.EMPTY, WildContainerItemImpl::transform);
-        return this.itemsAsNMSItemsView;
+        return TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.EMPTY, WildContainerItemImpl::transform);
     }
 
     @Override
