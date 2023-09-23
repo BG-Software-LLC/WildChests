@@ -24,3 +24,6 @@ include 'NMS:v1_17'
 include 'NMS:v1_18'
 include 'NMS:v1_19'
 include 'NMS:v1_20_1'
+include 'NMS:v1_20_2'
+findProject(':NMS:v1_20_2')?.name = 'v1_20_2'
+
