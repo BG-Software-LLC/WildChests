@@ -30,6 +30,8 @@ public final class ChunksListener implements Listener {
     }
 
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk){
+        plugin.getChestsManager().loadChestsForChunk(chunk);
+
         plugin.getChestsManager().getChests(chunk).forEach(chest -> {
             Location location = chest.getLocation();
             Material blockType = location.getBlock().getType();

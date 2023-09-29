@@ -12,6 +12,7 @@ import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.data.WChestData;
+import com.bgsoftware.wildchests.utils.BlockPosition;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
@@ -21,11 +22,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -39,56 +42,40 @@ public final class ChestsHandler implements ChestsManager {
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     private final Map<String, ChestData> chestsData = new HashMap<>();
 
-    private final Map<Location, Chest> chests = Maps.newConcurrentMap();
+    private final Map<BlockPosition, Chest> chests = Maps.newConcurrentMap();
     private final Map<ChunkPosition, Set<Chest>> chestsByChunks = Maps.newConcurrentMap();
+    private final Map<ChunkPosition, Map<BlockPosition, UnloadedChest>> unloadedChests = Maps.newConcurrentMap();
 
     @Override
     @Nullable
+
     public Chest getChest(Location location) {
-        return getChest(location, RegularChest.class);
+        return getChest(BlockPosition.of(location), RegularChest.class);
     }
 
     @Override
     @Nullable
     public LinkedChest getLinkedChest(Location location) {
-        return getChest(location, LinkedChest.class);
+        return getChest(BlockPosition.of(location), LinkedChest.class);
     }
 
     @Override
     @Nullable
     public StorageChest getStorageChest(Location location) {
-        return getChest(location, StorageChest.class);
+        return getChest(BlockPosition.of(location), StorageChest.class);
     }
 
     @Override
     public Chest addChest(UUID placer, Location location, ChestData chestData) {
-        WChest chest = loadChest(placer, location, chestData);
+        WChest chest = createChestInternal(placer, location, chestData);
         plugin.getDataHandler().insertChest(chest);
         Executor.sync(() -> plugin.getNMSInventory().updateTileEntity(chest));
         return chest;
     }
 
-    public WChest loadChest(UUID placer, Location location, ChestData chestData) {
-        WChest chest;
-
-        switch (chestData.getChestType()) {
-            case CHEST:
-                chest = new WRegularChest(placer, location, chestData);
-                break;
-            case LINKED_CHEST:
-                chest = new WLinkedChest(placer, location, chestData);
-                break;
-            case STORAGE_UNIT:
-                chest = new WStorageChest(placer, location, chestData);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid chest at " + location);
-        }
-
-        chests.put(location, chest);
-        chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
-
-        return chest;
+    public void loadUnloadedChest(UUID placer, BlockPosition position, ChestData chestData, String[] extendedData) {
+        UnloadedChest unloadedChest = new UnloadedChest(placer, position, chestData, extendedData);
+        unloadedChests.computeIfAbsent(ChunkPosition.of(position), s -> new LinkedHashMap<>()).put(position, unloadedChest);
     }
 
     public void loadChestsData(Map<String, ChestData> chestsData) {
@@ -108,7 +95,7 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public void removeChest(Chest chest) {
-        chests.remove(chest.getLocation());
+        chests.remove(BlockPosition.of(chest.getLocation()));
 
         Set<Chest> chunkChests = chestsByChunks.get(ChunkPosition.of(chest.getLocation()));
         if (chunkChests != null)
@@ -185,11 +172,31 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     @Nullable
-    private <T extends Chest> T getChest(Location location, Class<T> chestClass) {
-        Chest chest = chests.get(location);
+    private <T extends Chest> T getChest(BlockPosition blockPosition, Class<T> chestClass) {
+        World world = Bukkit.getWorld(blockPosition.getWorldName());
 
-        if (chest == null)
+        if (world == null)
             return null;
+
+        Chest chest = chests.get(blockPosition);
+
+        if (chest == null) {
+            ChunkPosition chunkPosition = ChunkPosition.of(blockPosition);
+            Map<BlockPosition, UnloadedChest> unloadedChests = this.unloadedChests.get(chunkPosition);
+            if (unloadedChests == null)
+                return null;
+
+            UnloadedChest unloadedChest = unloadedChests.remove(blockPosition);
+            if (unloadedChest == null)
+                return null;
+
+            if (unloadedChests.isEmpty())
+                this.unloadedChests.remove(chunkPosition);
+
+            chest = loadChestInternal(unloadedChest);
+        }
+
+        Location location = new Location(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
 
         if (Bukkit.isPrimaryThread() && location.getBlock().getType() != Material.CHEST) {
             removeChest(chest);
@@ -201,6 +208,86 @@ public final class ChestsHandler implements ChestsManager {
         } catch (ClassCastException ex) {
             return null;
         }
+    }
+
+    public void loadChestsForChunk(Chunk chunk) {
+        Map<BlockPosition, UnloadedChest> unloadedChests = this.unloadedChests.remove(ChunkPosition.of(chunk));
+        if (unloadedChests != null)
+            unloadedChests.values().forEach(this::loadChestInternal);
+    }
+
+    private WChest createChestInternal(UUID placer, Location location, ChestData chestData) {
+        WChest chest;
+
+        switch (chestData.getChestType()) {
+            case CHEST:
+                chest = new WRegularChest(placer, location, chestData);
+                break;
+            case LINKED_CHEST:
+                chest = new WLinkedChest(placer, location, chestData);
+                break;
+            case STORAGE_UNIT:
+                chest = new WStorageChest(placer, location, chestData);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid chest at " + location);
+        }
+
+        chests.put(BlockPosition.of(location), chest);
+        chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
+
+        return chest;
+    }
+
+    private WChest loadChestInternal(UnloadedChest unloadedChest) {
+        World world = Bukkit.getWorld(unloadedChest.position.getWorldName());
+
+        if (world == null) {
+            throw new IllegalArgumentException("Tried to load chest for an invalid world: " +
+                    unloadedChest.position.getWorldName());
+        }
+
+        Location location = new Location(world, unloadedChest.position.getX(),
+                unloadedChest.position.getY(), unloadedChest.position.getZ());
+
+        WChest chest = createChestInternal(unloadedChest.placer, location, unloadedChest.chestData);
+
+        if (chest instanceof StorageChest) {
+            String item = unloadedChest.extendedData[0];
+            String amount = unloadedChest.extendedData[1];
+            String maxAmount = unloadedChest.extendedData[2];
+            ((WStorageChest) chest).loadFromData(item, amount, maxAmount);
+        } else {
+            String serialized = unloadedChest.extendedData[0];
+            if (chest instanceof LinkedChest) {
+                String linkedChest = unloadedChest.extendedData[1];
+                ((WLinkedChest) chest).loadFromData(serialized, linkedChest);
+            } else {
+                ((WRegularChest) chest).loadFromData(serialized);
+            }
+
+            if (!serialized.isEmpty() && serialized.toCharArray()[0] != '*') {
+                chest.executeUpdateStatement(true);
+            }
+        }
+
+        return chest;
+    }
+
+    private static class UnloadedChest {
+
+        private final UUID placer;
+        private final BlockPosition position;
+        private final ChestData chestData;
+        private final String[] extendedData;
+
+        UnloadedChest(UUID placer, BlockPosition position, ChestData chestData, String[] extendedData) {
+            this.placer = placer;
+            this.position = position;
+            this.chestData = chestData;
+            this.extendedData = extendedData;
+        }
+
     }
 
 }

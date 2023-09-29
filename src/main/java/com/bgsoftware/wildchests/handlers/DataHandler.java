@@ -3,8 +3,6 @@ package com.bgsoftware.wildchests.handlers;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
-import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.DatabaseObject;
 import com.bgsoftware.wildchests.database.Query;
@@ -12,9 +10,7 @@ import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
-import com.bgsoftware.wildchests.objects.chests.WRegularChest;
-import com.bgsoftware.wildchests.objects.chests.WStorageChest;
+import com.bgsoftware.wildchests.utils.BlockPosition;
 import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
@@ -102,14 +98,10 @@ public final class DataHandler {
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS storage_units (location VARCHAR PRIMARY KEY, placer VARCHAR, chest_data VARCHAR, item VARCHAR, amount VARCHAR, max_amount VARCHAR);");
         SQLHelper.executeUpdate("CREATE TABLE IF NOT EXISTS offline_payment (uuid VARCHAR PRIMARY KEY, payment VARCHAR);");
 
-        List<Chest> updateContentsChests = new ArrayList<>();
-
         //Loading all tables
-        SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests", updateContentsChests));
-        SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests", updateContentsChests));
-        SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units", updateContentsChests));
-
-        updateContentsChests.forEach(chest -> ((WChest) chest).executeUpdateStatement(false));
+        SQLHelper.executeQuery("SELECT * FROM chests;", resultSet -> loadResultSet(resultSet, "chests"));
+        SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
+        SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
 
         Executor.sync(() -> {
             for (World world : Bukkit.getWorlds()) {
@@ -119,59 +111,52 @@ public final class DataHandler {
         }, 1L);
     }
 
-    private void loadResultSet(ResultSet resultSet, String tableName, List<Chest> updateContentsChests) throws SQLException {
+    private void loadResultSet(ResultSet resultSet, String tableName) throws SQLException {
         while (resultSet.next()) {
-            UUID placer = UUID.fromString(resultSet.getString("placer"));
             String stringLocation = resultSet.getString("location");
-            String errorMessage = null;
 
-            try {
-                if (Bukkit.getWorld(stringLocation.split(", ")[0]) == null) {
-                    errorMessage = "Null world.";
-                } else {
-                    Location location = LocationUtils.fromString(stringLocation);
+            UUID placer = UUID.fromString(resultSet.getString("placer"));
 
-                    String chestDataName = resultSet.getString("chest_data");
-                    ChestData chestData = plugin.getChestsManager().getChestData(chestDataName);
+            String chestDataName = resultSet.getString("chest_data");
+            ChestData chestData = plugin.getChestsManager().getChestData(chestDataName);
 
-                    if(chestData == null) {
-                        WildChestsPlugin.log("Couldn't load the location " + stringLocation);
-                        WildChestsPlugin.log("The chest data `" + chestDataName + "` does not exist.");
-                        continue;
-                    }
-
-                    WChest chest = plugin.getChestsManager().loadChest(placer, location, chestData);
-
-                    if (chest instanceof StorageChest) {
-                        String item = resultSet.getString("item");
-                        String amount = resultSet.getString("amount");
-                        String maxAmount = resultSet.getString("max_amount");
-                        ((WStorageChest) chest).loadFromData(item, amount, maxAmount);
-                    } else {
-                        String serialized = resultSet.getString("inventories");
-                        if (chest instanceof LinkedChest) {
-                            String linkedChest = resultSet.getString("linked_chest");
-                            ((WLinkedChest) chest).loadFromData(serialized, linkedChest);
-                        } else {
-                            ((WRegularChest) chest).loadFromData(serialized);
-                        }
-
-                        if (!serialized.isEmpty() && serialized.toCharArray()[0] != '*')
-                            updateContentsChests.add(chest);
-                    }
-                }
-            } catch (Exception ex) {
-                errorMessage = ex.getMessage();
+            if (chestData == null) {
+                WildChestsPlugin.log("Couldn't load the location " + stringLocation);
+                WildChestsPlugin.log("The chest data `" + chestDataName + "` does not exist.");
+                continue;
             }
 
-            if (errorMessage != null) {
-                WildChestsPlugin.log("Couldn't load the location " + stringLocation);
-                WildChestsPlugin.log(errorMessage);
-                if (errorMessage.contains("Null") && plugin.getSettings().invalidWorldDelete) {
+            BlockPosition position = BlockPosition.deserialize(stringLocation);
+
+            if (plugin.getSettings().invalidWorldDelete) {
+                World world = Bukkit.getWorld(position.getWorldName());
+                if (world == null) {
                     SQLHelper.executeUpdate("DELETE FROM " + tableName + " WHERE location = '" + stringLocation + "';");
                     WildChestsPlugin.log("Deleted spawner (" + stringLocation + ") from database.");
+                    continue;
                 }
             }
+
+            String[] extendedData;
+
+            ChestType chestType = chestData.getChestType();
+            if (chestType == ChestType.STORAGE_UNIT) {
+                extendedData = new String[3];
+                extendedData[0] = resultSet.getString("item");
+                extendedData[1] = resultSet.getString("amount");
+                extendedData[2] = resultSet.getString("max_amount");
+            } else {
+                if (chestType == ChestType.LINKED_CHEST) {
+                    extendedData = new String[2];
+                    extendedData[1] = resultSet.getString("linked_chest");
+                } else {
+                    extendedData = new String[1];
+                }
+
+                extendedData[0] = resultSet.getString("inventories");
+            }
+
+            plugin.getChestsManager().loadUnloadedChest(placer, position, chestData, extendedData);
         }
     }
 
