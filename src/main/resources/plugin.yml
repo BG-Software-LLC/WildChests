@@ -1,12 +1,14 @@
 name: WildChests
 version: ${project.version}
-api-version: 1.13
 main: com.bgsoftware.wildchests.WildChestsPlugin
+
 description: Sell wildchests, auto-crafters, pouches and more in one plugin!
 website: https://bg-software.com/
+api-version: 1.13
 author: Ome_R
 
-softdepend:
+# Custom section used by DependenciesManager, which replaces softdepend.
+class-depends:
   - ChestShop
   - EconomyShopGUI
   - EconomyShopGUI-Premium
@@ -18,6 +20,7 @@ softdepend:
 commands:
   chests:
     description: Main command for the plugin
+
 permissions:
   wildchests.*:
     description: Gives access to all the commands

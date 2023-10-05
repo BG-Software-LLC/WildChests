@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests;
 
+import com.bgsoftware.common.dependencies.DependenciesManager;
 import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.common.updater.Updater;
 import com.bgsoftware.wildchests.api.WildChests;
@@ -55,6 +56,9 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
     @Override
     public void onLoad() {
         plugin = this;
+
+        DependenciesManager.inject(this);
+
         shouldEnable = loadNMSAdapter();
     }
 
