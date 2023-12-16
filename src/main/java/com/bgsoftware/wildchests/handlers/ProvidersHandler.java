@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
@@ -49,6 +50,9 @@ public final class ProvidersHandler implements ProvidersManager {
 
     private final List<IChestPlaceListener> chestPlaceListeners = new ArrayList<>();
     private final List<IChestBreakListener> chestBreakListeners = new ArrayList<>();
+
+    private boolean isShopsBridge = false;
+    private long lastBulkTransactionStart = -1;
 
     public ProvidersHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
@@ -124,8 +128,9 @@ public final class ProvidersHandler implements ProvidersManager {
     public void startSellingTask(OfflinePlayer offlinePlayer) {
         if (!pendingTransactions.containsKey(offlinePlayer.getUniqueId()))
             pendingTransactions.put(offlinePlayer.getUniqueId(), new PendingTransaction());
-        if (this.pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
+        if (this.lastBulkTransactionStart == -1 && this.pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
             ((PricesProvider_ShopsBridgeWrapper) this.pricesProvider).startBulkTransaction();
+            this.lastBulkTransactionStart = System.currentTimeMillis();
         }
     }
 
@@ -134,7 +139,11 @@ public final class ProvidersHandler implements ProvidersManager {
         if (pendingTransaction != null)
             pendingTransaction.forEach(((depositMethod, value) -> depositPlayer(offlinePlayer, depositMethod, value)));
         if (this.pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
-            ((PricesProvider_ShopsBridgeWrapper) this.pricesProvider).stopBulkTransaction();
+            long currentTime = System.currentTimeMillis();
+            if (TimeUnit.MILLISECONDS.toSeconds(currentTime - this.lastBulkTransactionStart) > 10) {
+                ((PricesProvider_ShopsBridgeWrapper) this.pricesProvider).stopBulkTransaction();
+                this.lastBulkTransactionStart = -1;
+            }
         }
     }
 
