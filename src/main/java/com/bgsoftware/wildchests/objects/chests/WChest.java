@@ -33,8 +33,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -122,31 +124,28 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public Map<Integer, ItemStack> addItems(ItemStack... itemStacks) {
-        Map<Integer, ItemStack> additionalItems = new HashMap<>();
+        if (itemStacks.length == 0)
+            return Collections.emptyMap();
 
-        for (int index = 0; index < itemStacks.length; ++index) {
-            ItemStack itemStack = itemStacks[index];
+        Map<Integer, ItemStack> itemStackMap = new LinkedHashMap<>();
+        for (int i = 0; i < itemStacks.length; ++i)
+            itemStackMap.put(i, itemStacks[i]);
 
-            if (itemStack == null)
-                continue;
-
-            Map<Integer, ItemStack> inventoryAdditionalItems = new HashMap<>();
-            int currentInventory = 0;
-
-            do {
-                Inventory inventory = getPage(currentInventory);
-                if (inventory != null) {
-                    inventoryAdditionalItems = inventory.addItem(itemStack);
+        for (int i = 0; i < getPagesAmount(); ++i) {
+            Inventory page = getPage(i);
+            Iterator<ItemStack> itemStackIterator = itemStackMap.values().iterator();
+            while (itemStackIterator.hasNext()) {
+                ItemStack itemStack = itemStackIterator.next();
+                ItemStack leftOver = page.addItem(itemStack).get(0);
+                if (leftOver != null) {
+                    itemStack.setAmount(leftOver.getAmount());
+                } else {
+                    itemStackIterator.remove();
                 }
-                currentInventory++;
-            } while (!inventoryAdditionalItems.isEmpty() && currentInventory < getPagesAmount());
-
-            ItemStack additionalItem = inventoryAdditionalItems.get(0);
-            if (additionalItem != null)
-                additionalItems.put(index, additionalItem);
+            }
         }
 
-        return additionalItems;
+        return itemStackMap;
     }
 
     @Override
