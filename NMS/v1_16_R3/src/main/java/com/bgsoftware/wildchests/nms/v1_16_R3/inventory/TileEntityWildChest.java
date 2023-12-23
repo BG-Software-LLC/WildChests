@@ -10,7 +10,7 @@ import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.utils.ChestUtils;
-import com.bgsoftware.wildchests.utils.Counter;
+import com.google.common.base.Predicate;
 import net.minecraft.server.v1_16_R3.AxisAlignedBB;
 import net.minecraft.server.v1_16_R3.Block;
 import net.minecraft.server.v1_16_R3.BlockPosition;
@@ -41,6 +41,7 @@ import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -210,26 +211,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
         currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
         if (suctionItems != null) {
-            for (EntityItem entityItem : world.a(EntityItem.class, suctionItems, entityItem ->
-                    ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData))) {
-                org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
-                Item item = (Item) entityItem.getBukkitEntity();
-
-                org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
-                        itemStack, plugin.getProviders().getItemAmount(item));
-
-                Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
-
-                if (leftOvers.isEmpty()) {
-                    ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),
-                            entityItem.locZ(), 0, 0.0, 0.0, 0.0, 1.0, false);
-                    entityItem.die();
-                } else {
-                    Counter leftOverCount = new Counter();
-                    leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
-                    plugin.getProviders().setItemAmount(item, leftOverCount.get());
-                }
-            }
+            handleSuctionItems(chestData);
         }
 
         if (autoCraftMode) {
@@ -304,6 +286,63 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition) {
         tileEntity.setLocation(world, blockPosition);
+    }
+
+    private void handleSuctionItems(ChestData chestData) {
+        List<EntityItem> nearbyItems = world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>) entity ->
+                entity != null && ChestUtils.SUCTION_PREDICATE.test((CraftItem) entity.getBukkitEntity(), chestData));
+
+        if (nearbyItems.isEmpty())
+            return;
+
+        List<org.bukkit.inventory.ItemStack> suctionItemsList = new ArrayList<>(nearbyItems.size());
+        List<EntityItem> itemEntityList = new ArrayList<>(nearbyItems.size());
+
+        for (EntityItem itemEntity : nearbyItems) {
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItemStack());
+            Item item = (Item) itemEntity.getBukkitEntity();
+
+            int actualItemCount = plugin.getProviders().getItemAmount(item);
+            if (actualItemCount != itemStack.getAmount()) {
+                itemStack = itemStack.clone();
+                itemStack.setAmount(actualItemCount);
+            }
+
+            suctionItemsList.add(itemStack);
+            itemEntityList.add(itemEntity);
+        }
+
+        Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
+                suctionItemsList.toArray(new org.bukkit.inventory.ItemStack[0]));
+
+        if (leftOvers.isEmpty()) {
+            // We want to remove all entities.
+            itemEntityList.forEach(this::handleItemSuctionRemoval);
+            return;
+        }
+
+        for (int i = 0; i < suctionItemsList.size(); ++i) {
+            org.bukkit.inventory.ItemStack leftOverItem = leftOvers.get(i);
+            EntityItem entityItem = itemEntityList.get(i);
+
+            if (entityItem.dead)
+                continue;
+
+            if (leftOverItem == null) {
+                handleItemSuctionRemoval(entityItem);
+            } else {
+                Item item = (Item) entityItem.getBukkitEntity();
+                plugin.getProviders().setItemAmount(item,
+                        plugin.getProviders().getItemAmount(item) + leftOverItem.getAmount());
+            }
+        }
+    }
+
+    private void handleItemSuctionRemoval(EntityItem entityItem) {
+        ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
+                entityItem.locX(), entityItem.locY(), entityItem.locZ(),
+                0, 0.0, 0.0, 0.0, 1.0, false);
+        entityItem.die();
     }
 
 }
