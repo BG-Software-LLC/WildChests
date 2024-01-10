@@ -53,6 +53,9 @@ hooks:
 # The maximum pickup delay items can have for the suction chests to pick them up.
 maximum-pickup-delay: 32767
 
+# How long the received money while being offline message should be delayed (in ticks)
+offline-money-message-delay: 10
+
 # The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and
 # you can create and mix between them. You can create chests that stores infinite amount of items, chests that
 # are connected to player vaults or factions, linked chests and many more!
