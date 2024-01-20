@@ -10,7 +10,8 @@ version = "2023.3"
 project.ext {
     archiveFolder = file("archive/")
     targetFolder = file("target/")
-    buildVersion = System.getenv("BUILD_NUMBER") == null ? version : version + "-b" + System.getenv("BUILD_NUMBER")
+    buildVersion = System.getenv("BUILD_NUMBER") == null || Boolean.parseBoolean(System.getenv("STABLE_BUILD")) ?
+            version : version + "-b" + System.getenv("BUILD_NUMBER")
 }
 
 allprojects {
@@ -58,6 +59,7 @@ dependencies {
     implementation 'com.bgsoftware.common.config:CommentedConfiguration:1.0.3'
     implementation 'com.bgsoftware.common.updater:Updater:latest'
     implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b6:all@jar'
+    implementation 'com.bgsoftware.common.dependencies:DependenciesManager:b2'
 
     // Spigot jars
     compileOnly "org.spigotmc:v1_8_R1:latest"
