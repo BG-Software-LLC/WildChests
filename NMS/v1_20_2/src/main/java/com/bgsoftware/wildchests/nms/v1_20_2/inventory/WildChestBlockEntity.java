@@ -188,7 +188,8 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
             double z = blockPos.getZ() + level.getRandom().nextFloat();
             for (String particle : chestData.getChestParticles()) {
                 try {
-                    this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.valueOf(particle)),
+                    this.serverLevel.sendParticles(null,
+                            CraftParticle.createParticleParam(Particle.valueOf(particle), null),
                             x, y, z, 0, 0.0, 0.0, 0.0, 1.0, false);
                 } catch (Exception ignored) {
                 }
@@ -219,7 +220,8 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
                 Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
 
                 if (leftOvers.isEmpty()) {
-                    this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
+                    this.serverLevel.sendParticles(null,
+                            CraftParticle.createParticleParam(Particle.CLOUD, null),
                             itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
                             0, 0.0, 0.0, 0.0, 1.0, false);
                     itemEntity.discard();
