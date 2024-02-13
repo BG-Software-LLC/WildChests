@@ -228,16 +228,36 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public boolean onBreak(BlockBreakEvent event) {
-        Location loc = getLocation();
+        Map<ItemStack, BigInteger> itemStackAmountMap = new HashMap<>();
         for (int page = 0; page < getPagesAmount(); page++) {
             Inventory inventory = getPage(page);
-            for (ItemStack itemStack : inventory.getContents())
-                if (itemStack != null && itemStack.getType() != Material.AIR) {
-                    ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
-                }
+            for (ItemStack itemStack : inventory.getContents()) {
+                if (itemStack == null || itemStack.getType() == Material.AIR)
+                    continue;
+                BigInteger newAmount = BigInteger.valueOf(itemStack.getAmount());
+                BigInteger total = itemStackAmountMap.containsKey(itemStack) ? itemStackAmountMap.get(itemStack) : BigInteger.ZERO;
+                itemStackAmountMap.put(itemStack, total.add(newAmount));
+            }
             inventory.clear();
         }
 
+        Location loc = getLocation();
+        for (Entry<ItemStack, BigInteger> entry : itemStackAmountMap.entrySet()) {
+            ItemStack itemStack = entry.getKey();
+            BigInteger[] divideAndRemainder = entry.getValue().divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
+            int amountOfMaximums = divideAndRemainder[0].intValue();
+            int reminder = divideAndRemainder[1].intValue();
+
+            for (int i = 0; i < amountOfMaximums; i++) {
+                itemStack.setAmount(Integer.MAX_VALUE);
+                ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+            }
+
+            if (reminder > 0) {
+                itemStack.setAmount(reminder);
+                ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+            }
+        }
         return true;
     }
 
