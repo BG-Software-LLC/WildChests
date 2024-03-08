@@ -58,7 +58,7 @@ public final class SQLHelper {
             preparedStatement = connection.prepareStatement(statement);
             preparedStatement.executeUpdate();
         }catch(SQLException ex){
-            System.out.println(statement);
+            WildChestsPlugin.log(statement);
             ex.printStackTrace();
         } finally {
             close(preparedStatement);
