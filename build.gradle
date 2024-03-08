@@ -18,6 +18,12 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'com.github.johnrengelman.shadow'
 
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(8))
+        }
+    }
+
     repositories {
         maven { url 'https://repo.bg-software.com/repository/nms/' }
         maven { url 'https://repo.bg-software.com/repository/api/' }
@@ -58,7 +64,7 @@ dependencies {
     implementation 'com.bgsoftware.common.reflection:ReflectionUtils:1.0.2'
     implementation 'com.bgsoftware.common.config:CommentedConfiguration:1.0.3'
     implementation 'com.bgsoftware.common.updater:Updater:latest'
-    implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b8:all@jar'
+    implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b9:all@jar'
     implementation 'com.bgsoftware.common.dependencies:DependenciesManager:b2'
 
     // Spigot jars

@@ -28,7 +28,8 @@ sell-format: false
 # Set a chance of it to get dropped between 0 and 100.
 explode-drop-chance: 100
 
-# Choose which prices plugin to check for prices (Auto, CMI, EconomyShopGUI, Essentials, ExcellentShop, GUIShop, newtShop, QuantumShop, ShopGUIPlus, zShop).
+# Choose which prices plugin to check for prices:
+# Auto, CMI, EconomyShopGUI, Essentials, ExcellentShop, GUIShop, newtShop, NextGens, QuantumShop, ShopGUIPlus, zShop
 prices-provider: 'WildChests'
 
 # What stacker provider should the plugin use? (WildStacker, RoseStacker, Auto)
