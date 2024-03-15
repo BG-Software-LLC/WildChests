@@ -16,12 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 public final class ChestUtils {
@@ -30,6 +25,7 @@ public final class ChestUtils {
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
     public static final short DEFAULT_COOLDOWN = 20;
+    public static final HashMap<UUID, Double> offlineDeposit = new HashMap<>();
 
     public static final BiPredicate<Item, ChestData> SUCTION_PREDICATE = (item, chestData) -> {
         Key itemKey = item.getItemStack() == null ? Key.of("AIR:0") : Key.of(item.getItemStack());
@@ -183,6 +179,8 @@ public final class ChestUtils {
 
         if (successDeposit)
             NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
+        if(!player.isOnline())
+            offlineDeposit.put(player.getUniqueId(),offlineDeposit.getOrDefault(player.getUniqueId(),0.0)+finalPrice);
 
         return successDeposit;
     }

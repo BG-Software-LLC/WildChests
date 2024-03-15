@@ -27,10 +27,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class DataHandler {
@@ -56,13 +54,13 @@ public final class DataHandler {
 
         List<Chest> regularModifiedChests = chestList.stream()
                 .filter(chest -> chest.getChestType() == ChestType.CHEST)
-                .collect(Collectors.toList());
+                .toList();
         List<Chest> storageModifiedChests = chestList.stream()
                 .filter(chest -> chest.getChestType() == ChestType.STORAGE_UNIT)
-                .collect(Collectors.toList());
+                .toList();
         List<Chest> linkedChestsModifiedChests = chestList.stream()
                 .filter(chest -> chest.getChestType() == ChestType.LINKED_CHEST)
-                .collect(Collectors.toList());
+                .toList();
 
         if (!regularModifiedChests.isEmpty()) {
             StatementHolder chestsUpdateHolder = Query.REGULAR_CHEST_UPDATE_INVENTORIES.getStatementHolder(null);

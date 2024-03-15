@@ -29,6 +29,7 @@ import org.bukkit.UnsafeValues;
 import org.bukkit.World;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -138,6 +139,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         Executor.stop();
         log("Terminating database...");
         SQLHelper.close();
+        log("Terminating events...");
+        HandlerList.unregisterAll(this);
     }
 
     private void loadAPI() {
@@ -188,8 +191,8 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         if (version != null) {
             try {
-                nmsAdapter = (NMSAdapter) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSAdapter", version)).newInstance();
-                nmsInventory = (NMSInventory) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSInventory", version)).newInstance();
+                nmsAdapter = (NMSAdapter) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSAdapter", version)).getDeclaredConstructor().newInstance();
+                nmsInventory = (NMSInventory) Class.forName(String.format("com.bgsoftware.wildchests.nms.%s.NMSInventory", version)).getDeclaredConstructor().newInstance();
 
                 return true;
             } catch (Exception error) {
