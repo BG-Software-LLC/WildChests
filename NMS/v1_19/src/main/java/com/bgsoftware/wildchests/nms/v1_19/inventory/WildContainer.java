@@ -15,6 +15,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.InventoryHolder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -162,9 +163,9 @@ public class WildContainer implements Container {
     @Override
     public List<HumanEntity> getViewers() {
         try {
-            return new ArrayList<>(((WChest) chest).getTileEntityContainer().getTransaction());
+            return ((WChest) chest).getTileEntityContainer().getTransaction();
         } catch (Exception ex) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 

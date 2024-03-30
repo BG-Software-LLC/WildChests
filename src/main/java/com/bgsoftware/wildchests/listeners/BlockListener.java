@@ -18,7 +18,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -107,7 +107,10 @@ public final class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestExplode(EntityExplodeEvent e) {
-        List<Block> blockList = new ArrayList<>(e.blockList());
+        if (e.blockList().isEmpty())
+            return;
+
+        List<Block> blockList = new LinkedList<>(e.blockList());
 
         Player sourcePlayer = null;
 

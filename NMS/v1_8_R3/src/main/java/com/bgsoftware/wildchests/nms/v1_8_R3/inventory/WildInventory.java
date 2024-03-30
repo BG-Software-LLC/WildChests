@@ -13,6 +13,7 @@ import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -151,9 +152,9 @@ public class WildInventory implements IInventory {
 
     public List<HumanEntity> getViewers() {
         try {
-            return new ArrayList<>(((WChest) chest).getTileEntityContainer().getTransaction());
+            return ((WChest) chest).getTileEntityContainer().getTransaction();
         } catch (Exception ex) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
     }
 

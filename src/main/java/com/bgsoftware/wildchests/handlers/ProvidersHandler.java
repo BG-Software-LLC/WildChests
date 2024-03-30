@@ -26,9 +26,9 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,8 +48,8 @@ public final class ProvidersHandler implements ProvidersManager {
     private PricesProvider pricesProvider = new PricesProvider_Default();
     private StackerProvider stackerProvider = new StackerProvider_Default();
 
-    private final List<IChestPlaceListener> chestPlaceListeners = new ArrayList<>();
-    private final List<IChestBreakListener> chestBreakListeners = new ArrayList<>();
+    private final List<IChestPlaceListener> chestPlaceListeners = new LinkedList<>();
+    private final List<IChestBreakListener> chestBreakListeners = new LinkedList<>();
 
     private boolean isShopsBridge = false;
     private long lastBulkTransactionStart = -1;

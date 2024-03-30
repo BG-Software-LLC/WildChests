@@ -33,8 +33,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public final class WildChestsPlugin extends JavaPlugin implements WildChests {
@@ -110,7 +110,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         for (Chest chest : chestsManager.getChests()) {
             boolean needClose = false;
             for (Inventory inventory : chest.getPages()) {
-                List<HumanEntity> viewers = new ArrayList<>(inventory.getViewers());
+                List<HumanEntity> viewers = new LinkedList<>(inventory.getViewers());
                 for (HumanEntity humanEntity : viewers) {
                     humanEntity.closeInventory();
                     needClose = true;

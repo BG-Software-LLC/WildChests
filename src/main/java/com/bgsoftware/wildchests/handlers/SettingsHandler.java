@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -116,7 +117,7 @@ public final class SettingsHandler {
             }
 
             if (cfg.contains("chests." + name + ".item.lore")) {
-                List<String> lore = new ArrayList<>();
+                List<String> lore = new LinkedList<>();
 
                 for (String line : cfg.getStringList("chests." + name + ".item.lore"))
                     lore.add(ChatColor.translateAlternateColorCodes('&', line));
