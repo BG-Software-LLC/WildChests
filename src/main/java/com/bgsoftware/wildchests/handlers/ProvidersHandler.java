@@ -198,7 +198,7 @@ public final class ProvidersHandler implements ProvidersManager {
                 .flatMap(shopsProvider -> shopsProvider.createInstance(plugin).map(shopsBridge ->
                         new PricesProvider_ShopsBridgeWrapper(shopsProvider, shopsBridge)));
 
-        if (!pricesProvider.isPresent()) {
+        if (pricesProvider.isEmpty()) {
             WildChestsPlugin.log("- Couldn't find any prices providers, using default one");
             return;
         }
@@ -277,7 +277,7 @@ public final class ProvidersHandler implements ProvidersManager {
                 return Optional.of((T) constructor.newInstance(plugin));
             } catch (Exception error) {
                 // noinspection unchecked
-                return Optional.of((T) clazz.newInstance());
+                return Optional.of((T) clazz.getDeclaredConstructor().newInstance());
             }
         } catch (ClassNotFoundException ignored) {
             return Optional.empty();

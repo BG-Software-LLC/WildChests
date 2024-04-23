@@ -39,6 +39,7 @@ public final class SettingsHandler {
     public final boolean invalidWorldDelete;
     public final boolean wildStackerHook;
     public final int maximumPickupDelay;
+    public final int offlineMoneyMessageDelay;
 
     public SettingsHandler(WildChestsPlugin plugin) {
         WildChestsPlugin.log("Loading configuration started...");
@@ -68,6 +69,7 @@ public final class SettingsHandler {
         invalidWorldDelete = cfg.getBoolean("database.invalid-world-delete", false);
         wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);
         maximumPickupDelay = cfg.getInt("maximum-pickup-delay", 32767);
+        offlineMoneyMessageDelay = cfg.getInt("offline-money-message-delay",10);
 
         Map<String, Double> prices = new HashMap<>();
 
