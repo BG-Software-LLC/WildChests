@@ -32,7 +32,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly "com.bgsoftware.common.reflection:ReflectionUtils:latest"
+        compileOnly "com.bgsoftware.common.reflection:ReflectionUtils:b2"
     }
 
     task checkDebug() {
@@ -61,7 +61,7 @@ dependencies {
     implementation fileTree(rootProject.archiveFolder.getAbsolutePath())
     implementation project(":API")
 
-    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:1.0.2'
+    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:b2'
     implementation 'com.bgsoftware.common.config:CommentedConfiguration:1.0.3'
     implementation 'com.bgsoftware.common.updater:Updater:latest'
     implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b11:all@jar'
