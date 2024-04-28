@@ -4,7 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.v1_16_R3.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_16_R3.NMSInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_16_R3.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
@@ -106,7 +106,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     @Override
     public Container createContainer(int id, PlayerInventory playerinventory) {
-        Container container = NMSInventory.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+        Container container = NMSInventoryImpl.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
         startOpen(playerinventory.player);
         return container;
     }

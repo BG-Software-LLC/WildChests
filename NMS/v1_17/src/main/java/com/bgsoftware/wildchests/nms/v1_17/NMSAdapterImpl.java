@@ -1,6 +1,7 @@
-package com.bgsoftware.wildchests.nms.v1_20_1;
+package com.bgsoftware.wildchests.nms.v1_17;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,9 +16,9 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 
@@ -29,7 +30,7 @@ import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.Base64;
 
-public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
+public final class NMSAdapterImpl implements NMSAdapter {
 
     @Override
     public String serialize(org.bukkit.inventory.ItemStack bukkitItem) {
@@ -142,7 +143,7 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
             return;
 
         ServerLevel serverLevel = ((CraftWorld) bukkitWorld).getHandle();
-        BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        BlockPos blockPos = new BlockPos(location.getX(), location.getY(), location.getZ());
         BlockEntity blockEntity = serverLevel.getBlockEntity(blockPos);
         if (blockEntity instanceof ChestBlockEntity)
             serverLevel.blockEvent(blockPos, blockEntity.getBlockState().getBlock(), 1, open ? 1 : 0);

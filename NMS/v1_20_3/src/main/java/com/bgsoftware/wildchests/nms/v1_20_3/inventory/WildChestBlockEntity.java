@@ -5,7 +5,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.v1_20_3.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_20_3.NMSInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_20_3.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
@@ -110,7 +110,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory) {
-        AbstractContainerMenu containerMenu = NMSInventory.createMenu(id, playerInventory,
+        AbstractContainerMenu containerMenu = NMSInventoryImpl.createMenu(id, playerInventory,
                 (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
         startOpen(playerInventory.player);
         return containerMenu;

@@ -66,6 +66,7 @@ dependencies {
     implementation 'com.bgsoftware.common.updater:Updater:latest'
     implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b11:all@jar'
     implementation 'com.bgsoftware.common.dependencies:DependenciesManager:b2'
+    implementation 'com.bgsoftware.common.nmsloader:NMSLoader:b3'
 
     // Spigot jars
     compileOnly "org.spigotmc:v1_8_R1:latest"

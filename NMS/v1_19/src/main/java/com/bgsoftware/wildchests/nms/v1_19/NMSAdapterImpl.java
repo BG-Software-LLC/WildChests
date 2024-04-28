@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms.v1_19;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -29,7 +30,7 @@ import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.Base64;
 
-public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
+public final class NMSAdapterImpl implements NMSAdapter {
 
     @Override
     public String serialize(org.bukkit.inventory.ItemStack bukkitItem) {
