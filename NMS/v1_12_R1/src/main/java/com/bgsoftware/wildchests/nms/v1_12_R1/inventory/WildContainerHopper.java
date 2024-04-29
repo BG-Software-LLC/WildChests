@@ -1,6 +1,5 @@
 package com.bgsoftware.wildchests.nms.v1_12_R1.inventory;
 
-import com.bgsoftware.wildchests.nms.v1_12_R1.NMSInventory;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import net.minecraft.server.v1_12_R1.ContainerHopper;
 import net.minecraft.server.v1_12_R1.EntityHuman;

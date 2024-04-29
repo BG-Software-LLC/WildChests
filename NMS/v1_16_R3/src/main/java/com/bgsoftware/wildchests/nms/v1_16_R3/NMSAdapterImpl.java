@@ -1,20 +1,22 @@
-package com.bgsoftware.wildchests.nms.v1_12_R1;
+package com.bgsoftware.wildchests.nms.v1_16_R3;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
-import net.minecraft.server.v1_12_R1.BlockPosition;
-import net.minecraft.server.v1_12_R1.EntityHuman;
-import net.minecraft.server.v1_12_R1.ItemStack;
-import net.minecraft.server.v1_12_R1.NBTCompressedStreamTools;
-import net.minecraft.server.v1_12_R1.NBTTagCompound;
-import net.minecraft.server.v1_12_R1.NBTTagList;
-import net.minecraft.server.v1_12_R1.TileEntityChest;
-import net.minecraft.server.v1_12_R1.World;
+import net.minecraft.server.v1_16_R3.BlockPosition;
+import net.minecraft.server.v1_16_R3.EntityHuman;
+import net.minecraft.server.v1_16_R3.ItemStack;
+import net.minecraft.server.v1_16_R3.NBTCompressedStreamTools;
+import net.minecraft.server.v1_16_R3.NBTReadLimiter;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.server.v1_16_R3.NBTTagList;
+import net.minecraft.server.v1_16_R3.TileEntityChest;
+import net.minecraft.server.v1_16_R3.World;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 
@@ -27,7 +29,7 @@ import java.math.BigInteger;
 import java.util.Base64;
 
 @SuppressWarnings({"unused", "ConstantConditions"})
-public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
+public final class NMSAdapterImpl implements NMSAdapter {
 
     @Override
     public String serialize(org.bukkit.inventory.ItemStack itemStack) {
@@ -92,7 +94,7 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
-            NBTTagCompound tagCompound = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
+            NBTTagCompound tagCompound = NBTCompressedStreamTools.a(new DataInputStream(inputStream), NBTReadLimiter.a);
             int length = tagCompound.getInt("Length");
             inventories = new InventoryHolder[length];
 
@@ -103,7 +105,8 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
                 }
             }
 
-        } catch (Exception ignored) {
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return inventories;
@@ -125,9 +128,9 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
 
         try {
-            NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
+            NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream), NBTReadLimiter.a);
 
-            ItemStack nmsItem = new ItemStack(nbtTagCompoundRoot);
+            ItemStack nmsItem = ItemStack.a(nbtTagCompoundRoot);
 
             return CraftItemStack.asBukkitCopy(nmsItem);
         } catch (Exception ex) {
@@ -141,7 +144,7 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
         TileEntityChest tileChest = (TileEntityChest) world.getTileEntity(blockPosition);
         if (tileChest != null)
-            world.playBlockAction(blockPosition, tileChest.getBlock(), 1, open ? 1 : 0);
+            world.playBlockAction(blockPosition, tileChest.getBlock().getBlock(), 1, open ? 1 : 0);
     }
 
     @Override
@@ -170,17 +173,12 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
 
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack itemStack, String key, String value) {
         ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
-        NBTTagCompound tagCompound = nmsItem.getTag();
-
-        if (tagCompound == null)
-            nmsItem.setTag((tagCompound = new NBTTagCompound()));
-
+        NBTTagCompound tagCompound = nmsItem.getOrCreateTag();
         tagCompound.setString(key, value);
-
         return CraftItemStack.asCraftMirror(nmsItem);
     }
 
-    private void serialize(Inventory inventory, NBTTagCompound tagCompound) {
+    private static void serialize(Inventory inventory, NBTTagCompound tagCompound) {
         NBTTagList itemsList = new NBTTagList();
         org.bukkit.inventory.ItemStack[] items = inventory.getContents();
 
@@ -197,13 +195,13 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         tagCompound.set("Items", itemsList);
     }
 
-    private InventoryHolder deserialize(NBTTagCompound tagCompound) {
+    private static InventoryHolder deserialize(NBTTagCompound tagCompound) {
         InventoryHolder inventory = new InventoryHolder(tagCompound.getInt("Size"), "Chest");
         NBTTagList itemsList = tagCompound.getList("Items", 10);
 
         for (int i = 0; i < itemsList.size(); i++) {
-            NBTTagCompound nbtTagCompound = itemsList.get(i);
-            inventory.setItem(nbtTagCompound.getByte("Slot"), CraftItemStack.asBukkitCopy(new ItemStack(nbtTagCompound)));
+            NBTTagCompound nbtTagCompound = itemsList.getCompound(i);
+            inventory.setItem(nbtTagCompound.getByte("Slot"), CraftItemStack.asBukkitCopy(ItemStack.a(nbtTagCompound)));
         }
 
         return inventory;

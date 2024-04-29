@@ -1,14 +1,15 @@
-package com.bgsoftware.wildchests.nms.v1_17;
+package com.bgsoftware.wildchests.nms.v1_18;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.CraftWildInventoryImpl;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.WildChestBlockEntity;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.WildChestMenu;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.WildContainer;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.WildContainerItemImpl;
-import com.bgsoftware.wildchests.nms.v1_17.inventory.WildHopperMenu;
+import com.bgsoftware.wildchests.nms.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.CraftWildInventoryImpl;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.WildChestBlockEntity;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.WildChestMenu;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.WildContainer;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.WildContainerItemImpl;
+import com.bgsoftware.wildchests.nms.v1_18.inventory.WildHopperMenu;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import net.minecraft.core.BlockPos;
@@ -26,13 +27,13 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_17_R1.util.CraftChatMessage;
+import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_18_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_18_R2.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 
-public final class NMSInventory implements com.bgsoftware.wildchests.nms.NMSInventory {
+public final class NMSInventoryImpl implements NMSInventory {
 
     private static final ReflectMethod<TickingBlockEntity> CREATE_TICKING_BLOCK = new ReflectMethod<>(
             LevelChunk.class, "a", BlockEntity.class, BlockEntityTicker.class);

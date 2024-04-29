@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.nms.v1_20_2;
 import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
+import com.bgsoftware.wildchests.nms.NMSInventory;
 import com.bgsoftware.wildchests.nms.v1_20_2.inventory.CraftWildInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_20_2.inventory.WildChestBlockEntity;
 import com.bgsoftware.wildchests.nms.v1_20_2.inventory.WildChestMenu;
@@ -32,7 +33,7 @@ import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack;
 import org.bukkit.craftbukkit.v1_20_R2.util.CraftChatMessage;
 import org.bukkit.entity.Player;
 
-public final class NMSInventory implements com.bgsoftware.wildchests.nms.NMSInventory {
+public final class NMSInventoryImpl implements NMSInventory {
 
     private static final ReflectMethod<TickingBlockEntity> CREATE_TICKING_BLOCK = new ReflectMethod<>(
             LevelChunk.class, "a", BlockEntity.class, BlockEntityTicker.class);

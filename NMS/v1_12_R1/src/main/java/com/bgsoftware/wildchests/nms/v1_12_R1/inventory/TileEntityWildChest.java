@@ -4,7 +4,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.v1_12_R1.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_12_R1.NMSInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_12_R1.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
@@ -44,7 +44,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 
 import java.util.AbstractSequentialList;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +113,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     @Override
     public Container createContainer(PlayerInventory playerinventory, EntityHuman entityHuman) {
-        Container container = NMSInventory.createContainer(playerinventory, entityHuman, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+        Container container = NMSInventoryImpl.createContainer(playerinventory, entityHuman, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
         startOpen(playerinventory.player);
         return container;
     }

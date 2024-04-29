@@ -1,23 +1,26 @@
-package com.bgsoftware.wildchests.nms.v1_20_1;
+package com.bgsoftware.wildchests.nms.v1_20_4;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
+import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 
@@ -29,7 +32,7 @@ import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.Base64;
 
-public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapter {
+public final class NMSAdapterImpl implements NMSAdapter {
 
     @Override
     public String serialize(org.bukkit.inventory.ItemStack bukkitItem) {
@@ -41,10 +44,8 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         DataOutput dataOutput = new DataOutputStream(outputStream);
 
-        CompoundTag compoundTag = new CompoundTag();
-
         itemStack.setCount(1);
-        itemStack.save(compoundTag);
+        CompoundTag compoundTag = (CompoundTag) itemStack.save(MinecraftServer.getServer().registryAccess());
 
         try {
             NbtIo.write(compoundTag, dataOutput);
@@ -92,7 +93,7 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
-            CompoundTag compoundTag = NbtIo.read(new DataInputStream(inputStream), NbtAccounter.UNLIMITED);
+            CompoundTag compoundTag = NbtIo.read(new DataInputStream(inputStream));
             int length = compoundTag.getInt("Length");
             inventories = new InventoryHolder[length];
 
@@ -126,8 +127,8 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
 
         try {
-            CompoundTag compoundTag = NbtIo.read(new DataInputStream(inputStream), NbtAccounter.UNLIMITED);
-            ItemStack itemStack = ItemStack.of(compoundTag);
+            CompoundTag compoundTag = NbtIo.read(new DataInputStream(inputStream));
+            ItemStack itemStack = ItemStack.parse(MinecraftServer.getServer().registryAccess(), compoundTag).orElseThrow();
             return CraftItemStack.asBukkitCopy(itemStack);
         } catch (Exception ex) {
             return null;
@@ -161,9 +162,14 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
     @Override
     public String getChestName(org.bukkit.inventory.ItemStack bukkitItem) {
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
-        CompoundTag compoundTag = itemStack.getTag();
-        return compoundTag == null || !compoundTag.contains("chest-name") ? null :
-                compoundTag.getString("chest-name");
+        CustomData customData = itemStack.get(DataComponents.CUSTOM_DATA);
+        if (customData != null) {
+            CompoundTag compoundTag = customData.getUnsafe();
+            if (compoundTag.contains("chest-name", 8))
+                return compoundTag.getString("chest-name");
+        }
+
+        return null;
     }
 
     @Override
@@ -175,8 +181,11 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
 
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack bukkitItem, String key, String value) {
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
-        CompoundTag compoundTag = itemStack.getOrCreateTag();
-        compoundTag.putString(key, value);
+
+        CustomData customData = itemStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        customData = customData.update(compoundTag -> compoundTag.putString(key, value));
+        itemStack.set(DataComponents.CUSTOM_DATA, customData);
+
         return CraftItemStack.asCraftMirror(itemStack);
     }
 
@@ -187,9 +196,8 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
         for (int i = 0; i < items.length; ++i) {
             if (items[i] != null) {
                 ItemStack itemStack = CraftItemStack.asNMSCopy(items[i]);
-                CompoundTag itemTag = new CompoundTag();
+                CompoundTag itemTag = (CompoundTag) itemStack.save(MinecraftServer.getServer().registryAccess());
                 itemTag.putByte("Slot", (byte) i);
-                itemStack.save(itemTag);
                 itemsList.add(itemTag);
             }
         }
@@ -204,7 +212,8 @@ public final class NMSAdapter implements com.bgsoftware.wildchests.nms.NMSAdapte
 
         for (int i = 0; i < itemsList.size(); i++) {
             CompoundTag itemTag = itemsList.getCompound(i);
-            inventory.setItem(itemTag.getByte("Slot"), CraftItemStack.asBukkitCopy(ItemStack.of(itemTag)));
+            ItemStack.parse(MinecraftServer.getServer().registryAccess(), itemTag).ifPresent(itemStack ->
+                    inventory.setItem(itemTag.getByte("Slot"), CraftItemStack.asBukkitCopy(itemStack)));
         }
 
         return inventory;
