@@ -68,7 +68,7 @@ public final class Executor {
     public static void stop(){
         try{
             shutdown = true;
-            System.out.println("Shutting down database executor");
+            WildChestsPlugin.log("Shutting down database executor");
             shutdownAndAwaitTermination();
         }catch(Exception ex){
             ex.printStackTrace();
@@ -83,7 +83,7 @@ public final class Executor {
                 databaseExecutor.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!databaseExecutor.awaitTermination(60, TimeUnit.SECONDS))
-                    System.err.println("Pool did not terminate");
+                    WildChestsPlugin.log("Pool did not terminate");
             }
         } catch (InterruptedException ie) {
             // (Re-)Cancel if current thread also interrupted

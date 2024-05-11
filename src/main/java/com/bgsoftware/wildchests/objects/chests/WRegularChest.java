@@ -131,7 +131,7 @@ public class WRegularChest extends WChest implements RegularChest {
 
     @Override
     public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setInventories(getPages()).setLocation(location);
+        return statementHolder.setInventories(getPages()).setLocation(getLocation());
     }
 
     @Override
@@ -142,7 +142,7 @@ public class WRegularChest extends WChest implements RegularChest {
     @Override
     public void executeInsertStatement(boolean async) {
         Query.REGULAR_CHEST_INSERT.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .setString(placer.toString())
                 .setString(getData().getName())
                 .setInventories(getPages())
@@ -152,7 +152,7 @@ public class WRegularChest extends WChest implements RegularChest {
     @Override
     public void executeDeleteStatement(boolean async) {
         Query.REGULAR_CHEST_DELETE.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .execute(async);
     }
 

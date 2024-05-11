@@ -74,7 +74,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     public void saveLinkedChest() {
         Query.LINKED_CHEST_UPDATE_LINKED_CHEST.getStatementHolder(this)
                 .setLocation(!isLinkedIntoChest() || linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
-                .setLocation(location)
+                .setLocation(getLocation())
                 .execute(true);
     }
 
@@ -165,7 +165,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
     @Override
     public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setInventories(isLinkedIntoChest() ? null : getPages()).setLocation(location);
+        return statementHolder.setInventories(isLinkedIntoChest() ? null : getPages()).setLocation(getLocation());
     }
 
     @Override
@@ -176,7 +176,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     @Override
     public void executeInsertStatement(boolean async) {
         Query.LINKED_CHEST_INSERT.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .setString(placer.toString())
                 .setString(getData().getName())
                 .setInventories(isLinkedIntoChest() ? null : getPages())
@@ -187,7 +187,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     @Override
     public void executeDeleteStatement(boolean async) {
         Query.LINKED_CHEST_DELETE.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .execute(async);
     }
 

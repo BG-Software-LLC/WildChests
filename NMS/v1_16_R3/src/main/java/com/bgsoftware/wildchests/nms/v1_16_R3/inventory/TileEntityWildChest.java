@@ -4,13 +4,13 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.v1_16_R3.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_16_R3.NMSInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_16_R3.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.utils.ChestUtils;
-import com.bgsoftware.wildchests.utils.Counter;
+import com.google.common.base.Predicate;
 import net.minecraft.server.v1_16_R3.AxisAlignedBB;
 import net.minecraft.server.v1_16_R3.Block;
 import net.minecraft.server.v1_16_R3.BlockPosition;
@@ -41,6 +41,8 @@ import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 
+import java.util.AbstractSequentialList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -104,7 +106,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     @Override
     public Container createContainer(int id, PlayerInventory playerinventory) {
-        Container container = NMSInventory.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+        Container container = NMSInventoryImpl.createContainer(id, playerinventory, (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
         startOpen(playerinventory.player);
         return container;
     }
@@ -210,26 +212,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
         currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
         if (suctionItems != null) {
-            for (EntityItem entityItem : world.a(EntityItem.class, suctionItems, entityItem ->
-                    ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData))) {
-                org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack());
-                Item item = (Item) entityItem.getBukkitEntity();
-
-                org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
-                        itemStack, plugin.getProviders().getItemAmount(item));
-
-                Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
-
-                if (leftOvers.isEmpty()) {
-                    ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD), entityItem.locX(), entityItem.locY(),
-                            entityItem.locZ(), 0, 0.0, 0.0, 0.0, 1.0, false);
-                    entityItem.die();
-                } else {
-                    Counter leftOverCount = new Counter();
-                    leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
-                    plugin.getProviders().setItemAmount(item, leftOverCount.get());
-                }
-            }
+            handleSuctionItems(chestData);
         }
 
         if (autoCraftMode) {
@@ -304,6 +287,64 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
     private void updateTile(TileEntity tileEntity, World world, BlockPosition blockPosition) {
         tileEntity.setLocation(world, blockPosition);
+    }
+
+    private void handleSuctionItems(ChestData chestData) {
+        List<EntityItem> nearbyItems = world.a(EntityItem.class, suctionItems, (Predicate<? super EntityItem>) entity ->
+                entity != null && ChestUtils.SUCTION_PREDICATE.test((CraftItem) entity.getBukkitEntity(), chestData));
+
+        if (nearbyItems.isEmpty())
+            return;
+
+        if (!(nearbyItems instanceof AbstractSequentialList))
+            nearbyItems = new LinkedList<>(nearbyItems);
+
+        org.bukkit.inventory.ItemStack[] suctionItems = new org.bukkit.inventory.ItemStack[nearbyItems.size()];
+
+        int itemIndex = 0;
+        for (EntityItem itemEntity : nearbyItems) {
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItemStack());
+            Item item = (Item) itemEntity.getBukkitEntity();
+
+            int actualItemCount = plugin.getProviders().getItemAmount(item);
+            if (actualItemCount != itemStack.getAmount()) {
+                itemStack = itemStack.clone();
+                itemStack.setAmount(actualItemCount);
+            }
+
+            suctionItems[itemIndex++] = itemStack;
+        }
+
+        Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(suctionItems);
+
+        if (leftOvers.isEmpty()) {
+            // We want to remove all entities.
+            nearbyItems.forEach(this::handleItemSuctionRemoval);
+            return;
+        }
+
+        itemIndex = 0;
+        for (EntityItem nearbyItem : nearbyItems) {
+            if (nearbyItem.dead) {
+                continue;
+            }
+
+            org.bukkit.inventory.ItemStack leftOverItem = leftOvers.get(itemIndex++);
+
+            if (leftOverItem == null) {
+                handleItemSuctionRemoval(nearbyItem);
+            } else {
+                Item item = (Item) nearbyItem.getBukkitEntity();
+                plugin.getProviders().setItemAmount(item, leftOverItem.getAmount());
+            }
+        }
+    }
+
+    private void handleItemSuctionRemoval(EntityItem entityItem) {
+        ((WorldServer) world).sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
+                entityItem.locX(), entityItem.locY(), entityItem.locZ(),
+                0, 0.0, 0.0, 0.0, 1.0, false);
+        entityItem.die();
     }
 
 }

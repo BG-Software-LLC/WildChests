@@ -388,7 +388,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setItemStack(getItemStack()).setString(getAmount().toString()).setLocation(location);
+        return statementHolder.setItemStack(getItemStack()).setString(getAmount().toString()).setLocation(getLocation());
     }
 
     @Override
@@ -399,7 +399,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void executeInsertStatement(boolean async) {
         Query.STORAGE_UNIT_INSERT.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .setString(placer.toString())
                 .setString(getData().getName())
                 .setItemStack(getItemStack())
@@ -411,7 +411,7 @@ public final class WStorageChest extends WChest implements StorageChest {
     @Override
     public void executeDeleteStatement(boolean async) {
         Query.STORAGE_UNIT_DELETE.getStatementHolder(this)
-                .setLocation(location)
+                .setLocation(getLocation())
                 .execute(async);
     }
 

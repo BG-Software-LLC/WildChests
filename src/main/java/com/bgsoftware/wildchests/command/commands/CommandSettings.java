@@ -1,12 +1,12 @@
 package com.bgsoftware.wildchests.command.commands;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.command.ICommand;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.command.ICommand;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class CommandSettings implements ICommand {
@@ -43,7 +43,7 @@ public final class CommandSettings implements ICommand {
 
     @Override
     public void perform(WildChestsPlugin plugin, CommandSender sender, String[] args) {
-        if(!(sender instanceof Player)){
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "Only players can perform this command.");
             return;
         }
@@ -55,6 +55,6 @@ public final class CommandSettings implements ICommand {
 
     @Override
     public List<String> tabComplete(WildChestsPlugin plugin, CommandSender sender, String[] args) {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

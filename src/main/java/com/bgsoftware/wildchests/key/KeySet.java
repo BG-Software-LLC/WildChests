@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.AbstractSet;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -16,11 +16,11 @@ public class KeySet extends AbstractSet<Key> implements Set<Key> {
 
     private Set<String> set;
 
-    public KeySet(){
-        this(new ArrayList<>());
+    public KeySet() {
+        this(Collections.emptyList());
     }
 
-    public KeySet(List<String> keys){
+    public KeySet(List<String> keys) {
         this.set = new HashSet<>(keys);
     }
 
@@ -48,13 +48,13 @@ public class KeySet extends AbstractSet<Key> implements Set<Key> {
 
     @Override
     public boolean contains(Object o) {
-        if(o instanceof Key){
+        if (o instanceof Key) {
             String key = o.toString();
-            if(set.contains(key))
+            if (set.contains(key))
                 return true;
-            else if(key.contains(":") && set.contains(key.split(":")[0]))
+            else if (key.contains(":") && set.contains(key.split(":")[0]))
                 return true;
-            else if(key.contains(";") && set.contains(key.split(";")[0]))
+            else if (key.contains(";") && set.contains(key.split(";")[0]))
                 return true;
         }
         return super.contains(o);
@@ -70,11 +70,11 @@ public class KeySet extends AbstractSet<Key> implements Set<Key> {
         return set.remove(o);
     }
 
-    public Set<String> asStringSet(){
+    public Set<String> asStringSet() {
         return new HashSet<>(set);
     }
 
-    private Set<Key> asKeySet(){
+    private Set<Key> asKeySet() {
         Set<Key> set = new HashSet<>();
         this.set.forEach(string -> set.add(Key.of(string)));
         return set;

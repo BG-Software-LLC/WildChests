@@ -5,13 +5,12 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.v1_18.NMSInventory;
+import com.bgsoftware.wildchests.nms.v1_18.NMSInventoryImpl;
 import com.bgsoftware.wildchests.nms.v1_18.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.utils.ChestUtils;
-import com.bgsoftware.wildchests.utils.Counter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -45,6 +44,8 @@ import org.bukkit.craftbukkit.v1_18_R2.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 
+import java.util.AbstractSequentialList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -109,7 +110,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory) {
-        AbstractContainerMenu containerMenu = NMSInventory.createMenu(id, playerInventory,
+        AbstractContainerMenu containerMenu = NMSInventoryImpl.createMenu(id, playerInventory,
                 (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
         startOpen(playerInventory.player);
         return containerMenu;
@@ -208,27 +209,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
         currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
 
         if (suctionItems != null) {
-            for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, suctionItems, entityItem ->
-                    ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData))) {
-                org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem());
-                Item item = (Item) itemEntity.getBukkitEntity();
-
-                org.bukkit.inventory.ItemStack[] itemsToAdd = ChestUtils.fixItemStackAmount(
-                        itemStack, plugin.getProviders().getItemAmount(item));
-
-                Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(itemsToAdd);
-
-                if (leftOvers.isEmpty()) {
-                    this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
-                            itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
-                            0, 0.0, 0.0, 0.0, 1.0, false);
-                    itemEntity.discard();
-                } else {
-                    Counter leftOverCount = new Counter();
-                    leftOvers.values().forEach(leftOver -> leftOverCount.increase(leftOver.getAmount()));
-                    plugin.getProviders().setItemAmount(item, leftOverCount.get());
-                }
-            }
+            handleSuctionItems(chestData);
         }
 
         if (autoCraftMode) {
@@ -315,6 +296,64 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
 
             this.serverLevel.updateNeighborsAt(this.blockPos, block);
         }
+    }
+
+    private void handleSuctionItems(ChestData chestData) {
+        List<ItemEntity> nearbyItems = level.getEntitiesOfClass(ItemEntity.class, suctionItems, entityItem ->
+                ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData));
+
+        if (nearbyItems.isEmpty())
+            return;
+
+        if (!(nearbyItems instanceof AbstractSequentialList))
+            nearbyItems = new LinkedList<>(nearbyItems);
+
+        org.bukkit.inventory.ItemStack[] suctionItems = new org.bukkit.inventory.ItemStack[nearbyItems.size()];
+
+        int itemIndex = 0;
+        for (ItemEntity itemEntity : nearbyItems) {
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem());
+            Item item = (Item) itemEntity.getBukkitEntity();
+
+            int actualItemCount = plugin.getProviders().getItemAmount(item);
+            if (actualItemCount != itemStack.getAmount()) {
+                itemStack = itemStack.clone();
+                itemStack.setAmount(actualItemCount);
+            }
+
+            suctionItems[itemIndex++] = itemStack;
+        }
+
+        Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(suctionItems);
+
+        if (leftOvers.isEmpty()) {
+            // We want to remove all entities.
+            nearbyItems.forEach(this::handleItemSuctionRemoval);
+            return;
+        }
+
+        itemIndex = 0;
+        for (ItemEntity nearbyItem : nearbyItems) {
+            if (nearbyItem.isRemoved()) {
+                continue;
+            }
+
+            org.bukkit.inventory.ItemStack leftOverItem = leftOvers.get(itemIndex++);
+
+            if (leftOverItem == null) {
+                handleItemSuctionRemoval(nearbyItem);
+            } else {
+                Item item = (Item) nearbyItem.getBukkitEntity();
+                plugin.getProviders().setItemAmount(item, leftOverItem.getAmount());
+            }
+        }
+    }
+
+    private void handleItemSuctionRemoval(ItemEntity itemEntity) {
+        this.serverLevel.sendParticles(null, CraftParticle.toNMS(Particle.CLOUD),
+                itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
+                0, 0.0, 0.0, 0.0, 1.0, false);
+        itemEntity.discard();
     }
 
 }

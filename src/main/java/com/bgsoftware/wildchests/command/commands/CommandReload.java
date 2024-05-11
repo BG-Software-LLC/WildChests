@@ -9,6 +9,7 @@ import com.bgsoftware.wildchests.command.ICommand;
 import com.bgsoftware.wildchests.task.NotifierTask;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class CommandReload implements ICommand {
@@ -55,6 +56,6 @@ public final class CommandReload implements ICommand {
 
     @Override
     public List<String> tabComplete(WildChestsPlugin plugin, CommandSender sender, String[] args) {
-        return new ArrayList<>();
+        return Collections.emptyList();
     }
 }

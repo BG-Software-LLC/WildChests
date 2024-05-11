@@ -128,12 +128,10 @@ public final class ChestUtils {
             }
         }
 
-        List<ItemStack> toDrop = new ArrayList<>(chest.addItems(toAdd.toArray(new ItemStack[]{})).values());
+        Map<Integer, ItemStack> toDrop = chest.addItems(toAdd.toArray(new ItemStack[]{}));
 
-        if (!toDrop.isEmpty()) {
-            for (ItemStack itemStack : toDrop)
-                ItemUtils.dropItem(chest.getLocation(), itemStack);
-        }
+        for (ItemStack itemStack : toDrop.values())
+            ItemUtils.dropItem(chest.getLocation(), itemStack);
     }
 
     public static void trySellChest(Chest chest) {

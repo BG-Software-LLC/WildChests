@@ -44,6 +44,7 @@ public final class ChestsHandler implements ChestsManager {
 
     private final Map<BlockPosition, Chest> chests = Maps.newConcurrentMap();
     private final Map<ChunkPosition, Set<Chest>> chestsByChunks = Maps.newConcurrentMap();
+    private final Map<String, Set<Chest>> chestsByWorlds = Maps.newConcurrentMap();
     private final Map<ChunkPosition, Map<BlockPosition, UnloadedChest>> unloadedChests = Maps.newConcurrentMap();
 
     @Override
@@ -101,6 +102,10 @@ public final class ChestsHandler implements ChestsManager {
         if (chunkChests != null)
             chunkChests.remove(chest);
 
+        Set<Chest> worldChests = chestsByWorlds.get(chest.getLocation().getWorld().getName());
+        if (worldChests != null)
+            worldChests.remove(chest);
+
         ((WChest) chest).markAsRemoved();
 
         plugin.getNMSInventory().removeTileEntity(chest);
@@ -147,9 +152,15 @@ public final class ChestsHandler implements ChestsManager {
                 Collections.unmodifiableList(new LinkedList<>(chunkChests));
     }
 
+    public List<Chest> getChests(World world) {
+        Set<Chest> chunkChests = chestsByWorlds.get(world.getName());
+        return chunkChests == null || chunkChests.isEmpty() ? Collections.emptyList() :
+                Collections.unmodifiableList(new LinkedList<>(chunkChests));
+    }
+
     @Override
     public List<Chest> getNearbyChests(Location location) {
-        return getChests().stream()
+        return getChests(location.getWorld()).stream()
                 .filter(chest -> {
                     ChestData chestData = chest.getData();
                     if (chestData.isAutoSuctionChunk()) {
@@ -235,6 +246,7 @@ public final class ChestsHandler implements ChestsManager {
 
         chests.put(BlockPosition.of(location), chest);
         chestsByChunks.computeIfAbsent(ChunkPosition.of(location), s -> Sets.newConcurrentHashSet()).add(chest);
+        chestsByWorlds.computeIfAbsent(location.getWorld().getName(), s -> Sets.newConcurrentHashSet()).add(chest);
 
         return chest;
     }
