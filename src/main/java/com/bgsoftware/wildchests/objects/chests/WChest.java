@@ -14,7 +14,6 @@ import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.BlockPosition;
 import com.bgsoftware.wildchests.utils.ItemUtils;
-import com.bgsoftware.wildchests.utils.WorldsRegistry;
 import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -54,7 +53,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     protected final UUID placer;
     protected final BlockPosition blockPosition;
-    protected final WorldsRegistry.SyncedWorld world;
     protected final ChestData chestData;
 
     protected TileEntityContainer tileEntityContainer;
@@ -64,7 +62,6 @@ public abstract class WChest extends DatabaseObject implements Chest {
         this.placer = placer;
         this.blockPosition = new BlockPosition(location.getWorld().getName(),
                 location.getBlockX(), location.getBlockY(), location.getBlockZ());
-        this.world = WorldsRegistry.getWorld(location.getWorld().getName());
         this.chestData = chestData;
     }
 
@@ -77,7 +74,7 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public Location getLocation() {
-        return new Location(this.world.getBukkitWorld(),
+        return new Location(Bukkit.getWorld(this.blockPosition.getWorldName()),
                 this.blockPosition.getX(), this.blockPosition.getY(), this.blockPosition.getZ());
     }
 
