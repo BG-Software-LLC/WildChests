@@ -20,8 +20,9 @@ import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.listeners.PlayerListener;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.nms.NMSInventory;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.task.NotifierTask;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.DatabaseThread;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -105,7 +106,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         if (!shouldEnable)
             return;
 
-        Bukkit.getScheduler().cancelTasks(this);
+        Scheduler.cancelTasks();
 
         //Closing all inventories & closing chests
         for (Chest chest : chestsManager.getChests()) {
@@ -136,7 +137,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         log("Chunks to save: " + loadedChunks);
 
         log("Terminating executor...");
-        Executor.stop();
+        DatabaseThread.stop();
         log("Terminating database...");
         SQLHelper.close();
     }
@@ -149,7 +150,7 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
         } catch (Exception ex) {
             log("Failed to set-up API - disabling plugin...");
             setEnabled(false);
-            Executor.sync(() -> getServer().getPluginManager().disablePlugin(this));
+            Scheduler.runTask(() -> getServer().getPluginManager().disablePlugin(this));
             ex.printStackTrace();
         }
     }

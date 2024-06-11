@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.hooks;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
@@ -32,7 +32,7 @@ public final class CoreProtectHook {
             return;
 
         if (!Bukkit.isPrimaryThread()) {
-            Executor.sync(() -> recordBlockBreak(offlinePlayer, chest));
+            Scheduler.runTask(() -> recordBlockBreak(offlinePlayer, chest));
             return;
         }
 

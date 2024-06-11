@@ -2,11 +2,12 @@ package com.bgsoftware.wildchests.task;
 
 import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.scheduler.ScheduledTask;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -15,28 +16,32 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public final class NotifierTask extends BukkitRunnable {
+public final class NotifierTask {
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
     private static final Map<UUID, Set<TransactionDetails>> transactions = new HashMap<>();
     private static final Map<UUID, Set<CraftingDetails>> craftings = new HashMap<>();
 
-    private static int taskID = -1;
+    private static ScheduledTask task = null;
 
     private NotifierTask() {
-        if (plugin.getSettings().notifyInterval > 0)
-            taskID = runTaskTimerAsynchronously(plugin, plugin.getSettings().notifyInterval, plugin.getSettings().notifyInterval).getTaskId();
+        if (plugin.getSettings().notifyInterval > 0) {
+            task = Scheduler.runRepeatingTaskAsync(this::run, plugin.getSettings().notifyInterval);
+        } else {
+            task = null;
+        }
     }
 
     public static void start() {
-        if (Bukkit.getScheduler().isCurrentlyRunning(taskID) || Bukkit.getScheduler().isQueued(taskID))
-            Bukkit.getScheduler().cancelTask(taskID);
+        if (task != null) {
+            task.cancel();
+        }
+
         new NotifierTask();
     }
 
-    @Override
-    public void run() {
+    private void run() {
         synchronized (transactions) {
             transactions.forEach((uuid, transactions) -> {
                 OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);

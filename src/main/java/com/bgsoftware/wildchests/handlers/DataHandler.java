@@ -10,8 +10,8 @@ import com.bgsoftware.wildchests.database.SQLHelper;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.listeners.ChunksListener;
 import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.BlockPosition;
-import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -27,7 +27,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,14 +38,14 @@ public final class DataHandler {
 
     public DataHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
-        Executor.sync(() -> {
+        Scheduler.runTask(() -> {
             try {
                 SQLHelper.createConnection(plugin);
                 loadDatabase();
                 loadOldDatabase();
             } catch (Exception ex) {
                 ex.printStackTrace();
-                Executor.sync(() -> Bukkit.getPluginManager().disablePlugin(plugin));
+                Bukkit.getPluginManager().disablePlugin(plugin);
             }
         }, 2L);
     }
@@ -103,7 +102,7 @@ public final class DataHandler {
         SQLHelper.executeQuery("SELECT * FROM linked_chests;", resultSet -> loadResultSet(resultSet, "linked_chests"));
         SQLHelper.executeQuery("SELECT * FROM storage_units;", resultSet -> loadResultSet(resultSet, "storage_units"));
 
-        Executor.sync(() -> {
+        Scheduler.runTask(() -> {
             for (World world : Bukkit.getWorlds()) {
                 for (Chunk chunk : world.getLoadedChunks())
                     ChunksListener.handleChunkLoad(plugin, chunk);
