@@ -52,13 +52,15 @@ public final class ItemUtils {
         if(plugin.getProviders().dropItem(location, itemStack, itemStack.getAmount()))
             return;
 
-        int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
+        int maxStacks = plugin.getSettings().maxStacksOnDrop;
+        int normalIterations = itemStack.getAmount() / itemStack.getMaxStackSize();
+        int iterations = maxStacks == -1 ? normalIterations : Math.min(maxStacks, normalIterations);
 
         ItemStack cloned = itemStack.clone();
 
         cloned.setAmount(itemStack.getMaxStackSize());
 
-        for(int i = 0; i < amountOfIterates; i++)
+        for(int i = 0; i < iterations; i++)
             location.getWorld().dropItemNaturally(location, cloned);
 
         if(itemStack.getAmount() % itemStack.getMaxStackSize() > 0){
