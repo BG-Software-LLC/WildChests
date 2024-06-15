@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -230,15 +231,15 @@ public abstract class WChest extends DatabaseObject implements Chest {
 
     @Override
     public boolean onBreak(BlockBreakEvent event) {
-        Location loc = getLocation();
+        List<ItemStack> chestContents = new LinkedList<>();
         for (int page = 0; page < getPagesAmount(); page++) {
             Inventory inventory = getPage(page);
-            for (ItemStack itemStack : inventory.getContents())
-                if (itemStack != null && itemStack.getType() != Material.AIR) {
-                    ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
-                }
+            Collections.addAll(chestContents, inventory.getContents());
             inventory.clear();
         }
+
+        ItemUtils.dropOrCollect(event.getPlayer(), chestContents, getData().isAutoCollect(),
+                getLocation(), false);
 
         return true;
     }

@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.utils;
 
 public class Counter {
 
-    private int value = 0;
+    private long value = 0;
 
     public Counter() {
 
@@ -12,7 +12,7 @@ public class Counter {
         this.value += delta;
     }
 
-    public int get() {
+    public long get() {
         return value;
     }
 

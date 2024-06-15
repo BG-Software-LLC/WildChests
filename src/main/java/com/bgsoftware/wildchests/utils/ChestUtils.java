@@ -17,7 +17,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -129,21 +128,19 @@ public final class ChestUtils {
         }
 
         Map<Integer, ItemStack> toDrop = chest.addItems(toAdd.toArray(new ItemStack[]{}));
-
-        for (ItemStack itemStack : toDrop.values())
-            ItemUtils.dropItem(chest.getLocation(), itemStack);
+        ItemUtils.dropItems(chest.getLocation(), toDrop.values(), false);
     }
 
     public static void trySellChest(Chest chest) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(chest.getPlacer());
         try {
             plugin.getProviders().startSellingTask(player);
-            Arrays.stream(chest.getPages()).forEach(inventory -> {
+            for (Inventory inventory : chest.getPages()) {
                 for (int i = 0; i < inventory.getSize(); i++) {
                     if (trySellItem(player, chest, inventory.getItem(i)))
                         inventory.setItem(i, new ItemStack(Material.AIR));
                 }
-            });
+            }
         } finally {
             plugin.getProviders().stopSellingTask(player);
         }

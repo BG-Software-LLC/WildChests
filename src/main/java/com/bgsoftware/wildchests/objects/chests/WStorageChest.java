@@ -193,7 +193,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             if (storageItem.getType() == Material.AIR) {
                 setItemStack(itemStack.clone());
             } else if (!takeItemCheckSlot && !canPlaceItemThroughFace(itemStack)) {
-                ItemUtils.dropItem(getLocation(), itemStack);
+                ItemUtils.dropItem(getLocation(), itemStack, true);
                 return;
             }
 
@@ -282,12 +282,12 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         for (int i = 0; i < amountOfMaximums; i++) {
             itemStack.setAmount(Integer.MAX_VALUE);
-            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc, true);
         }
 
         if (remainder > 0) {
             itemStack.setAmount(remainder);
-            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc, true);
         }
 
         return true;
