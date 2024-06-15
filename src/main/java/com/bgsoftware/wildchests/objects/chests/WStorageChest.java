@@ -278,15 +278,15 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         BigInteger[] divideAndRemainder = getAmount().divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
         int amountOfMaximums = divideAndRemainder[0].intValue();
-        int reminder = divideAndRemainder[1].intValue();
+        int remainder = divideAndRemainder[1].intValue();
 
         for (int i = 0; i < amountOfMaximums; i++) {
             itemStack.setAmount(Integer.MAX_VALUE);
             ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 
-        if (reminder > 0) {
-            itemStack.setAmount(reminder);
+        if (remainder > 0) {
+            itemStack.setAmount(remainder);
             ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
         }
 

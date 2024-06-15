@@ -54,6 +54,13 @@ hooks:
 # The maximum pickup delay items can have for the suction chests to pick them up.
 maximum-pickup-delay: 32767
 
+# The maximum number of stacks of items that can be dropped from a storage unit.
+# Useful when not having a stacking plugin installed, and you don't want a lot
+# of items to be dropped from storage units.
+# Keep in mind, enabling this feature may cause items to be lost on drop.
+# You can disable this feature by setting it to -1.
+max-stacks-on-drop: -1
+
 # The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and
 # you can create and mix between them. You can create chests that stores infinite amount of items, chests that
 # are connected to player vaults or factions, linked chests and many more!

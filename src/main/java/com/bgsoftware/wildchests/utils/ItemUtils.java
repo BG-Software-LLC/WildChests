@@ -52,16 +52,22 @@ public final class ItemUtils {
         if(plugin.getProviders().dropItem(location, itemStack, itemStack.getAmount()))
             return;
 
-        int amountOfIterates = itemStack.getAmount() / itemStack.getMaxStackSize();
+        int maxStacks = plugin.getSettings().maxStacksOnDrop;
+        if (maxStacks == 0)
+            return;
+
+        int amountOfFullStacksToDrop = itemStack.getAmount() / itemStack.getMaxStackSize();
+        int amountOfStacksToDrop = maxStacks < 0 ? Integer.MAX_VALUE : maxStacks;
 
         ItemStack cloned = itemStack.clone();
 
-        cloned.setAmount(itemStack.getMaxStackSize());
+        if (amountOfFullStacksToDrop > 0) {
+            cloned.setAmount(itemStack.getMaxStackSize());
+            for (int i = 0; i < amountOfFullStacksToDrop && amountOfStacksToDrop > 0; ++i, --amountOfStacksToDrop)
+                location.getWorld().dropItemNaturally(location, cloned);
+        }
 
-        for(int i = 0; i < amountOfIterates; i++)
-            location.getWorld().dropItemNaturally(location, cloned);
-
-        if(itemStack.getAmount() % itemStack.getMaxStackSize() > 0){
+        if (amountOfStacksToDrop > 0 && itemStack.getAmount() % itemStack.getMaxStackSize() > 0) {
             cloned.setAmount(itemStack.getAmount() % itemStack.getMaxStackSize());
             location.getWorld().dropItemNaturally(location, cloned);
         }
