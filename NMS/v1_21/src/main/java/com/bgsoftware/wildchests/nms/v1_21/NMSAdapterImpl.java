@@ -3,19 +3,24 @@ package com.bgsoftware.wildchests.nms.v1_21;
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
+import com.mojang.serialization.Dynamic;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -218,6 +223,13 @@ public final class NMSAdapterImpl implements NMSAdapter {
             throw new RuntimeException(ex);
         }
 
+        int itemVersion = compoundTag.getInt("DataVersion");
+        int currVersion = CraftMagicNumbers.INSTANCE.getDataVersion();
+        if (itemVersion != currVersion) {
+            compoundTag = (CompoundTag) DataFixers.getDataFixer().update(References.ITEM_STACK,
+                    new Dynamic<>(NbtOps.INSTANCE, compoundTag), itemVersion, currVersion).getValue();
+        }
+
         return CraftItemStack.asCraftMirror(ItemStack.parse(MinecraftServer.getServer().registryAccess(), compoundTag).orElseThrow());
     }
 
@@ -227,7 +239,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
         for (int i = 0; i < items.length; ++i) {
             org.bukkit.inventory.ItemStack curr = items[i];
-            if (curr != null && curr.getType() == Material.AIR) {
+            if (curr != null && curr.getType() != Material.AIR) {
                 CompoundTag itemTag = serializeItemAsCompoundTag(curr);
                 itemTag.putByte("Slot", (byte) i);
                 itemsList.add(itemTag);
