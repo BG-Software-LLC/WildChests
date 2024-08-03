@@ -10,7 +10,6 @@ import org.bukkit.inventory.ShapelessRecipe;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -73,23 +72,24 @@ public final class RecipeUtils {
 
     @SuppressWarnings("deprecation")
     private static List<RecipeIngredient> getIngredients(List<ItemStack> oldList) {
-        Map<ItemStack, Integer> counts = new HashMap<>();
-        List<ItemStack> ingredients = new LinkedList<>();
+        ItemStackMap<Counter> counts = new ItemStackMap<>();
 
         for (ItemStack itemStack : oldList) {
             if (itemStack != null) {
                 if (itemStack.getData().getData() < 0)
                     itemStack.setDurability((short) 0);
-                counts.put(itemStack, counts.getOrDefault(itemStack, 0) + itemStack.getAmount());
+                counts.computeIfAbsent(itemStack, k -> new Counter()).increase(itemStack.getAmount());
             }
         }
 
-        for (ItemStack ingredient : counts.keySet()) {
-            ingredient.setAmount(counts.get(ingredient));
-            ingredients.add(ingredient);
-        }
+        List<RecipeIngredient> ingredients = new LinkedList<>();
 
-        return ingredients.stream().map(RecipeIngredient::of).collect(Collectors.toList());
+        counts.forEach((itemKey, counter) -> {
+            itemKey.setAmount((int) counter.get());
+            ingredients.add(RecipeIngredient.of(itemKey));
+        });
+
+        return ingredients;
     }
 
     private static List<RecipeIngredient> mergeIngredients(List<RecipeIngredient> recipeIngredients) {

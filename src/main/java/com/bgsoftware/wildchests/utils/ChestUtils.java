@@ -17,9 +17,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
@@ -39,35 +40,34 @@ public final class ChestUtils {
                 !chestData.getBlacklisted().contains(itemKey);
     };
 
-    public static ItemStack[] fixItemStackAmount(ItemStack itemStack, int amount) {
+    public static List<ItemStack> fixItemStackAmount(ItemStack itemStack, int amount) {
         int maxStackSize = itemStack.getMaxStackSize();
 
         if (maxStackSize == DEFAULT_MAX_STACK_SIZE) {
             itemStack.setAmount(amount);
-            return new ItemStack[]{itemStack};
+            return Collections.singletonList(itemStack);
         }
 
         if (amount <= maxStackSize)
-            return new ItemStack[]{itemStack};
+            return Collections.singletonList(itemStack);
 
         int amountOfFullStacks = amount / maxStackSize;
         int amountOfLeftOvers = amount % maxStackSize;
 
-        ItemStack[] totalItems = new ItemStack[amountOfLeftOvers == 0 ? amountOfFullStacks : amountOfFullStacks + 1];
-        int currentCursor = 0;
+        List<ItemStack> totalItems = new LinkedList<>();
 
         if (amountOfFullStacks > 0) {
             ItemStack fullStackItem = itemStack.clone();
             fullStackItem.setAmount(maxStackSize);
             for (int i = 0; i < amountOfFullStacks; ++i) {
-                totalItems[currentCursor++] = fullStackItem.clone();
+                totalItems.add(fullStackItem.clone());
             }
         }
 
         if (amountOfLeftOvers > 0) {
             ItemStack leftOverItem = itemStack.clone();
             leftOverItem.setAmount(amountOfLeftOvers);
-            totalItems[currentCursor] = leftOverItem;
+            totalItems.add(leftOverItem);
         }
 
         return totalItems;
@@ -129,21 +129,19 @@ public final class ChestUtils {
         }
 
         Map<Integer, ItemStack> toDrop = chest.addItems(toAdd.toArray(new ItemStack[]{}));
-
-        for (ItemStack itemStack : toDrop.values())
-            ItemUtils.dropItem(chest.getLocation(), itemStack);
+        ItemUtils.dropItems(chest.getLocation(), toDrop.values(), false);
     }
 
     public static void trySellChest(Chest chest) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(chest.getPlacer());
         try {
             plugin.getProviders().startSellingTask(player);
-            Arrays.stream(chest.getPages()).forEach(inventory -> {
+            for (Inventory inventory : chest.getPages()) {
                 for (int i = 0; i < inventory.getSize(); i++) {
                     if (trySellItem(player, chest, inventory.getItem(i)))
                         inventory.setItem(i, new ItemStack(Material.AIR));
                 }
-            });
+            }
         } finally {
             plugin.getProviders().stopSellingTask(player);
         }

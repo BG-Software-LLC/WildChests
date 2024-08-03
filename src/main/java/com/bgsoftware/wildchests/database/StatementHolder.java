@@ -1,7 +1,7 @@
 package com.bgsoftware.wildchests.database;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.utils.DatabaseThread;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -87,8 +87,8 @@ public final class StatementHolder {
     }
 
     public void execute(boolean async) {
-        if (async && !Executor.isDataThread()) {
-            Executor.data(() -> execute(false));
+        if (async && !DatabaseThread.isDataThread()) {
+            DatabaseThread.schedule(() -> execute(false));
             return;
         }
 

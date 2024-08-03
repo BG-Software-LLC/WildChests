@@ -12,9 +12,9 @@ import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.data.WChestData;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.BlockPosition;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
-import com.bgsoftware.wildchests.utils.Executor;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -70,7 +70,7 @@ public final class ChestsHandler implements ChestsManager {
     public Chest addChest(UUID placer, Location location, ChestData chestData) {
         WChest chest = createChestInternal(placer, location, chestData);
         plugin.getDataHandler().insertChest(chest);
-        Executor.sync(() -> plugin.getNMSInventory().updateTileEntity(chest));
+        Scheduler.runTask(location, () -> plugin.getNMSInventory().updateTileEntity(chest));
         return chest;
     }
 

@@ -308,46 +308,29 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
         if (nearbyItems.isEmpty())
             return;
 
-        if (!(nearbyItems instanceof AbstractSequentialList))
-            nearbyItems = new LinkedList<>(nearbyItems);
-
-        org.bukkit.inventory.ItemStack[] suctionItems = new org.bukkit.inventory.ItemStack[nearbyItems.size()];
-
-        int itemIndex = 0;
         for (ItemEntity itemEntity : nearbyItems) {
-            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem());
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asBukkitCopy(itemEntity.getItem());
+
             Item item = (Item) itemEntity.getBukkitEntity();
 
             int actualItemCount = plugin.getProviders().getItemAmount(item);
-            if (actualItemCount != itemStack.getAmount()) {
-                itemStack = itemStack.clone();
-                itemStack.setAmount(actualItemCount);
-            }
 
-            suctionItems[itemIndex++] = itemStack;
-        }
+            List<org.bukkit.inventory.ItemStack> suctionItems = ChestUtils.fixItemStackAmount(itemStack, actualItemCount);
 
-        Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(suctionItems);
+            Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
+                    suctionItems.toArray(new org.bukkit.inventory.ItemStack[0]));
 
-        if (leftOvers.isEmpty()) {
-            // We want to remove all entities.
-            nearbyItems.forEach(this::handleItemSuctionRemoval);
-            return;
-        }
-
-        itemIndex = 0;
-        for (ItemEntity nearbyItem : nearbyItems) {
-            if (nearbyItem.isRemoved()) {
-                continue;
-            }
-
-            org.bukkit.inventory.ItemStack leftOverItem = leftOvers.get(itemIndex++);
-
-            if (leftOverItem == null) {
-                handleItemSuctionRemoval(nearbyItem);
-            } else {
-                Item item = (Item) nearbyItem.getBukkitEntity();
-                plugin.getProviders().setItemAmount(item, leftOverItem.getAmount());
+            // We check that if there was any item that was added.
+            // If not, we can just do nothing.
+            if (leftOvers.size() != suctionItems.size()) {
+                if (leftOvers.isEmpty()) {
+                    handleItemSuctionRemoval(itemEntity);
+                } else {
+                    int newStackAmount = 0;
+                    for (org.bukkit.inventory.ItemStack leftOverItem : leftOvers.values())
+                        newStackAmount += leftOverItem.getAmount();
+                    plugin.getProviders().setItemAmount(item, newStackAmount);
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ import com.bgsoftware.wildchests.hooks.StackerProviderType;
 import com.bgsoftware.wildchests.hooks.StackerProvider_Default;
 import com.bgsoftware.wildchests.hooks.listener.IChestBreakListener;
 import com.bgsoftware.wildchests.hooks.listener.IChestPlaceListener;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -57,7 +57,7 @@ public final class ProvidersHandler implements ProvidersManager {
     public ProvidersHandler(WildChestsPlugin plugin) {
         this.plugin = plugin;
 
-        Executor.sync(() -> {
+        Scheduler.runTask(() -> {
             registerPricesProvider(plugin);
             registerStackersProvider();
             registerBanksProvider();

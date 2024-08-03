@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.hooks;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import net.coreprotect.CoreProtect;
 import net.coreprotect.CoreProtectAPI;
 import org.bukkit.Bukkit;
@@ -32,7 +32,7 @@ public final class CoreProtectHook {
             return;
 
         if (!Bukkit.isPrimaryThread()) {
-            Executor.sync(() -> recordBlockBreak(offlinePlayer, chest));
+            Scheduler.runTask(() -> recordBlockBreak(offlinePlayer, chest));
             return;
         }
 
@@ -42,7 +42,7 @@ public final class CoreProtectHook {
 
         if (coreProtectAPI.APIVersion() == 5) {
             coreProtectAPI.logRemoval(offlinePlayer.getName(), location, Material.CHEST, (byte) 0);
-        } else if (coreProtectAPI.APIVersion() <= 9) {
+        } else if (coreProtectAPI.APIVersion() <= 10) {
             coreProtectAPI.logRemoval(offlinePlayer.getName(), location, Material.CHEST,
                     Material.CHEST.createBlockData());
         } else if (!warningDisplayed) {

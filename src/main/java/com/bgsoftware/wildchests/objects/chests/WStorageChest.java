@@ -6,7 +6,7 @@ import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -193,7 +193,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             if (storageItem.getType() == Material.AIR) {
                 setItemStack(itemStack.clone());
             } else if (!takeItemCheckSlot && !canPlaceItemThroughFace(itemStack)) {
-                ItemUtils.dropItem(getLocation(), itemStack);
+                ItemUtils.dropItem(getLocation(), itemStack, true);
                 return;
             }
 
@@ -224,7 +224,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public void update() {
-        Executor.sync(() -> updateInventory(inventory), 1L);
+        Scheduler.runTask(() -> updateInventory(inventory), 1L);
     }
 
     @Override
@@ -278,16 +278,16 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         BigInteger[] divideAndRemainder = getAmount().divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
         int amountOfMaximums = divideAndRemainder[0].intValue();
-        int reminder = divideAndRemainder[1].intValue();
+        int remainder = divideAndRemainder[1].intValue();
 
         for (int i = 0; i < amountOfMaximums; i++) {
             itemStack.setAmount(Integer.MAX_VALUE);
-            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc, true);
         }
 
-        if (reminder > 0) {
-            itemStack.setAmount(reminder);
-            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc);
+        if (remainder > 0) {
+            itemStack.setAmount(remainder);
+            ItemUtils.dropOrCollect(event.getPlayer(), itemStack, getData().isAutoCollect(), loc, true);
         }
 
         return true;
@@ -353,7 +353,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                         }
                     }
                 } else {
-                    Executor.sync(() -> clickedPlayer.setItemOnCursor(itemToAdd), 1L);
+                    Scheduler.runTask(clickedPlayer, () -> clickedPlayer.setItemOnCursor(itemToAdd), 1L);
                 }
 
                 setAmount(getAmount().subtract(BigInteger.valueOf(newAmount)));
@@ -416,9 +416,17 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     private void updateInventory(Inventory inventory) {
-        inventory.getViewers().stream()
-                .filter(viewer -> viewer instanceof Player)
-                .forEach(viewer -> openPage((Player) viewer, 0));
+        if (Scheduler.isRegionScheduler()) {
+            inventory.getViewers().forEach(viewer -> {
+                if (viewer instanceof Player)
+                    Scheduler.runTask(viewer, () -> openPage((Player) viewer, 0));
+            });
+        } else {
+            inventory.getViewers().forEach(viewer -> {
+                if (viewer instanceof Player)
+                    openPage((Player) viewer, 0);
+            });
+        }
     }
 
 }

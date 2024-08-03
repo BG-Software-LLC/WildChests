@@ -5,14 +5,12 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
-import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.Materials;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
-import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -59,7 +57,7 @@ public final class InventoryListener implements Listener {
     public void onInventoryClickMonitor(InventoryClickEvent e){
         if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getView().getTitle().contains(title))) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
-            Executor.sync(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
+            Scheduler.runTask(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
     }
 
@@ -67,7 +65,7 @@ public final class InventoryListener implements Listener {
     public void onInventoryCloseMonitor(InventoryCloseEvent e){
         if(latestClickedItem.containsKey(e.getPlayer().getUniqueId())){
             ItemStack clickedItem = latestClickedItem.get(e.getPlayer().getUniqueId());
-            Executor.sync(() -> {
+            Scheduler.runTask(e.getPlayer(), () -> {
                 e.getPlayer().getInventory().removeItem(clickedItem);
                 ((Player) e.getPlayer()).updateInventory();
             }, 1L);
@@ -168,7 +166,7 @@ public final class InventoryListener implements Listener {
             }
 
             final int PAGE = pageIndex;
-            Executor.sync(() -> chest.openPage(player, PAGE));
+            Scheduler.runTask(player, () -> chest.openPage(player, PAGE));
         }catch(Exception ex){
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(player);
         }
@@ -179,9 +177,14 @@ public final class InventoryListener implements Listener {
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
         if (e.getView().getTitle().equals(WChest.guiConfirmTitle)) {
-            Executor.sync(() -> {
-                if (buyNewPage.containsKey(e.getPlayer().getUniqueId()))
-                    e.getPlayer().openInventory(e.getInventory());
+            Scheduler.runTask(() -> {
+                if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {
+                    if(Scheduler.isRegionScheduler()) {
+                        Scheduler.runTask(e.getPlayer(), () -> e.getPlayer().openInventory(e.getInventory()));
+                    } else {
+                        e.getPlayer().openInventory(e.getInventory());
+                    }
+                }
             }, 1L);
         }
     }

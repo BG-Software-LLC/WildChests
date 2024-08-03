@@ -2,7 +2,7 @@ package com.bgsoftware.wildchests.listeners;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.utils.WorldsRegistry;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,8 +11,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.event.world.WorldUnloadEvent;
 
 public final class ChunksListener implements Listener {
 
@@ -32,19 +30,17 @@ public final class ChunksListener implements Listener {
         plugin.getDataHandler().saveDatabase(e.getChunk(), true);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onWorldLoad(WorldLoadEvent e) {
-        WorldsRegistry.onWorldLoad(e.getWorld());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onWorldUnload(WorldUnloadEvent e) {
-        WorldsRegistry.onWorldUnload(e.getWorld());
-    }
-
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk) {
         plugin.getChestsManager().loadChestsForChunk(chunk);
 
+        if(Scheduler.isRegionScheduler()) {
+            Scheduler.runTask(chunk, () -> loadChestsForChunk(plugin, chunk));
+        } else {
+            loadChestsForChunk(plugin, chunk);
+        }
+    }
+
+    private static void loadChestsForChunk(WildChestsPlugin plugin, Chunk chunk) {
         plugin.getChestsManager().getChests(chunk).forEach(chest -> {
             Location location = chest.getLocation();
             Material blockType = location.getBlock().getType();

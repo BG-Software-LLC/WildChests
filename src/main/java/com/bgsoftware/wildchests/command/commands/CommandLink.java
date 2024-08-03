@@ -5,7 +5,7 @@ import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.command.ICommand;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
@@ -105,44 +105,42 @@ public final class CommandLink implements ICommand {
 
         LinkedChest linkedChest = (LinkedChest) chest;
 
-        if (players.containsKey(player.getUniqueId())) {
-            LinkedChest originalChest = plugin.getChestsManager().getLinkedChest(players.get(player.getUniqueId()));
-            players.remove(player.getUniqueId());
-
-
-            if (originalChest == null || originalChest.getLocation().equals(linkedChest.getLocation()) ||
-                    originalChest.equals(linkedChest.getLinkedChest())) {
-                Locale.NOT_LINKED_CHEST.send(player);
-                return;
-            }
-
-            List<ItemStack> toMove = new ArrayList<>();
-
-            for (int page = 0; page < originalChest.getPagesAmount(); page++) {
-                Inventory inventory = originalChest.getPage(page);
-                for (ItemStack itemStack : inventory.getContents()) {
-                    if (itemStack != null && itemStack.getType() != Material.AIR) {
-                        toMove.add(itemStack);
-                    }
-                }
-                inventory.clear();
-            }
-
-            originalChest.linkIntoChest(linkedChest);
-
-            Locale.LINKED_SUCCEED.send(player, LocationUtils.toString(originalChest.getLocation()));
-
-            if (!toMove.isEmpty()) {
-                linkedChest.addItems(toMove.toArray(new ItemStack[]{}));
-                Locale.LEFTOVERS_ITEMS_WARNING.send(player);
-            }
-
+        Location targetLinkLocation = players.remove(player.getUniqueId());
+        if (targetLinkLocation == null) {
+            players.put(player.getUniqueId(), linkedChest.getLocation());
+            Scheduler.runTask(() -> players.remove(player.getUniqueId()), 6000L);
+            Locale.SELECT_ANOTHER_CHEST.send(player);
             return;
         }
 
-        players.put(player.getUniqueId(), linkedChest.getLocation());
-        Executor.async(() -> players.remove(player.getUniqueId()), 6000L);
-        Locale.SELECT_ANOTHER_CHEST.send(player);
+        LinkedChest originalChest = plugin.getChestsManager().getLinkedChest(targetLinkLocation);
+
+        if (originalChest == null || originalChest.getLocation().equals(linkedChest.getLocation()) ||
+                originalChest.equals(linkedChest.getLinkedChest())) {
+            Locale.NOT_LINKED_CHEST.send(player);
+            return;
+        }
+
+        List<ItemStack> toMove = new ArrayList<>();
+
+        for (int page = 0; page < originalChest.getPagesAmount(); page++) {
+            Inventory inventory = originalChest.getPage(page);
+            for (ItemStack itemStack : inventory.getContents()) {
+                if (itemStack != null && itemStack.getType() != Material.AIR) {
+                    toMove.add(itemStack);
+                }
+            }
+            inventory.clear();
+        }
+
+        originalChest.linkIntoChest(linkedChest);
+
+        Locale.LINKED_SUCCEED.send(player, LocationUtils.toString(originalChest.getLocation()));
+
+        if (!toMove.isEmpty()) {
+            linkedChest.addItems(toMove.toArray(new ItemStack[]{}));
+            Locale.LEFTOVERS_ITEMS_WARNING.send(player);
+        }
     }
 
     @Override

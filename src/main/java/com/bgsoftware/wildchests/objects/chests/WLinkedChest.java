@@ -5,7 +5,7 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.objects.containers.LinkedChestsContainer;
-import com.bgsoftware.wildchests.utils.Executor;
+import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -137,7 +137,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         super.loadFromData(serialized);
         if (!linkedChest.isEmpty()) {
             Location linkedChestLocation = LocationUtils.fromString(linkedChest);
-            Executor.sync(() -> {
+            Scheduler.runTask(() -> {
                 LinkedChest sourceChest = plugin.getChestsManager().getLinkedChest(linkedChestLocation);
                 if (sourceChest != null) {
                     if (((WLinkedChest) sourceChest).linkedChestsContainer == null)
@@ -159,7 +159,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         if (cfg.contains("linked-chest")) {
             //We want to run it on the first tick, after all chests are loaded.
             Location linkedChest = LocationUtils.fromString(cfg.getString("linked-chest"));
-            Executor.sync(() -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
+            Scheduler.runTask(linkedChest, () -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
         }
     }
 
