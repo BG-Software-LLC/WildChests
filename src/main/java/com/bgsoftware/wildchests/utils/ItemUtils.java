@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -124,6 +125,10 @@ public final class ItemUtils {
         }
 
         dropItem(location, itemStack, checkForMaxStacks);
+    }
+
+    public static boolean isEmpty(@Nullable ItemStack itemStack) {
+        return itemStack == null || itemStack.getType() == Material.AIR || itemStack.getAmount() <= 0;
     }
 
 }
