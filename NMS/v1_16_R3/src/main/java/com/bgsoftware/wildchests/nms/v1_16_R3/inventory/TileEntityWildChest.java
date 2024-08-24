@@ -308,7 +308,8 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
             // We check that if there was any item that was added.
             // If not, we can just do nothing.
-            if (leftOvers.size() != suctionItems.size()) {
+            if (leftOvers.size() != suctionItems.size() ||
+                    (leftOvers.size() == 1 && leftOvers.get(0).getAmount() != actualItemCount)) {
                 if (leftOvers.isEmpty()) {
                     handleItemSuctionRemoval(entityItem);
                 } else {

@@ -40,10 +40,6 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 
-import java.util.AbstractSequentialList;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -332,12 +328,6 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
         if (nearbyItems.isEmpty())
             return;
 
-        if (!(nearbyItems instanceof AbstractSequentialList))
-            nearbyItems = new LinkedList<>(nearbyItems);
-
-        List<org.bukkit.inventory.ItemStack> suctionItems = new ArrayList<>();
-        Map<org.bukkit.inventory.ItemStack, Item> suctionItemsToItems = new IdentityHashMap<>();
-
         for (EntityItem entityItem : nearbyItems) {
             org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asBukkitCopy(entityItem.getItemStack());
 
@@ -345,31 +335,25 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
 
             int actualItemCount = plugin.getProviders().getItemAmount(item);
 
-            List<org.bukkit.inventory.ItemStack> splitItems = ChestUtils.fixItemStackAmount(itemStack, actualItemCount);
-            suctionItems.addAll(splitItems);
-            splitItems.forEach(_itemStack -> suctionItemsToItems.put(_itemStack, item));
-        }
+            List<org.bukkit.inventory.ItemStack> suctionItems = ChestUtils.fixItemStackAmount(itemStack, actualItemCount);
 
-        Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
-                suctionItems.toArray(new org.bukkit.inventory.ItemStack[0]));
+            Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
+                    suctionItems.toArray(new org.bukkit.inventory.ItemStack[0]));
 
-        if (leftOvers.isEmpty()) {
-            // We want to remove all entities.
-            nearbyItems.forEach(this::handleItemSuctionRemoval);
-            return;
-        }
-
-        for (org.bukkit.inventory.ItemStack leftOverItem : leftOvers.values()) {
-            Item item = suctionItemsToItems.remove(leftOverItem);
-            if (item != null) {
-                int currAmount = plugin.getProviders().getItemAmount(item);
-                plugin.getProviders().setItemAmount(item, currAmount + leftOverItem.getAmount());
-                nearbyItems.remove((EntityItem) ((CraftItem) item).getHandle());
+            // We check that if there was any item that was added.
+            // If not, we can just do nothing.
+            if (leftOvers.size() != suctionItems.size() ||
+                    (leftOvers.size() == 1 && leftOvers.get(0).getAmount() != actualItemCount)) {
+                if (leftOvers.isEmpty()) {
+                    handleItemSuctionRemoval(entityItem);
+                } else {
+                    int newStackAmount = 0;
+                    for (org.bukkit.inventory.ItemStack leftOverItem : leftOvers.values())
+                        newStackAmount += leftOverItem.getAmount();
+                    plugin.getProviders().setItemAmount(item, newStackAmount);
+                }
             }
         }
-
-        for(EntityItem nearbyItem : nearbyItems)
-            handleItemSuctionRemoval(nearbyItem);
     }
 
     private void handleItemSuctionRemoval(EntityItem entityItem) {
