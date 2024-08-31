@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.database;
 
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.utils.DatabaseThread;
+import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -67,12 +68,13 @@ public final class StatementHolder {
     }
 
     public StatementHolder setItemStack(ItemStack itemStack) {
-        values.put(currentIndex++, itemStack == null ? "" : plugin.getNMSAdapter().serialize(itemStack));
+        values.put(currentIndex++, ItemUtils.isEmpty(itemStack) ? "" : plugin.getNMSAdapter().serialize(itemStack));
         return this;
     }
 
     public StatementHolder setInventories(Inventory[] inventories) {
-        values.put(currentIndex++, inventories == null ? "" : plugin.getNMSAdapter().serialize(inventories));
+        values.put(currentIndex++, inventories == null || inventories.length == 0 ? "" :
+                plugin.getNMSAdapter().serialize(inventories));
         return this;
     }
 
