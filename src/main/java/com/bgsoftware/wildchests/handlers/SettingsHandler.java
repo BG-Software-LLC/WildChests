@@ -13,16 +13,18 @@ import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.objects.data.WInventoryData;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
@@ -92,125 +94,24 @@ public final class SettingsHandler {
         Map<String, ChestData> chestsData = new HashMap<>();
 
         for (String name : cfg.getConfigurationSection("chests").getKeys(false)) {
-            ChestType chestType;
-
-            if (!cfg.contains("chests." + name + ".chest-mode")) {
-                WildChestsPlugin.log("Couldn''t find chest-mode for " + name + " - skipping...");
+            if (!cfg.isConfigurationSection("chests." + name)) {
+                WildChestsPlugin.log("Not a valid section: chests." + name + " - skipping...");
                 continue;
             }
 
+            ConfigurationSection chestSection = cfg.getConfigurationSection("chests." + name);
+
+            ChestData chestData;
             try {
-                chestType = ChestType.valueOf(cfg.getString("chests." + name + ".chest-mode"));
-            } catch (IllegalArgumentException ex) {
-                WildChestsPlugin.log("Found an invalid chest-type for " + name + " - skipping...");
+                chestData = loadChestFromSection(plugin, name, chestSection);
+            } catch (Throwable error) {
+                WildChestsPlugin.log("An unexpected error occurred while loading chest " + name + ":");
+                error.printStackTrace();
                 continue;
             }
 
-            if (!cfg.contains("chests." + name + ".item.name") && !cfg.contains("chests." + name + ".item.lore")) {
-                WildChestsPlugin.log("Found an invalid item for " + name + " - skipping...");
+            if (chestData == null)
                 continue;
-            }
-
-            ItemStack itemStack = new ItemStack(Material.CHEST);
-            ItemMeta itemMeta = itemStack.getItemMeta();
-
-            if (cfg.contains("chests." + name + ".item.name")) {
-                itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', cfg.getString("chests." + name + ".item.name")));
-            }
-
-            if (cfg.contains("chests." + name + ".item.lore")) {
-                List<String> lore = new LinkedList<>();
-
-                for (String line : cfg.getStringList("chests." + name + ".item.lore"))
-                    lore.add(ChatColor.translateAlternateColorCodes('&', line));
-
-                itemMeta.setLore(lore);
-            }
-
-            itemStack.setItemMeta(itemMeta);
-
-            ChestData chestData = new WChestData(name, plugin.getNMSAdapter().setChestType(itemStack, chestType), chestType);
-
-            if (cfg.contains("chests." + name + ".size")) {
-                int rows = cfg.getInt("chests." + name + ".size");
-
-                if (rows < 1 || rows > 6) {
-                    WildChestsPlugin.log("Found an invalid rows amount for " + name + " - setting default size to 3 rows");
-                    rows = 3;
-                }
-
-                chestData.setDefaultSize(rows * 9);
-            }
-
-            if (cfg.contains("chests." + name + ".title")) {
-                chestData.setDefaultTitle(ChatColor.translateAlternateColorCodes('&', cfg.getString("chests." + name + ".title")));
-            }
-
-            if (cfg.getBoolean("chests." + name + ".sell-mode", false)) {
-                chestData.setSellMode(true);
-            }
-
-            if (cfg.contains("chests." + name + ".deposit-method")) {
-                String depositMethod = cfg.getString("chests." + name + ".deposit-method").toUpperCase();
-                try {
-                    chestData.setDepositMethod(DepositMethod.valueOf(depositMethod));
-                } catch (IllegalArgumentException error) {
-                    WildChestsPlugin.log("Found an invalid deposit-method for " + name + " - skipping...");
-                }
-            }
-
-            if (cfg.contains("chests." + name + ".crafter-chest")) {
-                chestData.setAutoCrafter(cfg.getStringList("chests." + name + ".crafter-chest"));
-            }
-
-            if (cfg.contains("chests." + name + ".hopper-filter")) {
-                chestData.setHopperFilter(cfg.getBoolean("chests." + name + ".hopper-filter"));
-            }
-
-            if (cfg.contains("chests." + name + ".pages")) {
-                Map<Integer, InventoryData> pages = new HashMap<>();
-                for (String index : cfg.getConfigurationSection("chests." + name + ".pages").getKeys(false)) {
-                    if (!index.equals("default")) {
-                        String title = cfg.getString("chests." + name + ".pages." + index + ".title");
-                        double price = cfg.getDouble("chests." + name + ".pages." + index + ".price", 0);
-                        pages.put(Integer.valueOf(index), new WInventoryData(title, price));
-                    } else {
-                        chestData.setDefaultPagesAmount(cfg.getInt("chests." + name + ".pages.default"));
-                    }
-                }
-                chestData.setPagesData(pages);
-            }
-
-            if (cfg.contains("chests." + name + ".multiplier")) {
-                chestData.setMultiplier(cfg.getDouble("chests." + name + ".multiplier"));
-            }
-
-            if (cfg.contains("chests." + name + ".auto-collect")) {
-                chestData.setAutoCollect(cfg.getBoolean("chests." + name + ".auto-collect"));
-            }
-
-            if (cfg.contains("chests." + name + ".auto-suction")) {
-                chestData.setAutoSuctionRange(cfg.getInt("chests." + name + ".auto-suction.range", 1));
-                chestData.setAutoSuctionChunk(cfg.getBoolean("chests." + name + ".auto-suction.chunk", false));
-            }
-
-            if (cfg.contains("chests." + name + ".blacklist")) {
-                chestData.setBlacklisted(new KeySet(cfg.getStringList("chests." + name + ".blacklist")));
-            }
-
-            if (cfg.contains("chests." + name + ".whitelist")) {
-                chestData.setWhitelisted(new KeySet(cfg.getStringList("chests." + name + ".whitelist")));
-            }
-
-            if (cfg.contains("chests." + name + ".max-amount") && chestType == ChestType.STORAGE_UNIT) {
-                chestData.setStorageUnitMaxAmount(cfg.isInt("chests." + name + ".max-amount") ?
-                        BigInteger.valueOf(cfg.getInt("chests." + name + ".max-amount")) :
-                        new BigInteger(cfg.getString("chests." + name + ".max-amount")));
-            }
-
-            if (cfg.contains("chests." + name + ".particles")) {
-                chestData.setParticles(cfg.getStringList("chests." + name + ".particles"));
-            }
 
             chestsData.put(name.toLowerCase(), chestData);
             chestsAmount++;
@@ -225,6 +126,131 @@ public final class SettingsHandler {
     public static void reload() {
         WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
         plugin.setSettings(new SettingsHandler(plugin));
+    }
+
+    @Nullable
+    private static ChestData loadChestFromSection(WildChestsPlugin plugin, String chestName, ConfigurationSection section) {
+        ChestType chestType;
+
+        if (!section.contains("chest-mode")) {
+            WildChestsPlugin.log("Couldn't find chest-mode for " + chestName + " - skipping...");
+            return null;
+        }
+
+        try {
+            chestType = ChestType.valueOf(section.getString("chest-mode"));
+        } catch (IllegalArgumentException ex) {
+            WildChestsPlugin.log("Found an invalid chest-type for " + chestName + " - skipping...");
+            return null;
+        }
+
+        if (!section.contains("item.name") && !section.contains("item.lore")) {
+            WildChestsPlugin.log("Found an invalid item for " + chestName + " - skipping...");
+            return null;
+        }
+
+        ItemStack itemStack = new ItemStack(Material.CHEST);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+
+        if (section.contains("item.name")) {
+            itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', section.getString("item.name")));
+        }
+
+        if (section.contains("item.lore")) {
+            List<String> lore = new LinkedList<>();
+
+            for (String line : section.getStringList("item.lore"))
+                lore.add(ChatColor.translateAlternateColorCodes('&', line));
+
+            itemMeta.setLore(lore);
+        }
+
+        itemStack.setItemMeta(itemMeta);
+
+        ChestData chestData = new WChestData(chestName, plugin.getNMSAdapter().setChestType(itemStack, chestType), chestType);
+
+        if (section.contains("size")) {
+            int rows = section.getInt("size");
+
+            if (rows < 1 || rows > 6) {
+                WildChestsPlugin.log("Found an invalid rows amount for " + chestName + " - setting default size to 3 rows");
+                rows = 3;
+            }
+
+            chestData.setDefaultSize(rows * 9);
+        }
+
+        if (section.contains("title")) {
+            chestData.setDefaultTitle(ChatColor.translateAlternateColorCodes('&', section.getString("title")));
+        }
+
+        if (section.getBoolean("sell-mode", false)) {
+            chestData.setSellMode(true);
+        }
+
+        if (section.contains("deposit-method")) {
+            String depositMethod = section.getString("deposit-method").toUpperCase(Locale.ENGLISH);
+            try {
+                chestData.setDepositMethod(DepositMethod.valueOf(depositMethod));
+            } catch (IllegalArgumentException error) {
+                WildChestsPlugin.log("Found an invalid deposit-method for " + chestName + " - skipping...");
+            }
+        }
+
+        if (section.contains("crafter-chest")) {
+            chestData.setAutoCrafter(section.getStringList("crafter-chest"));
+        }
+
+        if (section.contains("hopper-filter")) {
+            chestData.setHopperFilter(section.getBoolean("hopper-filter"));
+        }
+
+        if (section.contains("pages")) {
+            Map<Integer, InventoryData> pages = new HashMap<>();
+            for (String index : section.getConfigurationSection("pages").getKeys(false)) {
+                if (!index.equals("default")) {
+                    String title = section.getString("pages." + index + ".title");
+                    double price = section.getDouble("pages." + index + ".price", 0);
+                    pages.put(Integer.valueOf(index), new WInventoryData(title, price));
+                } else {
+                    chestData.setDefaultPagesAmount(section.getInt("pages.default"));
+                }
+            }
+            chestData.setPagesData(pages);
+        }
+
+        if (section.contains("multiplier")) {
+            chestData.setMultiplier(section.getDouble("multiplier"));
+        }
+
+        if (section.contains("auto-collect")) {
+            chestData.setAutoCollect(section.getBoolean("auto-collect"));
+        }
+
+        if (section.contains("auto-suction")) {
+            chestData.setAutoSuctionRange(section.getInt("auto-suction.range", 1));
+            chestData.setAutoSuctionChunk(section.getBoolean("auto-suction.chunk", false));
+        }
+
+        if (section.contains("blacklist")) {
+            chestData.setBlacklisted(new KeySet(section.getStringList("blacklist")));
+        }
+
+        if (section.contains("whitelist")) {
+            chestData.setWhitelisted(new KeySet(section.getStringList("whitelist")));
+        }
+
+        if (section.contains("max-amount") && chestType == ChestType.STORAGE_UNIT) {
+            chestData.setStorageUnitMaxAmount(section.isInt("max-amount") ?
+                    BigInteger.valueOf(section.getInt("max-amount")) :
+                    new BigInteger(section.getString("max-amount")));
+        }
+
+        if (section.contains("particles")) {
+            chestData.setParticles(section.getStringList("particles"));
+        }
+
+        return chestData;
     }
 
 }
