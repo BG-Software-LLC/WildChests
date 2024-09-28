@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.utils;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -49,7 +50,10 @@ public final class RecipeUtils {
 
         if (SHAPRED_RECIPE_GET_CHOICE_MAP.isValid()) {
             recipeIngredients = SHAPRED_RECIPE_GET_CHOICE_MAP.invoke(shapedRecipe)
-                    .values().stream().map(RecipeIngredient::of).collect(Collectors.toList());
+                    .values().stream()
+                    .filter(Objects::nonNull)
+                    .map(RecipeIngredient::of)
+                    .collect(Collectors.toList());
         } else {
             recipeIngredients = getIngredients(new LinkedList<>(shapedRecipe.getIngredientMap().values()));
         }
@@ -62,7 +66,10 @@ public final class RecipeUtils {
 
         if (SHAPELESS_RECIPE_GET_CHOICE_LIST.isValid()) {
             recipeIngredients = SHAPELESS_RECIPE_GET_CHOICE_LIST.invoke(shapelessRecipe)
-                    .stream().map(RecipeIngredient::of).collect(Collectors.toList());
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .map(RecipeIngredient::of)
+                    .collect(Collectors.toList());
         } else {
             recipeIngredients = getIngredients(shapelessRecipe.getIngredientList());
         }
