@@ -247,9 +247,9 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
                 chestData.isAutoSuctionChunk() ? position.getX() >> 4 << 4 : position.getX() - chestData.getAutoSuctionRange(),
                 position.getY() - chestData.getAutoSuctionRange(),
                 chestData.isAutoSuctionChunk() ? position.getZ() >> 4 << 4 : position.getZ() - chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (position.getX() >> 4 << 4) + 16 : position.getX() + chestData.getAutoSuctionRange(),
+                chestData.isAutoSuctionChunk() ? (position.getX() >> 4 << 4) + 16 : position.getX() + chestData.getAutoSuctionRange() + 1,
                 position.getY() + chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (position.getZ() >> 4 << 4) + 16 : position.getZ() + chestData.getAutoSuctionRange()
+                chestData.isAutoSuctionChunk() ? (position.getZ() >> 4 << 4) + 16 : position.getZ() + chestData.getAutoSuctionRange() + 1
         );
         autoCraftMode = chestData.isAutoCrafter();
         autoSellMode = chestData.isSellMode();

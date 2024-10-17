@@ -247,9 +247,9 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
                 chestData.isAutoSuctionChunk() ? blockPos.getX() >> 4 << 4 : blockPos.getX() - chestData.getAutoSuctionRange(),
                 blockPos.getY() - chestData.getAutoSuctionRange(),
                 chestData.isAutoSuctionChunk() ? blockPos.getZ() >> 4 << 4 : blockPos.getZ() - chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (blockPos.getX() >> 4 << 4) + 16 : blockPos.getX() + chestData.getAutoSuctionRange(),
+                chestData.isAutoSuctionChunk() ? (blockPos.getX() >> 4 << 4) + 16 : blockPos.getX() + chestData.getAutoSuctionRange() + 1,
                 blockPos.getY() + chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (blockPos.getZ() >> 4 << 4) + 16 : blockPos.getZ() + chestData.getAutoSuctionRange()
+                chestData.isAutoSuctionChunk() ? (blockPos.getZ() >> 4 << 4) + 16 : blockPos.getZ() + chestData.getAutoSuctionRange() + 1
         );
         autoCraftMode = chestData.isAutoCrafter();
         autoSellMode = chestData.isSellMode();
