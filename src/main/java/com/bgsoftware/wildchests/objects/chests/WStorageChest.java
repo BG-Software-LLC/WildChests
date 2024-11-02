@@ -1,9 +1,11 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
+import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
@@ -366,10 +368,19 @@ public final class WStorageChest extends WChest implements StorageChest {
         return true;
     }
 
-    public void loadFromData(String item, String amount, String maxAmount) {
-        setItemStack(plugin.getNMSAdapter().deserialzeItem(item));
-        setAmount(new BigInteger(amount));
-        setMaxAmount(new BigInteger(maxAmount));
+    @Override
+    public void loadFromData(ChestsHandler.UnloadedChest unloadedChest) {
+        if(!(unloadedChest instanceof ChestsHandler.UnloadedStorageUnit)) {
+            WildChestsPlugin.log("&cCannot load data to chest " + getLocation() + " from " + unloadedChest);
+            return;
+        }
+
+        ChestsHandler.UnloadedStorageUnit unloadedStorageUnit =
+                (ChestsHandler.UnloadedStorageUnit) unloadedChest;
+
+        setItemStack(unloadedStorageUnit.itemStack);
+        setAmount(unloadedStorageUnit.amount);
+        setMaxAmount(unloadedStorageUnit.maxAmount);
     }
 
     @Override

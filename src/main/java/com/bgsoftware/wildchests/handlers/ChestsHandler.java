@@ -12,6 +12,7 @@ import com.bgsoftware.wildchests.objects.chests.WLinkedChest;
 import com.bgsoftware.wildchests.objects.chests.WRegularChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.data.WChestData;
+import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.BlockPosition;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
@@ -26,6 +27,7 @@ import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -74,9 +76,9 @@ public final class ChestsHandler implements ChestsManager {
         return chest;
     }
 
-    public void loadUnloadedChest(UUID placer, BlockPosition position, ChestData chestData, String[] extendedData) {
-        UnloadedChest unloadedChest = new UnloadedChest(placer, position, chestData, extendedData);
-        unloadedChests.computeIfAbsent(ChunkPosition.of(position), s -> new LinkedHashMap<>()).put(position, unloadedChest);
+    public void addUnloadedChest(UnloadedChest unloadedChest) {
+        unloadedChests.computeIfAbsent(ChunkPosition.of(unloadedChest.position), s -> new LinkedHashMap<>())
+                .put(unloadedChest.position, unloadedChest);
     }
 
     public void loadChestsData(Map<String, ChestData> chestsData) {
@@ -263,41 +265,54 @@ public final class ChestsHandler implements ChestsManager {
                 unloadedChest.position.getY(), unloadedChest.position.getZ());
 
         WChest chest = createChestInternal(unloadedChest.placer, location, unloadedChest.chestData);
-
-        if (chest instanceof StorageChest) {
-            String item = unloadedChest.extendedData[0];
-            String amount = unloadedChest.extendedData[1];
-            String maxAmount = unloadedChest.extendedData[2];
-            ((WStorageChest) chest).loadFromData(item, amount, maxAmount);
-        } else {
-            String serialized = unloadedChest.extendedData[0];
-            if (chest instanceof LinkedChest) {
-                String linkedChest = unloadedChest.extendedData[1];
-                ((WLinkedChest) chest).loadFromData(serialized, linkedChest);
-            } else {
-                ((WRegularChest) chest).loadFromData(serialized);
-            }
-
-            if (!serialized.isEmpty() && serialized.toCharArray()[0] != '*') {
-                chest.executeUpdateStatement(true);
-            }
-        }
+        chest.loadFromData(unloadedChest);
 
         return chest;
     }
 
-    private static class UnloadedChest {
+    public static abstract class UnloadedChest {
 
-        private final UUID placer;
-        private final BlockPosition position;
-        private final ChestData chestData;
-        private final String[] extendedData;
+        public final UUID placer;
+        public final BlockPosition position;
+        public final ChestData chestData;
 
-        UnloadedChest(UUID placer, BlockPosition position, ChestData chestData, String[] extendedData) {
+        public UnloadedChest(UUID placer, BlockPosition position, ChestData chestData) {
             this.placer = placer;
             this.position = position;
             this.chestData = chestData;
-            this.extendedData = extendedData;
+        }
+
+    }
+
+    public static class UnloadedStorageUnit extends UnloadedChest {
+
+        public final ItemStack itemStack;
+        public final BigInteger amount;
+        public final BigInteger maxAmount;
+
+        public UnloadedStorageUnit(UUID placer, BlockPosition position, ChestData chestData,
+                            ItemStack itemStack, BigInteger amount, BigInteger maxAmount) {
+            super(placer, position, chestData);
+            this.itemStack = itemStack;
+            this.amount = amount;
+            this.maxAmount = maxAmount;
+        }
+
+    }
+
+    public static class UnloadedRegularChest extends UnloadedChest {
+
+        public final InventoryHolder[] inventories;
+        @Nullable
+        public final Location linkedChest;
+        public boolean executeUpdate;
+
+        public UnloadedRegularChest(UUID placer, BlockPosition position, ChestData chestData,
+                                    InventoryHolder[] inventories, @Nullable Location linkedChest, boolean executeUpdate) {
+            super(placer, position, chestData);
+            this.inventories = inventories;
+            this.linkedChest = linkedChest;
+            this.executeUpdate = executeUpdate;
         }
 
     }

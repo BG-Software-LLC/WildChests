@@ -7,6 +7,7 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.database.DatabaseObject;
+import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.listeners.InventoryListener;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
@@ -364,6 +365,8 @@ public abstract class WChest extends DatabaseObject implements Chest {
     }
 
     /* DATA RELATED METHODS */
+
+    public abstract void loadFromData(ChestsHandler.UnloadedChest unloadedChest);
 
     public void loadFromFile(YamlConfiguration cfg) {
         if (cfg.contains("inventory")) {

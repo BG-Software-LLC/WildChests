@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -136,26 +137,30 @@ public final class DataHandler {
                 }
             }
 
-            String[] extendedData;
+            ChestsHandler.UnloadedChest unloadedChest;
 
             ChestType chestType = chestData.getChestType();
             if (chestType == ChestType.STORAGE_UNIT) {
-                extendedData = new String[3];
-                extendedData[0] = resultSet.getString("item");
-                extendedData[1] = resultSet.getString("amount");
-                extendedData[2] = resultSet.getString("max_amount");
+                String item = resultSet.getString("item");
+                String amount = resultSet.getString("amount");
+                String maxAmount = resultSet.getString("max_amount");
+                unloadedChest = new ChestsHandler.UnloadedStorageUnit(placer, position, chestData,
+                        plugin.getNMSAdapter().deserialzeItem(item), new BigInteger(amount), new BigInteger(maxAmount));
             } else {
+                String inventories = resultSet.getString("inventories");
+                Location linkedChest = null;
+
                 if (chestType == ChestType.LINKED_CHEST) {
-                    extendedData = new String[2];
-                    extendedData[1] = resultSet.getString("linked_chest");
-                } else {
-                    extendedData = new String[1];
+                    linkedChest = LocationUtils.fromString(resultSet.getString("linked_chest"));
                 }
 
-                extendedData[0] = resultSet.getString("inventories");
+                boolean executeUpdate = !inventories.isEmpty() && inventories.toCharArray()[0] != '*';
+
+                unloadedChest = new ChestsHandler.UnloadedRegularChest(placer, position, chestData,
+                        plugin.getNMSAdapter().deserialze(inventories), linkedChest, executeUpdate);
             }
 
-            plugin.getChestsManager().loadUnloadedChest(placer, position, chestData, extendedData);
+            plugin.getChestsManager().addUnloadedChest(unloadedChest);
         }
     }
 

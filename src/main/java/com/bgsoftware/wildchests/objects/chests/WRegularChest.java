@@ -1,10 +1,12 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.RegularChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.api.objects.data.InventoryData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
+import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
@@ -20,7 +22,6 @@ import java.util.UUID;
 public class WRegularChest extends WChest implements RegularChest {
 
     protected SyncedArray<CraftWildInventory> inventories;
-    private String serializedData = null;
 
     public WRegularChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
@@ -115,18 +116,21 @@ public class WRegularChest extends WChest implements RegularChest {
     }
 
     @Override
-    public void onChunkLoad() {
-        super.onChunkLoad();
-        if (serializedData != null) {
-            InventoryHolder[] inventories = plugin.getNMSAdapter().deserialze(serializedData);
-            for (int i = 0; i < inventories.length; i++)
-                setPage(i, inventories[i]);
-            serializedData = null;
+    public void loadFromData(ChestsHandler.UnloadedChest unloadedChest) {
+        if (!(unloadedChest instanceof ChestsHandler.UnloadedRegularChest)) {
+            WildChestsPlugin.log("&cCannot load data to chest " + getLocation() + " from " + unloadedChest);
+            return;
         }
-    }
 
-    public void loadFromData(String serialized) {
-        this.serializedData = !serialized.isEmpty() ? serialized : null;
+        ChestsHandler.UnloadedRegularChest unloadedRegularChest =
+                (ChestsHandler.UnloadedRegularChest) unloadedChest;
+
+        InventoryHolder[] inventories = unloadedRegularChest.inventories;
+        for (int i = 0; i < inventories.length; i++)
+            setPage(i, inventories[i]);
+
+        if (unloadedRegularChest.executeUpdate)
+            executeUpdateStatement(true);
     }
 
     @Override

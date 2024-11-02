@@ -1,9 +1,11 @@
 package com.bgsoftware.wildchests.objects.chests;
 
+import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
+import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.objects.containers.LinkedChestsContainer;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LocationUtils;
@@ -133,24 +135,32 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         return true;
     }
 
-    public void loadFromData(String serialized, String linkedChest) {
-        super.loadFromData(serialized);
-        if (!linkedChest.isEmpty()) {
-            Location linkedChestLocation = LocationUtils.fromString(linkedChest);
-            Scheduler.runTask(() -> {
-                LinkedChest sourceChest = plugin.getChestsManager().getLinkedChest(linkedChestLocation);
-                if (sourceChest != null) {
-                    if (((WLinkedChest) sourceChest).linkedChestsContainer == null)
-                        ((WLinkedChest) sourceChest).linkedChestsContainer = new LinkedChestsContainer(sourceChest,
-                                ((WLinkedChest) sourceChest).inventories);
-
-                    this.linkedChestsContainer = ((WLinkedChest) sourceChest).linkedChestsContainer;
-                    this.linkedChestsContainer.linkChest(this);
-
-                    this.inventories = ((WLinkedChest) sourceChest).inventories;
-                }
-            }, 1L);
+    @Override
+    public void loadFromData(ChestsHandler.UnloadedChest unloadedChest) {
+        if (!(unloadedChest instanceof ChestsHandler.UnloadedRegularChest)) {
+            WildChestsPlugin.log("&cCannot load data to chest " + getLocation() + " from " + unloadedChest);
+            return;
         }
+
+        super.loadFromData(unloadedChest);
+
+        Location linkedChestLocation = ((ChestsHandler.UnloadedRegularChest) unloadedChest).linkedChest;
+        if (linkedChestLocation == null)
+            return;
+
+        Scheduler.runTask(() -> {
+            LinkedChest sourceChest = plugin.getChestsManager().getLinkedChest(linkedChestLocation);
+            if (sourceChest != null) {
+                if (((WLinkedChest) sourceChest).linkedChestsContainer == null)
+                    ((WLinkedChest) sourceChest).linkedChestsContainer = new LinkedChestsContainer(sourceChest,
+                            ((WLinkedChest) sourceChest).inventories);
+
+                this.linkedChestsContainer = ((WLinkedChest) sourceChest).linkedChestsContainer;
+                this.linkedChestsContainer.linkChest(this);
+
+                this.inventories = ((WLinkedChest) sourceChest).inventories;
+            }
+        }, 1L);
     }
 
     @Override
