@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.nms.v1_12_R1;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
+import com.bgsoftware.wildchests.nms.v1_12_R1.utils.NbtUtils;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import net.minecraft.server.v1_12_R1.BlockPosition;
 import net.minecraft.server.v1_12_R1.EntityHuman;
@@ -93,7 +94,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
-            NBTTagCompound tagCompound = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
+            NBTTagCompound tagCompound = NbtUtils.read(new DataInputStream(inputStream));
             int length = tagCompound.getInt("Length");
             inventories = new InventoryHolder[length];
 
@@ -126,7 +127,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
 
         try {
-            NBTTagCompound nbtTagCompoundRoot = NBTCompressedStreamTools.a(new DataInputStream(inputStream));
+            NBTTagCompound nbtTagCompoundRoot = NbtUtils.read(new DataInputStream(inputStream));
 
             ItemStack nmsItem = new ItemStack(nbtTagCompoundRoot);
 

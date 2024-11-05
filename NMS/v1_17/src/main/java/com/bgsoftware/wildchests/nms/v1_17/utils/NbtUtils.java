@@ -1,13 +1,12 @@
-package com.bgsoftware.wildchests.nms.v1_21.utils;
+package com.bgsoftware.wildchests.nms.v1_17.utils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NbtAccounter;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagTypes;
-import net.minecraft.util.FastBufferedInputStream;
 
+import java.io.BufferedInputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -25,7 +24,7 @@ public class NbtUtils {
     }
 
     public static CompoundTag read(DataInput input) throws IOException {
-        return read(input, NbtAccounter.unlimitedHeap());
+        return read(input, NbtAccounter.UNLIMITED);
     }
 
     private static CompoundTag read(DataInput input, NbtAccounter tracker) throws IOException {
@@ -45,22 +44,22 @@ public class NbtUtils {
             return EndTag.INSTANCE;
         }
 
-        StringTag.skipString(input);
+        input.readUTF();
         return readTag(input, tracker, firstByte);
     }
 
     private static Tag readTag(DataInput input, NbtAccounter tracker, byte typeId) throws IOException {
-        return TagTypes.getType(typeId).load(input, tracker);
+        return TagTypes.getType(typeId).load(input, 0, tracker);
     }
 
-    public static CompoundTag readCompressed(InputStream stream, NbtAccounter tagSizeTracker) throws IOException {
+    public static CompoundTag readCompressed(InputStream stream) throws IOException {
         try (DataInputStream dataInputStream = createDecompressorStream(stream)) {
-            return read(dataInputStream, tagSizeTracker);
+            return read(dataInputStream);
         }
     }
 
     private static DataInputStream createDecompressorStream(InputStream stream) throws IOException {
-        return new DataInputStream(new FastBufferedInputStream(new GZIPInputStream(stream)));
+        return new DataInputStream(new BufferedInputStream(new GZIPInputStream(stream)));
     }
 
 }

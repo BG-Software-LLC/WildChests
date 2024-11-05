@@ -1,4 +1,4 @@
-package com.bgsoftware.wildchests.nms.v1_21.utils;
+package com.bgsoftware.wildchests.nms.v1_20_3.utils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;

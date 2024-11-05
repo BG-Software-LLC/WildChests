@@ -1,4 +1,4 @@
-package com.bgsoftware.wildchests.nms.v1_21.utils;
+package com.bgsoftware.wildchests.nms.v1_19.utils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
@@ -25,7 +25,7 @@ public class NbtUtils {
     }
 
     public static CompoundTag read(DataInput input) throws IOException {
-        return read(input, NbtAccounter.unlimitedHeap());
+        return read(input, NbtAccounter.UNLIMITED);
     }
 
     private static CompoundTag read(DataInput input, NbtAccounter tracker) throws IOException {
@@ -50,12 +50,12 @@ public class NbtUtils {
     }
 
     private static Tag readTag(DataInput input, NbtAccounter tracker, byte typeId) throws IOException {
-        return TagTypes.getType(typeId).load(input, tracker);
+        return TagTypes.getType(typeId).load(input, 0, tracker);
     }
 
-    public static CompoundTag readCompressed(InputStream stream, NbtAccounter tagSizeTracker) throws IOException {
+    public static CompoundTag readCompressed(InputStream stream) throws IOException {
         try (DataInputStream dataInputStream = createDecompressorStream(stream)) {
-            return read(dataInputStream, tagSizeTracker);
+            return read(dataInputStream);
         }
     }
 

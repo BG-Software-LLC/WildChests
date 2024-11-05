@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.nms.v1_20_4;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
+import com.bgsoftware.wildchests.nms.v1_20_4.utils.NbtUtils;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.core.BlockPos;
@@ -85,7 +86,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
         InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
-            CompoundTag compoundTag = NbtIo.read(new DataInputStream(inputStream));
+            CompoundTag compoundTag = NbtUtils.read(new DataInputStream(inputStream));
             int length = compoundTag.getInt("Length");
             inventories = new InventoryHolder[length];
 
@@ -126,7 +127,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
     @Nullable
     private static ItemStack tryDeserializeNoDataVersionItem(DataInputStream stream) {
         try {
-            CompoundTag compoundTag = NbtIo.read(new DataInputStream(stream));
+            CompoundTag compoundTag = NbtUtils.read(new DataInputStream(stream));
             if (compoundTag.contains("DataVersion"))
                 return null;
             return ItemStack.parse(MinecraftServer.getServer().registryAccess(), compoundTag).orElseThrow();
@@ -198,7 +199,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
         CompoundTag compoundTag;
         try {
-            compoundTag = NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
+            compoundTag = NbtUtils.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -253,7 +254,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
         byte[] data = serializeItemAsBytes(bukkitItem);
 
         try {
-            return NbtIo.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
+            return NbtUtils.readCompressed(new ByteArrayInputStream(data), NbtAccounter.unlimitedHeap());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
