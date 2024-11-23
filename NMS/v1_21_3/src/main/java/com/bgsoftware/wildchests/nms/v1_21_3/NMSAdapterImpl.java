@@ -5,6 +5,7 @@ import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.nms.v1_21_3.utils.NbtUtils;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -42,6 +43,8 @@ import java.math.BigInteger;
 import java.util.Base64;
 
 public final class NMSAdapterImpl implements NMSAdapter {
+
+    private static final int DATA_VERSION = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
 
     @Override
     public String serialize(org.bukkit.inventory.ItemStack bukkitItem) {
@@ -200,7 +203,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
         CompoundTag compoundTag = (CompoundTag) CraftItemStack.asNMSCopy(bukkitItem)
                 .save(MinecraftServer.getServer().registryAccess());
 
-        compoundTag.putInt("DataVersion", CraftMagicNumbers.INSTANCE.getDataVersion());
+        compoundTag.putInt("DataVersion", DATA_VERSION);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try {
             NbtIo.writeCompressed(compoundTag, outputStream);
@@ -224,10 +227,9 @@ public final class NMSAdapterImpl implements NMSAdapter {
         }
 
         int itemVersion = compoundTag.getInt("DataVersion");
-        int currVersion = CraftMagicNumbers.INSTANCE.getDataVersion();
-        if (itemVersion != currVersion) {
+        if (itemVersion != DATA_VERSION) {
             compoundTag = (CompoundTag) DataFixers.getDataFixer().update(References.ITEM_STACK,
-                    new Dynamic<>(NbtOps.INSTANCE, compoundTag), itemVersion, currVersion).getValue();
+                    new Dynamic<>(NbtOps.INSTANCE, compoundTag), itemVersion, DATA_VERSION).getValue();
         }
 
         return CraftItemStack.asCraftMirror(ItemStack.parse(MinecraftServer.getServer().registryAccess(), compoundTag).orElseThrow());
