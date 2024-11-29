@@ -61,7 +61,8 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
         try {
             NbtIo.write(compoundTag, dataOutput);
-        } catch (Exception ex) {
+        } catch (Exception error) {
+            error.printStackTrace();
             return null;
         }
 
@@ -70,6 +71,11 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
     @Override
     public InventoryHolder[] deserialze(String serialized) {
+        InventoryHolder[] inventories = new InventoryHolder[0];
+
+        if(serialized.isEmpty())
+            return inventories;
+
         byte[] buff;
 
         if (serialized.toCharArray()[0] == '*') {
@@ -79,7 +85,6 @@ public final class NMSAdapterImpl implements NMSAdapter {
         }
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(buff);
-        InventoryHolder[] inventories = new InventoryHolder[0];
 
         try {
             CompoundTag compoundTag = NbtUtils.read(new DataInputStream(inputStream));
