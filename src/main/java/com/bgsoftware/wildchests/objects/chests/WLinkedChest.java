@@ -168,8 +168,9 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         super.loadFromFile(cfg);
         if (cfg.contains("linked-chest")) {
             //We want to run it on the first tick, after all chests are loaded.
-            Location linkedChest = LocationUtils.fromString(cfg.getString("linked-chest"));
-            Scheduler.runTask(linkedChest, () -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
+            Location linkedChest = LocationUtils.fromString(cfg.getString("linked-chest"), true);
+            if (linkedChest != null)
+                Scheduler.runTask(linkedChest, () -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
         }
     }
 

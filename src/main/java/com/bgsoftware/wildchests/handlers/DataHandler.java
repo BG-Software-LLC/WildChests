@@ -151,7 +151,7 @@ public final class DataHandler {
                 Location linkedChest = null;
 
                 if (chestType == ChestType.LINKED_CHEST) {
-                    linkedChest = LocationUtils.fromString(resultSet.getString("linked_chest"));
+                    linkedChest = LocationUtils.fromString(resultSet.getString("linked_chest"), true);
                 }
 
                 boolean executeUpdate = !inventories.isEmpty() && inventories.toCharArray()[0] != '*';
@@ -177,7 +177,7 @@ public final class DataHandler {
                 cfg = YamlConfiguration.loadConfiguration(chestFile);
 
                 UUID placer = UUID.fromString(cfg.getString("placer"));
-                Location location = LocationUtils.fromString(chestFile.getName().replace(".yml", ""));
+                Location location = LocationUtils.fromString(chestFile.getName().replace(".yml", ""), false);
                 ChestData chestData = plugin.getChestsManager().getChestData(cfg.getString("data"));
 
                 WChest chest = (WChest) plugin.getChestsManager().addChest(placer, location, chestData);
