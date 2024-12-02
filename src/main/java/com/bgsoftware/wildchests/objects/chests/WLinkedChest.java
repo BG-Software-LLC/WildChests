@@ -11,7 +11,6 @@ import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.bgsoftware.wildchests.utils.SyncedArray;
 import com.google.common.base.Preconditions;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -228,14 +227,12 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         }
 
         void linkChest(WLinkedChest linkedChest, boolean saveData) {
-            Bukkit.broadcastMessage("Linking " + linkedChest.getLocation() + " to the chain of " + sourceChest.getLocation());
             ensureNotDestroyed();
             if (linkedChests.add(linkedChest))
                 linkedChest.setLinkedChestsChain(this, saveData);
         }
 
         void unlinkChest(WLinkedChest linkedChest, boolean saveData) {
-            Bukkit.broadcastMessage("Unlinking " + linkedChest.getLocation() + " from the chain of " + sourceChest.getLocation());
             ensureNotDestroyed();
             if (this.sourceChest == linkedChest) {
                 destroy(saveData);
