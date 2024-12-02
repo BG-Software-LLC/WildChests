@@ -123,14 +123,16 @@ public final class CommandLink implements ICommand {
 
         List<ItemStack> toMove = new ArrayList<>();
 
-        for (int page = 0; page < originalChest.getPagesAmount(); page++) {
-            Inventory inventory = originalChest.getPage(page);
-            for (ItemStack itemStack : inventory.getContents()) {
-                if (itemStack != null && itemStack.getType() != Material.AIR) {
-                    toMove.add(itemStack);
+        if(!originalChest.isLinkedIntoChest()) {
+            for (int page = 0; page < originalChest.getPagesAmount(); page++) {
+                Inventory inventory = originalChest.getPage(page);
+                for (ItemStack itemStack : inventory.getContents()) {
+                    if (itemStack != null && itemStack.getType() != Material.AIR) {
+                        toMove.add(itemStack);
+                    }
                 }
+                inventory.clear();
             }
-            inventory.clear();
         }
 
         originalChest.linkIntoChest(linkedChest);

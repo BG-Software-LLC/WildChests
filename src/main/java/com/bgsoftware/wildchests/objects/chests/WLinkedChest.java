@@ -6,9 +6,12 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.database.Query;
 import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
-import com.bgsoftware.wildchests.objects.containers.LinkedChestsContainer;
+import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.LocationUtils;
+import com.bgsoftware.wildchests.utils.SyncedArray;
+import com.google.common.base.Preconditions;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -17,72 +20,85 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
-    private LinkedChestsContainer linkedChestsContainer;
+    @Nullable
+    private LinkedChestsChain linkedChestsChain;
 
     public WLinkedChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
-        this.linkedChestsContainer = null;
-    }
-
-    public void setLinkedChestsContainerRaw(@Nullable LinkedChestsContainer linkedChestsContainer) {
-        this.linkedChestsContainer = linkedChestsContainer;
-        if (linkedChestsContainer == null) {
-            initContainer(getData());
-        } else {
-            this.inventories = linkedChestsContainer.getInventories();
-        }
-    }
-
-    public void setLinkedChestsContainer(@Nullable LinkedChestsContainer linkedChestsContainer) {
-        if (this.linkedChestsContainer == linkedChestsContainer)
-            return;
-
-        if (linkedChestsContainer == null) {
-            this.linkedChestsContainer.unlinkChest(this);
-        } else {
-            if (this.linkedChestsContainer != null) {
-                linkedChestsContainer.merge(this.linkedChestsContainer);
-            } else {
-                linkedChestsContainer.linkChest(this);
-            }
-        }
+        this.linkedChestsChain = null;
     }
 
     @Override
     public void linkIntoChest(@Nullable LinkedChest linkedChest) {
+        linkIntoChest(linkedChest, true);
+    }
+
+    private void linkIntoChest(@Nullable LinkedChest linkedChest, boolean saveData) {
+        LinkedChestsChain newChain = linkedChest == null ? null : ((WLinkedChest) linkedChest).linkedChestsChain;
+
+        // If both on the same **VALID** chain, do nothing.
+        if (newChain == this.linkedChestsChain && this.linkedChestsChain != null)
+            return;
+
+        // In any case we want to unlink this chest from the current chain.
+        if (this.linkedChestsChain != null)
+            this.linkedChestsChain.unlinkChest(this, saveData);
+
         if (linkedChest == null) {
-            setLinkedChestsContainer(null);
-            saveLinkedChest();
+            // Unlink operation, let's just save to DB and return.
+            if (saveData)
+                saveLinkedChest();
             return;
         }
 
-        LinkedChestsContainer newContainer = ((WLinkedChest) linkedChest).linkedChestsContainer;
-        if (newContainer == null) {
-            linkedChest.onBreak(new BlockBreakEvent(null, null));
-            newContainer = new LinkedChestsContainer(linkedChest, ((WLinkedChest) linkedChest).inventories);
+        // Let's simulate this chest being broken
+        onBreak(new BlockBreakEvent(null, null));
+
+        // In case the linked chest is not part of chain, let's create for it a new chain.
+        if (newChain == null) {
+            newChain = ((WLinkedChest) linkedChest).newChain(saveData);
         }
 
-        setLinkedChestsContainer(newContainer);
+        newChain.linkChest(this, saveData);
+    }
 
-        ((WLinkedChest) linkedChest).saveLinkedChest();
-        saveLinkedChest();
+    private void setLinkedChestsChain(@Nullable LinkedChestsChain linkedChestsChain, boolean saveData) {
+        this.linkedChestsChain = linkedChestsChain;
+        if (linkedChestsChain == null) {
+            initContainer(getData());
+        } else {
+            this.inventories = linkedChestsChain.inventories;
+        }
+        if (saveData)
+            saveLinkedChest();
+    }
+
+    private LinkedChestsChain newChain(boolean saveData) {
+        Preconditions.checkState(this.linkedChestsChain == null, "Cannot create new chain while already being in one");
+        this.linkedChestsChain = new LinkedChestsChain(this, this.inventories);
+        if (saveData)
+            saveLinkedChest();
+        return this.linkedChestsChain;
     }
 
     public void saveLinkedChest() {
         Query.LINKED_CHEST_UPDATE_LINKED_CHEST.getStatementHolder(this)
-                .setLocation(!isLinkedIntoChest() || linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
+                .setLocation(isLinkedIntoChest() ? this.linkedChestsChain.sourceChest.getLocation() : null)
                 .setLocation(getLocation())
                 .execute(true);
     }
 
     @Override
     public LinkedChest getLinkedChest() {
-        return linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest();
+        return this.linkedChestsChain == null ? null : this.linkedChestsChain.sourceChest;
     }
 
     @Override
@@ -93,15 +109,16 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
     @Override
     public List<LinkedChest> getAllLinkedChests() {
-        return linkedChestsContainer == null ? Collections.emptyList() : linkedChestsContainer.getLinkedChests();
+        return this.linkedChestsChain == null ? Collections.emptyList() :
+                Collections.unmodifiableList(new LinkedList<>(this.linkedChestsChain.linkedChests));
     }
 
     @Override
     public void remove() {
         super.remove();
         //We want to unlink all linked chests only if that's the original chest
-        if (linkedChestsContainer != null)
-            linkedChestsContainer.unlinkChest(this);
+        if (this.linkedChestsChain != null)
+            this.linkedChestsChain.unlinkChest(this, true);
     }
 
     @Override
@@ -151,14 +168,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         Scheduler.runTask(() -> {
             LinkedChest sourceChest = plugin.getChestsManager().getLinkedChest(linkedChestLocation);
             if (sourceChest != null) {
-                if (((WLinkedChest) sourceChest).linkedChestsContainer == null)
-                    ((WLinkedChest) sourceChest).linkedChestsContainer = new LinkedChestsContainer(sourceChest,
-                            ((WLinkedChest) sourceChest).inventories);
-
-                this.linkedChestsContainer = ((WLinkedChest) sourceChest).linkedChestsContainer;
-                this.linkedChestsContainer.linkChest(this);
-
-                this.inventories = ((WLinkedChest) sourceChest).inventories;
+                linkIntoChest(sourceChest, false);
             }
         }, 1L);
     }
@@ -186,12 +196,13 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
 
     @Override
     public void executeInsertStatement(boolean async) {
+        boolean isLinkedIntoChest = isLinkedIntoChest();
         Query.LINKED_CHEST_INSERT.getStatementHolder(this)
                 .setLocation(getLocation())
                 .setString(placer.toString())
                 .setString(getData().getName())
-                .setInventories(isLinkedIntoChest() ? null : getPages())
-                .setLocation(linkedChestsContainer == null ? null : linkedChestsContainer.getSourceChest().getLocation())
+                .setInventories(isLinkedIntoChest ? null : getPages())
+                .setLocation(isLinkedIntoChest ? this.linkedChestsChain.sourceChest.getLocation() : null)
                 .execute(async);
     }
 
@@ -200,6 +211,51 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         Query.LINKED_CHEST_DELETE.getStatementHolder(this)
                 .setLocation(getLocation())
                 .execute(async);
+    }
+
+    private static class LinkedChestsChain {
+
+        private final Set<WLinkedChest> linkedChests = new LinkedHashSet<>();
+        private final SyncedArray<CraftWildInventory> inventories;
+        private final WLinkedChest sourceChest;
+
+        private boolean destroyed = false;
+
+        LinkedChestsChain(WLinkedChest sourceChest, SyncedArray<CraftWildInventory> inventories) {
+            this.inventories = inventories;
+            this.sourceChest = sourceChest;
+            this.linkedChests.add(sourceChest);
+        }
+
+        void linkChest(WLinkedChest linkedChest, boolean saveData) {
+            Bukkit.broadcastMessage("Linking " + linkedChest.getLocation() + " to the chain of " + sourceChest.getLocation());
+            ensureNotDestroyed();
+            if (linkedChests.add(linkedChest))
+                linkedChest.setLinkedChestsChain(this, saveData);
+        }
+
+        void unlinkChest(WLinkedChest linkedChest, boolean saveData) {
+            Bukkit.broadcastMessage("Unlinking " + linkedChest.getLocation() + " from the chain of " + sourceChest.getLocation());
+            ensureNotDestroyed();
+            if (this.sourceChest == linkedChest) {
+                destroy(saveData);
+            } else if (this.linkedChests.remove(linkedChest)) {
+                linkedChest.setLinkedChestsChain(null, saveData);
+            }
+        }
+
+        void destroy(boolean saveData) {
+            ensureNotDestroyed();
+            this.linkedChests.forEach(linkedChest ->
+                    linkedChest.setLinkedChestsChain(null, saveData));
+            this.linkedChests.clear();
+            this.destroyed = true;
+        }
+
+        private void ensureNotDestroyed() {
+            Preconditions.checkState(!this.destroyed, "Used destroyed chain");
+        }
+
     }
 
 }
