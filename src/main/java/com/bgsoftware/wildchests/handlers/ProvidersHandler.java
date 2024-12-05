@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.handlers;
 
 import com.bgsoftware.common.shopsbridge.ShopsProvider;
+import com.bgsoftware.common.shopsbridge.Transaction;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.handlers.ProvidersManager;
 import com.bgsoftware.wildchests.api.hooks.BankProvider;
@@ -18,6 +19,7 @@ import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
@@ -112,8 +114,21 @@ public final class ProvidersHandler implements ProvidersManager {
      */
 
     public TransactionResult<Double> canSellItem(OfflinePlayer offlinePlayer, ItemStack itemStack) {
-        double price = itemStack == null ? 0 : getPrice(offlinePlayer, itemStack);
-        return TransactionResult.of(price, _price -> _price > 0);
+        Transaction transaction;
+        double price;
+
+        if (itemStack == null || itemStack.getType() == Material.AIR) {
+            transaction = null;
+            price = 0;
+        } else if (pricesProvider instanceof PricesProvider_ShopsBridgeWrapper) {
+            transaction = ((PricesProvider_ShopsBridgeWrapper) pricesProvider).getTransaction(offlinePlayer, itemStack);
+            price = transaction.getPrice().doubleValue();
+        } else {
+            transaction = null;
+            price = pricesProvider.getPrice(offlinePlayer, itemStack);
+        }
+
+        return TransactionResult.of(transaction, price, _price -> _price > 0);
     }
 
     public boolean withdrawPlayer(OfflinePlayer offlinePlayer, double money) {
@@ -289,10 +304,13 @@ public final class ProvidersHandler implements ProvidersManager {
 
     public static final class TransactionResult<T> {
 
+        @Nullable
+        private final Transaction transaction;
         private final T data;
         private final Predicate<T> success;
 
-        private TransactionResult(T data, Predicate<T> success) {
+        private TransactionResult(@Nullable Transaction transaction, T data, Predicate<T> success) {
+            this.transaction = transaction;
             this.data = data;
             this.success = success;
         }
@@ -301,12 +319,17 @@ public final class ProvidersHandler implements ProvidersManager {
             return success == null || success.test(data);
         }
 
+        @Nullable
+        public Transaction getTransaction() {
+            return transaction;
+        }
+
         public T getData() {
             return data;
         }
 
-        public static <T> TransactionResult<T> of(T data, Predicate<T> success) {
-            return new TransactionResult<>(data, success);
+        public static <T> TransactionResult<T> of(@Nullable Transaction transaction, T data, Predicate<T> success) {
+            return new TransactionResult<>(transaction, data, success);
         }
 
     }

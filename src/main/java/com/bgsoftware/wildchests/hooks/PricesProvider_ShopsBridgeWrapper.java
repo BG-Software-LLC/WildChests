@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.hooks;
 import com.bgsoftware.common.shopsbridge.BulkTransaction;
 import com.bgsoftware.common.shopsbridge.IShopsBridge;
 import com.bgsoftware.common.shopsbridge.ShopsProvider;
+import com.bgsoftware.common.shopsbridge.Transaction;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.hooks.PricesProvider;
 import org.bukkit.OfflinePlayer;
@@ -20,7 +21,11 @@ public class PricesProvider_ShopsBridgeWrapper implements PricesProvider {
 
     @Override
     public double getPrice(OfflinePlayer offlinePlayer, ItemStack itemStack) {
-        return (this.bulkTransaction == null ? this.shopsBridge : this.bulkTransaction).getSellPrice(offlinePlayer, itemStack).doubleValue();
+        return getTransaction(offlinePlayer, itemStack).getPrice().doubleValue();
+    }
+
+    public Transaction getTransaction(OfflinePlayer offlinePlayer, ItemStack itemStack) {
+        return (this.bulkTransaction == null ? this.shopsBridge : this.bulkTransaction).getSellPrice(offlinePlayer, itemStack);
     }
 
     public void startBulkTransaction() {

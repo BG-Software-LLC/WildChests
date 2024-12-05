@@ -177,8 +177,11 @@ public final class ChestUtils {
             successDeposit = true;
         }
 
-        if (successDeposit)
+        if (successDeposit) {
             NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
+            if (transactionResult.getTransaction() != null)
+                transactionResult.getTransaction().onTransact();
+        }
 
         return successDeposit;
     }
