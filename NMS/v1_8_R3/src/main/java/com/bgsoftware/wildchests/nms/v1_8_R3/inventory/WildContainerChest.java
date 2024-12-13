@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_8_R3.inventory;
 
 import com.bgsoftware.wildchests.listeners.InventoryListener;
-import com.bgsoftware.wildchests.objects.chests.WChest;
 import net.minecraft.server.v1_8_R3.Container;
 import net.minecraft.server.v1_8_R3.ContainerChest;
 import net.minecraft.server.v1_8_R3.EntityHuman;
@@ -10,30 +9,22 @@ import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftInventoryView;
 
 public class WildContainerChest extends ContainerChest {
 
-    private final PlayerInventory playerInventory;
-    private final WildInventory inventory;
-    private CraftInventoryView bukkitEntity;
+    private final BaseNMSMenu base;
 
     private WildContainerChest(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory) {
         super(playerInventory, inventory, entityHuman);
-        this.playerInventory = playerInventory;
-        this.inventory = inventory;
+        this.base = new BaseNMSMenu(this, playerInventory, inventory);
     }
 
     @Override
     public CraftInventoryView getBukkitView() {
-        if (bukkitEntity == null) {
-            CraftWildInventory inventory = new CraftWildInventory(this.inventory);
-            bukkitEntity = new CraftInventoryView(playerInventory.player.getBukkitEntity(), inventory, this);
-        }
-
-        return bukkitEntity;
+        return this.base.getBukkitView();
     }
 
     @Override
     public void b(EntityHuman entityhuman) {
         if (!InventoryListener.buyNewPage.containsKey(entityhuman.getUniqueID()))
-            ((TileEntityWildChest) ((WChest) inventory.chest).getTileEntityContainer()).closeContainer(entityhuman);
+            this.base.removed(entityhuman);
     }
 
     public static Container of(PlayerInventory playerInventory, EntityHuman entityHuman, WildInventory inventory) {

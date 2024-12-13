@@ -78,6 +78,16 @@ public class FoliaSchedulerImplementation implements ISchedulerImplementation {
                 plugin, v -> task.run(), delay * 50L, delay * 50L, TimeUnit.MILLISECONDS));
     }
 
+    @Override
+    public boolean isScheduledForRegion(World world, int chunkX, int chunkZ) {
+        return Bukkit.getServer().isOwnedByCurrentRegion(world, chunkX, chunkZ);
+    }
+
+    @Override
+    public boolean isScheduledForRegion(Entity entity) {
+        return Bukkit.getServer().isOwnedByCurrentRegion(entity);
+    }
+
     private static class FoliaScheduledTask implements ScheduledTask {
 
         private final io.papermc.paper.threadedregions.scheduler.ScheduledTask handle;

@@ -211,7 +211,7 @@ public final class ChestsHandler implements ChestsManager {
 
         Location location = new Location(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
 
-        if (Bukkit.isPrimaryThread() && location.getBlock().getType() != Material.CHEST) {
+        if (Scheduler.isScheduledForRegion(location) && location.getBlock().getType() != Material.CHEST) {
             removeChest(chest);
             return null;
         }

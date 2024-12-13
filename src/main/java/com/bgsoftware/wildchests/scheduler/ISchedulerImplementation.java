@@ -19,5 +19,8 @@ public interface ISchedulerImplementation {
 
     ScheduledTask scheduleRepeatingAsyncTask(Runnable task, long delay);
 
+    boolean isScheduledForRegion(World world, int chunkX, int chunkZ);
+
+    boolean isScheduledForRegion(Entity entity);
 
 }

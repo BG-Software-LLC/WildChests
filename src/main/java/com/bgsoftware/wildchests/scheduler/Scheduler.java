@@ -64,6 +64,14 @@ public class Scheduler {
         return IMP.scheduleTask(chunk.getWorld(), chunk.getX(), chunk.getZ(), task, delay);
     }
 
+    public static boolean isScheduledForRegion(World world, int chunkX, int chunkZ) {
+        return IMP.isScheduledForRegion(world, chunkX, chunkZ);
+    }
+
+    public static boolean isScheduledForRegion(Entity entity) {
+        return IMP.isScheduledForRegion(entity);
+    }
+
     public static ScheduledTask runTask(Chunk chunk, Runnable task) {
         return runTask(chunk, task, 0L);
     }
@@ -86,6 +94,14 @@ public class Scheduler {
 
     public static ScheduledTask runTaskAsync(Runnable task) {
         return runTaskAsync(task, 0L);
+    }
+
+    public static boolean isScheduledForRegion(Chunk chunk) {
+        return isScheduledForRegion(chunk.getWorld(), chunk.getX(), chunk.getZ());
+    }
+
+    public static boolean isScheduledForRegion(Location location) {
+        return isScheduledForRegion(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
     }
 
 }

@@ -59,6 +59,16 @@ public class BukkitSchedulerImplementation implements ISchedulerImplementation {
         return new BukkitScheduledTask(Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, task, delay, delay));
     }
 
+    @Override
+    public boolean isScheduledForRegion(World world, int chunkX, int chunkZ) {
+        return Bukkit.isPrimaryThread();
+    }
+
+    @Override
+    public boolean isScheduledForRegion(Entity entity) {
+        return Bukkit.isPrimaryThread();
+    }
+
     private static class BukkitScheduledTask implements ScheduledTask {
 
         private int taskId;

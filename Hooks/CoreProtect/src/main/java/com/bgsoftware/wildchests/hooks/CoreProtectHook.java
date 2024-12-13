@@ -28,17 +28,17 @@ public final class CoreProtectHook {
     }
 
     public static void recordBlockBreak(@Nullable OfflinePlayer offlinePlayer, Chest chest) {
-        if(offlinePlayer == null) // We don't want entities to record block breaks
+        if (offlinePlayer == null) // We don't want entities to record block breaks
             return;
 
-        if (!Bukkit.isPrimaryThread()) {
-            Scheduler.runTask(() -> recordBlockBreak(offlinePlayer, chest));
+        Location location = chest.getLocation();
+
+        if (!Scheduler.isScheduledForRegion(location)) {
+            Scheduler.runTask(location, () -> recordBlockBreak(offlinePlayer, chest));
             return;
         }
 
         CoreProtectAPI coreProtectAPI = ((CoreProtect) coreProtect).getAPI();
-
-        Location location = chest.getLocation();
 
         if (coreProtectAPI.APIVersion() == 5) {
             coreProtectAPI.logRemoval(offlinePlayer.getName(), location, Material.CHEST, (byte) 0);

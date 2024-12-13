@@ -1,7 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_21.inventory;
 
 import com.bgsoftware.wildchests.listeners.InventoryListener;
-import com.bgsoftware.wildchests.objects.chests.WChest;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
@@ -10,30 +9,22 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 
 public class WildChestMenu extends ChestMenu {
 
-    private final Inventory playerInventory;
-    private final WildContainer inventory;
-    private CraftInventoryView bukkitEntity;
+    private final BaseNMSMenu base;
 
     private WildChestMenu(MenuType<?> menuType, int id, Inventory playerInventory, WildContainer inventory, int rows) {
         super(menuType, id, playerInventory, inventory, rows);
-        this.playerInventory = playerInventory;
-        this.inventory = inventory;
+        this.base = new BaseNMSMenu(this, playerInventory, inventory);
     }
 
     @Override
     public CraftInventoryView getBukkitView() {
-        if (bukkitEntity == null) {
-            CraftWildInventoryImpl inventory = new CraftWildInventoryImpl(this.inventory);
-            bukkitEntity = new CraftInventoryView(playerInventory.player.getBukkitEntity(), inventory, this);
-        }
-
-        return bukkitEntity;
+        return this.base.getBukkitView();
     }
 
     @Override
     public void removed(Player player) {
         if (!InventoryListener.buyNewPage.containsKey(player.getUUID()))
-            ((WildChestBlockEntity) ((WChest) inventory.chest).getTileEntityContainer()).stopOpen(player);
+            this.base.removed(player);
     }
 
     public static WildChestMenu of(int id, Inventory playerInventory, WildContainer inventory) {
