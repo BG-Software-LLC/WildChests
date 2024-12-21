@@ -138,8 +138,16 @@ public final class ChestUtils {
             plugin.getProviders().startSellingTask(player);
             for (Inventory inventory : chest.getPages()) {
                 for (int i = 0; i < inventory.getSize(); i++) {
-                    if (trySellItem(player, chest, inventory.getItem(i)))
-                        inventory.setItem(i, new ItemStack(Material.AIR));
+                    ItemStack itemStack = inventory.getItem(i);
+                    Counter itemCount = new Counter();
+                    if (trySellItem(player, chest, itemStack, itemCount)) {
+                        if (itemCount.get() <= 0) {
+                            inventory.setItem(i, new ItemStack(Material.AIR));
+                        } else {
+                            itemStack.setAmount((int) itemCount.get());
+                            inventory.setItem(i, itemStack);
+                        }
+                    }
                 }
             }
         } finally {
@@ -147,7 +155,7 @@ public final class ChestUtils {
         }
     }
 
-    public static boolean trySellItem(OfflinePlayer player, Chest chest, ItemStack toSell) {
+    public static boolean trySellItem(OfflinePlayer player, Chest chest, ItemStack toSell, Counter newItemAmount) {
         if (toSell == null || toSell.getType() == Material.AIR)
             return false;
 
@@ -179,8 +187,12 @@ public final class ChestUtils {
 
         if (successDeposit) {
             NotifierTask.addTransaction(player.getUniqueId(), toSell, toSell.getAmount(), finalPrice);
-            if (transactionResult.getTransaction() != null)
+            if (transactionResult.getTransaction() != null) {
+                ItemStack transactItem = transactionResult.getTransaction().getItem();
+                if (transactItem != toSell)
+                    newItemAmount.increase(toSell.getAmount() - transactItem.getAmount());
                 transactionResult.getTransaction().onTransact();
+            }
         }
 
         return successDeposit;
