@@ -97,7 +97,7 @@ public final class StatementHolder {
         SQLHelper.waitForConnection();
 
         try {
-            StringHolder errorQuery = new StringHolder(query);
+            StringBuilder errorQuery = new StringBuilder(query);
 
             synchronized (SQLHelper.getMutex()) {
                 queryCalls.computeIfAbsent(queryEnum, q -> new IncreasableInteger()).increase();
@@ -113,7 +113,11 @@ public final class StatementHolder {
                         for (Map<Integer, Object> values : batches) {
                             for (Map.Entry<Integer, Object> entry : values.entrySet()) {
                                 preparedStatement.setObject(entry.getKey(), entry.getValue());
-                                errorQuery.value = errorQuery.value.replaceFirst("\\?", entry.getValue() + "");
+
+                                int index = errorQuery.indexOf("?");
+                                if (index != -1) {
+                                    errorQuery.replace(index, index + 1, entry.getValue().toString());
+                                }
                             }
                             preparedStatement.addBatch();
                         }
@@ -128,7 +132,11 @@ public final class StatementHolder {
                     } else {
                         for (Map.Entry<Integer, Object> entry : values.entrySet()) {
                             preparedStatement.setObject(entry.getKey(), entry.getValue());
-                            errorQuery.value = errorQuery.value.replaceFirst("\\?", entry.getValue() + "");
+
+                            int index = errorQuery.indexOf("?");
+                            if (index != -1) {
+                                errorQuery.replace(index, index + 1, entry.getValue().toString());
+                            }
                         }
                         preparedStatement.executeUpdate();
                     }
