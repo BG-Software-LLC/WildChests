@@ -26,7 +26,7 @@ public class WildContainer implements Container {
 
     private NonNullList<ItemStack> itemsAsNMSItemsView;
     public BiConsumer<Integer, ItemStack> setItemFunction = null;
-    private int maxStack = 64;
+    private int maxStack = 99;
     private int nonEmptyItems = 0;
     private String title;
 
