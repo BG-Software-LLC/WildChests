@@ -43,6 +43,10 @@ public final class ChestUtils {
     public static List<ItemStack> fixItemStackAmount(ItemStack itemStack, int amount) {
         int maxStackSize = itemStack.getMaxStackSize();
 
+        // https://github.com/BG-Software-LLC/WildChests/issues/272
+        if(maxStackSize <= 0)
+            maxStackSize = DEFAULT_MAX_STACK_SIZE;
+
         if (maxStackSize == DEFAULT_MAX_STACK_SIZE) {
             itemStack.setAmount(amount);
             return Collections.singletonList(itemStack);
