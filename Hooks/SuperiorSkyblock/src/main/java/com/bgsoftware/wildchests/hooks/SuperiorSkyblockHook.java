@@ -9,9 +9,20 @@ import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 public final class SuperiorSkyblockHook {
 
-    public static void register(WildChestsPlugin plugin){
+    public static void register(WildChestsPlugin plugin) {
+        registerCustomKeys(plugin);
+        checkMissingInteractables(plugin);
+    }
+
+    private static void registerCustomKeys(WildChestsPlugin plugin) {
         SuperiorSkyblockAPI.getBlockValues().registerKeyParser(new CustomKeyParser() {
 
             @Override
@@ -31,6 +42,28 @@ public final class SuperiorSkyblockHook {
             }
 
         }, Key.of("CHEST"));
+    }
+
+    private static void checkMissingInteractables(WildChestsPlugin plugin) {
+        Set<String> interactables = new HashSet<>();
+        SuperiorSkyblockAPI.getSuperiorSkyblock().getSettings().getInteractables()
+                .forEach(block -> interactables.add(block.toUpperCase(Locale.ENGLISH)));
+
+        List<String> missingChests = new LinkedList<>();
+
+        for (ChestData chestData : plugin.getChestsManager().getAllChestData()) {
+            String chestName = chestData.getName().toUpperCase(Locale.ENGLISH);
+            if (!interactables.contains(chestName)) {
+                missingChests.add(chestName);
+            }
+        }
+
+        if(!missingChests.isEmpty()) {
+            WildChestsPlugin.log("&c[WARNING] The following chests are missing from SuperiorSkyblock's interactables list:");
+            missingChests.forEach(missingChestName -> WildChestsPlugin.log("&c\t- " + missingChestName));
+            WildChestsPlugin.log("&cThis means players are able to open these chests on other islands, even without permissions.");
+        }
+
     }
 
 }
