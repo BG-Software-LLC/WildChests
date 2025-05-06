@@ -12,6 +12,7 @@ import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NBTTagList;
 import net.minecraft.server.v1_8_R3.TileEntityChest;
 import net.minecraft.server.v1_8_R3.World;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
@@ -27,6 +28,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.math.BigInteger;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public final class NMSAdapterImpl implements NMSAdapter {
@@ -170,6 +172,11 @@ public final class NMSAdapterImpl implements NMSAdapter {
         EntityHuman entityHuman = ((CraftHumanEntity) humanEntity).getHandle();
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
         entityHuman.drop(itemStack, false);
+    }
+
+    @Override
+    public CompletableFuture<Chunk> getChunk(Location location) {
+        return CompletableFuture.completedFuture(location.getChunk());
     }
 
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack itemStack, String key, String value) {
