@@ -59,7 +59,7 @@ public final class TransportPipesHook {
         public ItemStack extractItem(TPDirection tpDirection, int amount, ItemFilter itemFilter) {
             if (chest instanceof StorageChest) {
                 BigInteger bigAmount = BigInteger.valueOf(amount);
-                ItemStack chestItem = ((StorageChest) chest).getItemStack().clone();
+                ItemStack chestItem = ((StorageChest) chest).getItemStack();
                 BigInteger chestAmount = ((StorageChest) chest).getAmount();
                 if (chestAmount.compareTo(bigAmount) >= 0 && itemFilter.applyFilter(chestItem).getWeight() > 0) {
                     ((StorageChest) chest).setAmount(chestAmount.subtract(bigAmount));

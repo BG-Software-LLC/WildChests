@@ -85,6 +85,10 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public ItemStack getItemStack() {
+        return getItemStackUnsafe().clone();
+    }
+
+    private ItemStack getItemStackUnsafe() {
         if (amount.compareTo(BigInteger.ZERO) < 1)
             setItemStack(null);
 
@@ -243,7 +247,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             if (!canPlaceItemThroughFace(itemStacks[i])) {
                 additionalItems.put(i, itemStacks[i]);
             } else {
-                if (getItemStack().getType() == Material.AIR)
+                if (getItemStackUnsafe().getType() == Material.AIR)
                     setItemStack(itemStacks[i]);
 
                 amountToAdd = amountToAdd == null ? BigInteger.valueOf(itemStacks[i].getAmount()) :
@@ -261,7 +265,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public void removeItem(int amountToRemove, ItemStack itemStack) {
-        ItemStack storageItem = getItemStack();
+        ItemStack storageItem = getItemStackUnsafe();
 
         if (storageItem.getType() == Material.AIR || !storageItem.isSimilar(itemStack))
             return; // Storage unit is empty
@@ -277,7 +281,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
         Location loc = getLocation();
 
-        ItemStack itemStack = getItemStack();
+        ItemStack itemStack = getItemStackUnsafe();
 
         BigInteger[] divideAndRemainder = getAmount().divideAndRemainder(BigInteger.valueOf(Integer.MAX_VALUE));
         int amountOfMaximums = divideAndRemainder[0].intValueExact();
@@ -400,7 +404,9 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setItemStack(getItemStack()).setString(getAmount().toString()).setLocation(getLocation());
+        return statementHolder.setItemStack(getItemStackUnsafe())
+                .setString(getAmount().toString())
+                .setLocation(getLocation());
     }
 
     @Override
@@ -414,7 +420,7 @@ public final class WStorageChest extends WChest implements StorageChest {
                 .setLocation(getLocation())
                 .setString(placer.toString())
                 .setString(getData().getName())
-                .setItemStack(getItemStack())
+                .setItemStack(getItemStackUnsafe())
                 .setString(getAmount().toString())
                 .setString(getMaxAmount().toString())
                 .execute(async);
