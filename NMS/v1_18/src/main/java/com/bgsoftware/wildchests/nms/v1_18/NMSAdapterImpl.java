@@ -17,6 +17,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -36,6 +37,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 
 public final class NMSAdapterImpl implements NMSAdapter {
 
@@ -175,6 +177,16 @@ public final class NMSAdapterImpl implements NMSAdapter {
         Player player = ((CraftHumanEntity) humanEntity).getHandle();
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
         player.drop(itemStack, false);
+    }
+
+    @Override
+    public CompletableFuture<Chunk> getChunk(Location location) {
+        try {
+            return location.getWorld().getChunkAtAsync(location);
+        } catch (Throwable ignored) {
+        }
+
+        return CompletableFuture.completedFuture(location.getChunk());
     }
 
     private org.bukkit.inventory.ItemStack setItemTag(org.bukkit.inventory.ItemStack bukkitItem, String key, String value) {
