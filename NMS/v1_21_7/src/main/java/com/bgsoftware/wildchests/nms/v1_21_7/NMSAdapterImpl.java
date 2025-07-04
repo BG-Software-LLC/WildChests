@@ -1,8 +1,8 @@
-package com.bgsoftware.wildchests.nms.v1_21_6;
+package com.bgsoftware.wildchests.nms.v1_21_7;
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
-import com.bgsoftware.wildchests.nms.v1_21_6.utils.NbtUtils;
+import com.bgsoftware.wildchests.nms.v1_21_7.utils.NbtUtils;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;

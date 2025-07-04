@@ -1,7 +1,5 @@
-package com.bgsoftware.wildchests.nms.v1_21_6.inventory;
+package com.bgsoftware.wildchests.nms.v1_21_7.inventory;
 
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.CraftWildInventoryImpl;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildChestBlockEntity;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import net.minecraft.world.entity.player.Inventory;

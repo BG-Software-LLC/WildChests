@@ -1,4 +1,4 @@
-package com.bgsoftware.wildchests.nms.v1_21_6.utils;
+package com.bgsoftware.wildchests.nms.v1_21_7.utils;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ForwardingList;

@@ -1,15 +1,15 @@
-package com.bgsoftware.wildchests.nms.v1_21_6;
+package com.bgsoftware.wildchests.nms.v1_21_7;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.nms.NMSInventory;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.CraftWildInventoryImpl;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildChestBlockEntity;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildChestMenu;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildContainer;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildContainerItemImpl;
-import com.bgsoftware.wildchests.nms.v1_21_6.inventory.WildHopperMenu;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.CraftWildInventoryImpl;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.WildChestBlockEntity;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.WildChestMenu;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.WildContainer;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.WildContainerItemImpl;
+import com.bgsoftware.wildchests.nms.v1_21_7.inventory.WildHopperMenu;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import net.minecraft.core.BlockPos;
