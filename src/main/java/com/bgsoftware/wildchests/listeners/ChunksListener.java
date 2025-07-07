@@ -43,15 +43,17 @@ public final class ChunksListener implements Listener {
     private static void loadChestsForChunk(WildChestsPlugin plugin, Chunk chunk) {
         plugin.getChestsManager().getChests(chunk).forEach(chest -> {
             Location location = chest.getLocation();
-            Material blockType = location.getBlock().getType();
-            if (blockType != Material.CHEST) {
-                WildChestsPlugin.log("Loading chunk " + chunk.getX() + ", " + chunk.getX() + " but found a chest not " +
-                        "associated with a chest block but " + blockType + " at " + location.getWorld().getName() + ", " +
-                        location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ());
-                chest.remove();
-            } else {
-                ((WChest) chest).onChunkLoad();
-            }
+            plugin.getNMSAdapter().getChunk(location).thenAccept(loadedChunk -> {
+                Material blockType = location.getBlock().getType();
+                if (blockType != Material.CHEST) {
+                    WildChestsPlugin.log("Loading chunk " + chunk.getX() + ", " + chunk.getX() + " but found a chest not " +
+                            "associated with a chest block but " + blockType + " at " + location.getWorld().getName() + ", " +
+                            location.getBlockX() + ", " + location.getBlockY() + ", " + location.getBlockZ());
+                    chest.remove();
+                } else {
+                    ((WChest) chest).onChunkLoad();
+                }
+            });
         });
     }
 
