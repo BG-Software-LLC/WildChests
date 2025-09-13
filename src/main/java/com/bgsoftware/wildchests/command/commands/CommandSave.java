@@ -44,7 +44,7 @@ public final class CommandSave implements ICommand {
     @Override
     public void perform(WildChestsPlugin plugin, CommandSender sender, String[] args) {
         Scheduler.runTaskAsync(() -> {
-            plugin.getDataHandler().saveDatabase(null, false);
+            plugin.getDataHandler().saveDatabase(null);
             sender.sendMessage(ChatColor.YELLOW + "Successfully saved all cached data.");
         });
     }

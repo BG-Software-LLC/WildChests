@@ -5,6 +5,26 @@
 ##                                                     ##
 #########################################################
 
+# All settings related to the database of the plugin.
+database:
+  # For local database, use "SQLite".
+  # For remote database, use "MySQL" or "MariaDB" (Depends on your setup).
+  type: SQLite
+  # Remote database information
+  address: 'localhost'
+  port: 3306
+  db-name: 'WildChests'
+  user-name: 'root'
+  password: 'root'
+  prefix: ''
+  useSSL: false
+  allowPublicKeyRetrieval: true
+  waitTimeout: 600000
+  maxLifetime: 1800000
+
+  # Automatically delete data from invalid worlds.
+  invalid-world-delete: false
+
 # How much time should be passed between sell and crafting notifies? (in ticks)
 # Set 0 to disable this feature.
 notifier-interval: 12000
@@ -40,11 +60,6 @@ stacker-provider: 'Auto'
 prices-list:
 - 'STONE:5' #Each stone will cost $5
 - 'LOG:0:5' #Only oak logs will cost $5
-
-# All settings related to database.
-database:
-  # Automatically delete data from invalid worlds.
-  invalid-world-delete: false
 
 # All settings related to hooks
 hooks:

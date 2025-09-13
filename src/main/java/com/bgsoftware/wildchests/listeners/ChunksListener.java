@@ -27,13 +27,13 @@ public final class ChunksListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkUnload(ChunkUnloadEvent e) {
-        plugin.getDataHandler().saveDatabase(e.getChunk(), true);
+        plugin.getDataHandler().saveDatabase(e.getChunk());
     }
 
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk) {
         plugin.getChestsManager().loadChestsForChunk(chunk);
 
-        if(Scheduler.isRegionScheduler()) {
+        if (Scheduler.isRegionScheduler()) {
             Scheduler.runTask(chunk, () -> loadChestsForChunk(plugin, chunk));
         } else {
             loadChestsForChunk(plugin, chunk);

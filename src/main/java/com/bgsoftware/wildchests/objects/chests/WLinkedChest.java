@@ -3,8 +3,6 @@ package com.bgsoftware.wildchests.objects.chests;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
@@ -54,7 +52,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         if (linkedChest == null) {
             // Unlink operation, let's just save to DB and return.
             if (saveData)
-                saveLinkedChest();
+                plugin.getDataHandler().saveLinkedChest(this);
             return;
         }
 
@@ -77,22 +75,15 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
             this.inventories = linkedChestsChain.inventories;
         }
         if (saveData)
-            saveLinkedChest();
+            plugin.getDataHandler().saveLinkedChest(this);
     }
 
     private LinkedChestsChain newChain(boolean saveData) {
         Preconditions.checkState(this.linkedChestsChain == null, "Cannot create new chain while already being in one");
         this.linkedChestsChain = new LinkedChestsChain(this, this.inventories);
         if (saveData)
-            saveLinkedChest();
+            plugin.getDataHandler().saveLinkedChest(this);
         return this.linkedChestsChain;
-    }
-
-    public void saveLinkedChest() {
-        Query.LINKED_CHEST_UPDATE_LINKED_CHEST.getStatementHolder(this)
-                .setLocation(isLinkedIntoChest() ? this.linkedChestsChain.sourceChest.getLocation() : null)
-                .setLocation(getLocation())
-                .execute(true);
     }
 
     @Override
@@ -181,35 +172,6 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
             if (linkedChest != null)
                 Scheduler.runTask(linkedChest, () -> linkIntoChest(plugin.getChestsManager().getLinkedChest(linkedChest)), 1L);
         }
-    }
-
-    @Override
-    public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setInventories(isLinkedIntoChest() ? null : getPages()).setLocation(getLocation());
-    }
-
-    @Override
-    public void executeUpdateStatement(boolean async) {
-        setUpdateStatement(Query.LINKED_CHEST_UPDATE_INVENTORIES.getStatementHolder(this)).execute(async);
-    }
-
-    @Override
-    public void executeInsertStatement(boolean async) {
-        boolean isLinkedIntoChest = isLinkedIntoChest();
-        Query.LINKED_CHEST_INSERT.getStatementHolder(this)
-                .setLocation(getLocation())
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setInventories(isLinkedIntoChest ? null : getPages())
-                .setLocation(isLinkedIntoChest ? this.linkedChestsChain.sourceChest.getLocation() : null)
-                .execute(async);
-    }
-
-    @Override
-    public void executeDeleteStatement(boolean async) {
-        Query.LINKED_CHEST_DELETE.getStatementHolder(this)
-                .setLocation(getLocation())
-                .execute(async);
     }
 
     private static class LinkedChestsChain {

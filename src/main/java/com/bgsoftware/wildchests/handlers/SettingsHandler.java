@@ -30,6 +30,17 @@ import java.util.Map;
 @SuppressWarnings("WeakerAccess")
 public final class SettingsHandler {
 
+    public final String databaseType;
+    public final String databaseMySQLAddress;
+    public final int databaseMySQLPort;
+    public final String databaseMySQLDBName;
+    public final String databaseMySQLUsername;
+    public final String databaseMySQLPassword;
+    public final String databaseMySQLPrefix;
+    public final boolean databaseMySQLSSL;
+    public final boolean databaseMySQLPublicKeyRetrieval;
+    public final long databaseMySQLWaitTimeout;
+    public final long databaseMySQLMaxLifetime;
     public final long notifyInterval;
     public final boolean detailedNotifier;
     public final boolean confirmGUI;
@@ -60,6 +71,17 @@ public final class SettingsHandler {
             error.printStackTrace();
         }
 
+        databaseType = cfg.getString("database.type").toUpperCase(Locale.ENGLISH);
+        databaseMySQLAddress = cfg.getString("database.address");
+        databaseMySQLPort = cfg.getInt("database.port");
+        databaseMySQLDBName = cfg.getString("database.db-name");
+        databaseMySQLUsername = cfg.getString("database.user-name");
+        databaseMySQLPassword = cfg.getString("database.password");
+        databaseMySQLPrefix = cfg.getString("database.prefix");
+        databaseMySQLSSL = cfg.getBoolean("database.useSSL");
+        databaseMySQLPublicKeyRetrieval = cfg.getBoolean("database.allowPublicKeyRetrieval");
+        databaseMySQLWaitTimeout = cfg.getLong("database.waitTimeout");
+        databaseMySQLMaxLifetime = cfg.getLong("database.maxLifetime");
         notifyInterval = cfg.getLong("notifier-interval", 12000);
         detailedNotifier = cfg.getBoolean("detailed-notifier", true);
         confirmGUI = cfg.getBoolean("confirm-gui", false);

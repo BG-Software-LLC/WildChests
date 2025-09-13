@@ -3,8 +3,6 @@ package com.bgsoftware.wildchests.objects.chests;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.database.Query;
-import com.bgsoftware.wildchests.database.StatementHolder;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
@@ -88,7 +86,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         return getItemStackUnsafe().clone();
     }
 
-    private ItemStack getItemStackUnsafe() {
+    public ItemStack getItemStackUnsafe() {
         if (amount.compareTo(BigInteger.ZERO) < 1)
             setItemStack(null);
 
@@ -400,37 +398,6 @@ public final class WStorageChest extends WChest implements StorageChest {
         }
         if (cfg.contains("max-amount"))
             setMaxAmount(new BigInteger(cfg.getString("max-amount")));
-    }
-
-    @Override
-    public StatementHolder setUpdateStatement(StatementHolder statementHolder) {
-        return statementHolder.setItemStack(getItemStackUnsafe())
-                .setString(getAmount().toString())
-                .setLocation(getLocation());
-    }
-
-    @Override
-    public void executeUpdateStatement(boolean async) {
-        setUpdateStatement(Query.STORAGE_UNIT_UPDATE_ITEM.getStatementHolder(this)).execute(async);
-    }
-
-    @Override
-    public void executeInsertStatement(boolean async) {
-        Query.STORAGE_UNIT_INSERT.getStatementHolder(this)
-                .setLocation(getLocation())
-                .setString(placer.toString())
-                .setString(getData().getName())
-                .setItemStack(getItemStackUnsafe())
-                .setString(getAmount().toString())
-                .setString(getMaxAmount().toString())
-                .execute(async);
-    }
-
-    @Override
-    public void executeDeleteStatement(boolean async) {
-        Query.STORAGE_UNIT_DELETE.getStatementHolder(this)
-                .setLocation(getLocation())
-                .execute(async);
     }
 
     private void updateInventory(Inventory inventory) {

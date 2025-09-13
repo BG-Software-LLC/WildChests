@@ -10,7 +10,7 @@ import com.bgsoftware.wildchests.api.WildChests;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.command.CommandsHandler;
-import com.bgsoftware.wildchests.database.SQLHelper;
+import com.bgsoftware.wildchests.database.DBSession;
 import com.bgsoftware.wildchests.handlers.ChestsHandler;
 import com.bgsoftware.wildchests.handlers.DataHandler;
 import com.bgsoftware.wildchests.handlers.ProvidersHandler;
@@ -23,7 +23,6 @@ import com.bgsoftware.wildchests.nms.NMSAdapter;
 import com.bgsoftware.wildchests.nms.NMSInventory;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.task.NotifierTask;
-import com.bgsoftware.wildchests.utils.DatabaseThread;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -130,17 +129,15 @@ public final class WildChestsPlugin extends JavaPlugin implements WildChests {
 
         for (World world : Bukkit.getWorlds()) {
             for (Chunk chunk : world.getLoadedChunks()) {
-                dataHandler.saveDatabase(chunk, false);
+                dataHandler.saveDatabase(chunk);
                 loadedChunks++;
             }
         }
 
         log("Chunks to save: " + loadedChunks);
 
-        log("Terminating executor...");
-        DatabaseThread.stop();
         log("Terminating database...");
-        SQLHelper.close();
+        DBSession.close();
     }
 
     private void loadAPI() {

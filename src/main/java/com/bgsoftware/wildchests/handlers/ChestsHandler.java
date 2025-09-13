@@ -112,7 +112,7 @@ public final class ChestsHandler implements ChestsManager {
 
         plugin.getNMSInventory().removeTileEntity(chest);
 
-        ((WChest) chest).executeDeleteStatement(true);
+        plugin.getDataHandler().deleteChest(chest);
     }
 
     @Override
