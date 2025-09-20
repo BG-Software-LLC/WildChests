@@ -55,6 +55,7 @@ public final class Locale {
     public static Locale FORMAT_THOUSANDS = new Locale("FORMAT_THOUSANDS");
     public static Locale MONEY_EARNED_OFFLINE = new Locale("MONEY_EARNED_OFFLINE");
     public static Locale LEFTOVERS_ITEMS_WARNING = new Locale("LEFTOVERS_ITEMS_WARNING");
+    public static Locale CHEST_LIMIT_REACHED = new Locale("CHEST_LIMIT_REACHED");
 
 
     private Locale(String identifier) {

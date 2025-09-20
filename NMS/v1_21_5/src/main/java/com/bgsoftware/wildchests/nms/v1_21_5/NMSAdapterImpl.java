@@ -94,12 +94,12 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
         try {
             CompoundTag compoundTag = NbtUtils.read(new DataInputStream(inputStream));
-            int length = compoundTag.getIntOr("Length", 0);
+            int length = compoundTag.getInt("Length");
             inventories = new InventoryHolder[length];
 
             for (int i = 0; i < length; i++) {
                 if (compoundTag.contains(i + "")) {
-                    CompoundTag itemCompound = compoundTag.getCompoundOrEmpty(i + "");
+                    CompoundTag itemCompound = compoundTag.getCompound(i + "");
                     inventories[i] = deserializeInventory(itemCompound);
                 }
             }
@@ -174,7 +174,8 @@ public final class NMSAdapterImpl implements NMSAdapter {
         CustomData customData = itemStack.get(DataComponents.CUSTOM_DATA);
         if (customData != null) {
             CompoundTag compoundTag = customData.getUnsafe();
-            return compoundTag.getString("chest-name").orElse(null);
+            if (compoundTag.contains("chest-name", 8))
+                return compoundTag.getString("chest-name");
         }
 
         return null;
@@ -229,7 +230,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
             throw new RuntimeException(ex);
         }
 
-        int itemVersion = compoundTag.getIntOr("DataVersion", 0);
+        int itemVersion = compoundTag.getInt("DataVersion");
         if (itemVersion != DATA_VERSION) {
             compoundTag = (CompoundTag) DataFixers.getDataFixer().update(References.ITEM_STACK,
                     new Dynamic<>(NbtOps.INSTANCE, compoundTag), itemVersion, DATA_VERSION).getValue();
@@ -266,12 +267,12 @@ public final class NMSAdapterImpl implements NMSAdapter {
     }
 
     private static InventoryHolder deserializeInventory(CompoundTag compoundTag) {
-        InventoryHolder inventory = new InventoryHolder(compoundTag.getIntOr("Size", 0), "Chest");
-        ListTag itemsList = compoundTag.getListOrEmpty("Items");
+        InventoryHolder inventory = new InventoryHolder(compoundTag.getInt("Size"), "Chest");
+        ListTag itemsList = compoundTag.getList("Items", 10);
 
         for (int i = 0; i < itemsList.size(); i++) {
-            CompoundTag itemTag = itemsList.getCompoundOrEmpty(i);
-            inventory.setItem(itemTag.getIntOr("Slot", 0), deserializeItemFromCompoundTag(itemTag));
+            CompoundTag itemTag = itemsList.getCompound(i);
+            inventory.setItem(itemTag.getByte("Slot"), deserializeItemFromCompoundTag(itemTag));
         }
 
         return inventory;

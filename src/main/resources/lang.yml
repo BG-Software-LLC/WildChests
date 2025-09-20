@@ -78,3 +78,6 @@ RELOAD_SUCCESS: '&5&lWildChests &7Successfully reloaded the configuration files.
 SOLD_CHEST_HEADER: '&5&lWildChests &7Your transactions in the last 10 minutes:'
 SOLD_CHEST_LINE: '&5&lWildChests &7x{0} {1} for ${2}'
 SOLD_CHEST_FOOTER: '&5&lWildChests &7You earned a total of ${0}'
+
+# Called when a player tries to place a chest but has reached the limit for that type
+CHEST_LIMIT_REACHED: '&5&lWildChests &7You have reached the maximum limit of {0} {1} chests!'

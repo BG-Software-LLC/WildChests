@@ -61,6 +61,24 @@ maximum-pickup-delay: 32767
 # You can disable this feature by setting it to -1.
 max-stacks-on-drop: -1
 
+# Enable permission-based chest placement limits.
+# When enabled, players can only place a limited number of each chest type based on permissions.
+# Permission format: wildchests.limit.<type>.<amount>
+# For example: wildchests.limit.linked_chest.5 allows placing up to 5 linked chests
+enable-chest-limits: false
+
+# Default limits for each chest type when no specific permission is given.
+# Set to 0 for unlimited, or any positive number for the default limit.
+# Set to -1 to disable this chest type entirely.
+# These only apply when enable-chest-limits is true.
+default-chest-limits:
+  linked_chest: 0
+  large_chest: 0
+  sell_chest: 0
+  auto_crafter: 0
+  storage_unit: 0
+  chunk_collector: 0
+
 # The plugin brings tons of new custom and unique chests to your server. All the chests are configurable, and
 # you can create and mix between them. You can create chests that stores infinite amount of items, chests that
 # are connected to player vaults or factions, linked chests and many more!
