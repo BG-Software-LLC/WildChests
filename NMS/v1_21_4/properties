@@ -1,0 +1,4 @@
+NMS_VERSION=v1_21_4
+CRAFTBUKKIT_PACKAGE=org.bukkit.craftbukkit
+NBT_ACCOUNTER_UNLIMITED=unlimitedHeap()
+TAG_TYPE_LOAD_TRACKER_PARAMS=input, tracker
