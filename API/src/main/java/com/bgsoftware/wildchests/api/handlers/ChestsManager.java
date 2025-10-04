@@ -117,9 +117,9 @@ public interface ChestsManager {
      * Get the count of chests placed by a specific player of a specific type.
      *
      * @param placer The UUID of the player who placed the chests
-     * @param chestType The name of the chest type to count
+     * @param chestDataName The name of the chest data to count
      * @return The number of chests of the specified type placed by the player
      */
-    int getChestCount(UUID placer, String chestType);
+    int getChestCount(UUID placer, String chestDataName);
 
 }

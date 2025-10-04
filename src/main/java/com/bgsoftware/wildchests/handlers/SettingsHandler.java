@@ -74,11 +74,11 @@ public final class SettingsHandler {
         wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);
         maximumPickupDelay = cfg.getInt("maximum-pickup-delay", 32767);
         maxStacksOnDrop = cfg.getInt("max-stacks-on-drop", -1);
-        enableChestLimits = cfg.getBoolean("enable-chest-limits", false);
+        enableChestLimits = cfg.getBoolean("chest-limits.enabled", false);
         
         defaultChestLimits = new HashMap<>();
-        if (cfg.contains("default-chest-limits")) {
-            ConfigurationSection limitsSection = cfg.getConfigurationSection("default-chest-limits");
+        if (cfg.contains("chest-limits.default")) {
+            ConfigurationSection limitsSection = cfg.getConfigurationSection("chest-limits.default");
             for (String chestType : limitsSection.getKeys(false)) {
                 int limit = limitsSection.getInt(chestType, -1);
                 defaultChestLimits.put(chestType, limit);
@@ -264,5 +264,4 @@ public final class SettingsHandler {
 
         return chestData;
     }
-
 }

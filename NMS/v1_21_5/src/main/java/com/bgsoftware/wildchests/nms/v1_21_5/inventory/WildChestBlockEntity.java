@@ -188,9 +188,9 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
             double z = blockPos.getZ() + level.getRandom().nextFloat();
             for (String particle : chestData.getChestParticles()) {
                 try {
-                    this.serverLevel.sendParticles(null,
+                    this.serverLevel.sendParticles(
                             CraftParticle.createParticleParam(Particle.valueOf(particle), null),
-                            false, x, y, z, 0, 0.0, 0.0, 0.0, 1.0);
+                            false, false, x, y, z, 0, 0.0, 0.0, 0.0, 1.0);
                 } catch (Exception ignored) {
                 }
             }
@@ -335,9 +335,9 @@ public class WildChestBlockEntity extends ChestBlockEntity implements WorldlyCon
     }
 
     private void handleItemSuctionRemoval(ItemEntity itemEntity) {
-        this.serverLevel.sendParticles(null,
+        this.serverLevel.sendParticles(
                 CraftParticle.createParticleParam(Particle.CLOUD, null),
-                false, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
+                false, false, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(),
                 0, 0.0, 0.0, 0.0, 1.0);
         itemEntity.discard();
     }

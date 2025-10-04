@@ -81,16 +81,17 @@ public final class BlockListener implements Listener {
             return;
 
         if (plugin.getSettings().enableChestLimits) {
-            String chestType = chestData.getName();
+            String chestDataName = chestData.getName();
             Player player = e.getPlayer();
             
-            if (ChestLimitUtils.hasChestLimit(player, chestType)) {
-                int limit = ChestLimitUtils.getPlayerChestLimit(player, chestType);
-                int currentCount = plugin.getChestsManager().getChestCount(player.getUniqueId(), chestType);
+            ChestLimitUtils.ChestLimitResult limitResult = ChestLimitUtils.getPlayerChestLimitResult(player, chestDataName);
+            if (limitResult.hasLimit()) {
+                int limit = limitResult.getLimit();
+                int currentCount = plugin.getChestsManager().getChestCount(player.getUniqueId(), chestDataName);
                 
                 if (limit != Integer.MAX_VALUE && currentCount >= limit) {
                     e.setCancelled(true);
-                    Locale.CHEST_LIMIT_REACHED.send(player, limit, chestType);
+                    Locale.CHEST_LIMIT_REACHED.send(player, limit, chestDataName);
                     return;
                 }
             }
