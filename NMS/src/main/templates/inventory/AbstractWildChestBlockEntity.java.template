@@ -111,7 +111,15 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
     }
 
     @Override
-    public final void stopOpen(Player player) {
+    public final void stopOpen(${CONTAINER_OPEN_PARAM_TYPE} containerUser) {
+        Player player;
+
+        try {
+            player = (Player) containerUser;
+        } catch (Throwable error) {
+            return;
+        }
+
         CraftHumanEntity craftHumanEntity = player.getBukkitEntity();
 
         this.transaction.remove(craftHumanEntity);
@@ -134,7 +142,15 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
     }
 
     @Override
-    public void startOpen(Player player) {
+    public void startOpen(${CONTAINER_OPEN_PARAM_TYPE} containerUser) {
+        Player player;
+
+        try {
+            player = (Player) containerUser;
+        } catch (Throwable error) {
+            return;
+        }
+
         CraftHumanEntity craftHumanEntity = player.getBukkitEntity();
 
         this.transaction.add(craftHumanEntity);

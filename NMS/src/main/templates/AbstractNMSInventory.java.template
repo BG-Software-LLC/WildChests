@@ -35,7 +35,7 @@ import org.bukkit.entity.Player;
 public abstract class AbstractNMSInventory implements NMSInventory {
 
     private static final ReflectMethod<TickingBlockEntity> CREATE_TICKING_BLOCK = new ReflectMethod<>(
-            LevelChunk.class, "a", BlockEntity.class, BlockEntityTicker.class);
+            LevelChunk.class, 1, BlockEntity.class, BlockEntityTicker.class);
 
     @Override
     public void updateTileEntity(Chest chest) {

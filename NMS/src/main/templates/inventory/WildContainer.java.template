@@ -151,11 +151,11 @@ public class WildContainer implements Container {
     }
 
     @Override
-    public void startOpen(Player player) {
+    public void startOpen(${CONTAINER_OPEN_PARAM_TYPE} player) {
     }
 
     @Override
-    public void stopOpen(Player player) {
+    public void stopOpen(${CONTAINER_OPEN_PARAM_TYPE} player) {
 
     }
 
