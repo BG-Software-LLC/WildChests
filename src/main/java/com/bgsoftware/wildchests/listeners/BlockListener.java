@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.utils.ChestLimitUtils;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -78,6 +79,23 @@ public final class BlockListener implements Listener {
 
         if (chestData == null)
             return;
+
+        if (plugin.getSettings().enableChestLimits) {
+            String chestDataName = chestData.getName();
+            Player player = e.getPlayer();
+            
+            ChestLimitUtils.ChestLimitResult limitResult = ChestLimitUtils.getPlayerChestLimitResult(player, chestDataName);
+            if (limitResult.hasLimit()) {
+                int limit = limitResult.getLimit();
+                int currentCount = plugin.getChestsManager().getChestCount(player.getUniqueId(), chestDataName);
+                
+                if (limit != Integer.MAX_VALUE && currentCount >= limit) {
+                    e.setCancelled(true);
+                    Locale.CHEST_LIMIT_REACHED.send(player, limit, chestDataName);
+                    return;
+                }
+            }
+        }
 
         Chest chest = plugin.getChestsManager().addChest(e.getPlayer().getUniqueId(), e.getBlockPlaced().getLocation(), chestData);
 

@@ -161,6 +161,16 @@ public final class ChestsHandler implements ChestsManager {
     }
 
     @Override
+    public int getChestCount(UUID placer, String chestDataName) {
+        ChestData chestData = getChestData(chestDataName);
+        if (chestData == null)
+            return 0;
+        return (int) chests.values().stream()
+                .filter(chest -> chest.getPlacer().equals(placer) && chest.getData() == chestData)
+                .count();
+    }
+
+    @Override
     public List<Chest> getNearbyChests(Location location) {
         return getChests(location.getWorld()).stream()
                 .filter(chest -> {

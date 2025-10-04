@@ -42,6 +42,8 @@ public final class SettingsHandler {
     public final boolean wildStackerHook;
     public final int maximumPickupDelay;
     public final int maxStacksOnDrop;
+    public final boolean enableChestLimits;
+    public final Map<String, Integer> defaultChestLimits;
 
     public SettingsHandler(WildChestsPlugin plugin) {
         WildChestsPlugin.log("Loading configuration started...");
@@ -72,6 +74,16 @@ public final class SettingsHandler {
         wildStackerHook = cfg.getBoolean("hooks.wildstacker", true);
         maximumPickupDelay = cfg.getInt("maximum-pickup-delay", 32767);
         maxStacksOnDrop = cfg.getInt("max-stacks-on-drop", -1);
+        enableChestLimits = cfg.getBoolean("chest-limits.enabled", false);
+        
+        defaultChestLimits = new HashMap<>();
+        if (cfg.contains("chest-limits.default")) {
+            ConfigurationSection limitsSection = cfg.getConfigurationSection("chest-limits.default");
+            for (String chestType : limitsSection.getKeys(false)) {
+                int limit = limitsSection.getInt(chestType, -1);
+                defaultChestLimits.put(chestType, limit);
+            }
+        }
 
         Map<String, Double> prices = new HashMap<>();
 
@@ -252,5 +264,4 @@ public final class SettingsHandler {
 
         return chestData;
     }
-
 }
