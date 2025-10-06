@@ -68,7 +68,7 @@ dependencies {
     implementation 'com.bgsoftware.common.reflection:ReflectionUtils:b5'
     implementation 'com.bgsoftware.common.config:CommentedConfiguration:b1'
     implementation 'com.bgsoftware.common.updater:Updater:b1'
-    implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b19:all@jar'
+    implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b20:all@jar'
     implementation 'com.bgsoftware.common.dependencies:DependenciesManager:b2'
     implementation 'com.bgsoftware.common.nmsloader:NMSLoader:b15'
     implementation 'com.bgsoftware.common.databasebridge:DatabaseBridge:b2'
