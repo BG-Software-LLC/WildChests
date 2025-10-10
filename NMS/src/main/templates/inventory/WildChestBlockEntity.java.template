@@ -46,7 +46,7 @@ import org.bukkit.entity.Item;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity implements
+public class WildChestBlockEntity extends ChestBlockEntity implements
         WorldlyContainer, TileEntityContainer, BlockEntityTicker<WildChestBlockEntity> {
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
@@ -64,7 +64,7 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
     private boolean autoCraftMode = false;
     private boolean autoSellMode = false;
 
-    public AbstractWildChestBlockEntity(Chest chest, ServerLevel serverLevel, BlockPos blockPos) {
+    public WildChestBlockEntity(Chest chest, ServerLevel serverLevel, BlockPos blockPos) {
         super(blockPos, serverLevel.getBlockState(blockPos));
         this.chest = chest;
         this.serverLevel = serverLevel;
@@ -194,7 +194,7 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
             double z = blockPos.getZ() + level.getRandom().nextFloat();
             for (String particle : chestData.getChestParticles()) {
                 try {
-                    sendParticles(Particle.valueOf(particle), x, y, z);
+                    sendParticlesInternal(Particle.valueOf(particle), x, y, z);
                 } catch (Exception ignored) {
                 }
             }
@@ -225,8 +225,6 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
         }
 
     }
-
-    protected abstract void sendParticles(Particle particle, double x, double y, double z);
 
     @Override
     public int getContainerSize() {
@@ -341,8 +339,12 @@ public abstract class AbstractWildChestBlockEntity extends ChestBlockEntity impl
     }
 
     private void handleItemSuctionRemoval(ItemEntity itemEntity) {
-        sendParticles(Particle.CLOUD, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
+        sendParticlesInternal(Particle.CLOUD, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
         itemEntity.discard();
+    }
+
+    private void sendParticlesInternal(Particle particle, double x, double y, double z) {
+        this.serverLevel.getWorld().spawnParticle(particle, x, y, z, 0, 0D, 0D, 0D, 1.0, null, false);
     }
 
 }
