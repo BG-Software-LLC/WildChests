@@ -1,5 +1,6 @@
 package com.bgsoftware.wildchests.nms.v1_21_9;
 
+import com.bgsoftware.common.reflection.ReflectField;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.SharedConstants;
@@ -13,7 +14,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
 
+import java.lang.reflect.Modifier;
+
 public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_21_9.AbstractNMSAdapter {
+
+    private static final ReflectField<CompoundTag> CUSTOM_DATA_TAG = new ReflectField<>(CustomData.class,
+            CompoundTag.class, Modifier.PRIVATE | Modifier.FINAL, 1);
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -44,7 +50,7 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_21_9.Abstra
     protected String getChestNameInternal(ItemStack itemStack) {
         CustomData customData = itemStack.get(DataComponents.CUSTOM_DATA);
         if (customData != null) {
-            CompoundTag compoundTag = customData.getUnsafe();
+            CompoundTag compoundTag = getCustomDataTag(customData);
             return compoundTag.getStringOr("chest-name", null);
         }
 
@@ -72,6 +78,14 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_21_9.Abstra
     @Override
     protected CompoundTag getListTagChildCompound(ListTag listTag, int i) {
         return listTag.getCompoundOrEmpty(i);
+    }
+
+    private static CompoundTag getCustomDataTag(CustomData customData) {
+        try {
+            return customData.getUnsafe();
+        } catch (Throwable error) {
+            return CUSTOM_DATA_TAG.get(customData);
+        }
     }
 
 }
