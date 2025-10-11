@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://bg-software.com/imgs/wildchests-logo.png" />
+<img src="https://static.bg-software.com/imgs/wildchests-logo.png" />
 <h2 align="center">New era of chests!</h2>
 </p>
 <br>
