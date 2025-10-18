@@ -26,6 +26,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -54,7 +55,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null && e.isCancelled() && e.getView().getTopInventory().getHolder() instanceof ConfirmMenu) {
+        if(e.getCurrentItem() != null && e.isCancelled() && isConfirmMenu(e.getView())) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Scheduler.runTask(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
@@ -175,7 +176,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
-        if (e.getView().getTopInventory().getHolder() instanceof ConfirmMenu) {
+        if (isConfirmMenu(e.getView())) {
             Scheduler.runTask(() -> {
                 if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {
                     if(Scheduler.isRegionScheduler()) {
@@ -215,6 +216,11 @@ public final class InventoryListener implements Listener {
         WChest.guiConfirm.setItem(1, blankButton);
         WChest.guiConfirm.setItem(2, blankButton);
         WChest.guiConfirm.setItem(3, blankButton);
+    }
+
+    private static boolean isConfirmMenu(InventoryView inventoryView) {
+        Inventory topInventory = inventoryView.getTopInventory();
+        return topInventory != null && topInventory.getHolder() instanceof ConfirmMenu;
     }
 
     private static class ConfirmMenu implements InventoryHolder {
