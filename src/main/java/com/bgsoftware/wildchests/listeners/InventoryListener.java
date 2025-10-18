@@ -25,10 +25,10 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -51,11 +51,10 @@ public final class InventoryListener implements Listener {
      */
 
     private final Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
-    private final String[] inventoryTitles = new String[] {"Expand Confirmation", };
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null && e.isCancelled() && Arrays.stream(inventoryTitles).anyMatch(title -> e.getView().getTitle().contains(title))) {
+        if(e.getCurrentItem() != null && e.isCancelled() && e.getView().getTopInventory().getHolder() instanceof ConfirmMenu) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Scheduler.runTask(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
@@ -176,7 +175,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
-        if (e.getView().getTitle().equals(WChest.guiConfirmTitle)) {
+        if (e.getView().getTopInventory().getHolder() instanceof ConfirmMenu) {
             Scheduler.runTask(() -> {
                 if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {
                     if(Scheduler.isRegionScheduler()) {
@@ -190,8 +189,9 @@ public final class InventoryListener implements Listener {
     }
 
     private void initGUIConfirm(){
-        WChest.guiConfirm = Bukkit.createInventory(null, InventoryType.HOPPER, ChatColor.BOLD + "    Expand Confirmation");
-        WChest.guiConfirmTitle = ChatColor.BOLD + "    Expand Confirmation";
+        ConfirmMenu confirmMenu = new ConfirmMenu();
+        WChest.guiConfirm = Bukkit.createInventory(confirmMenu, InventoryType.HOPPER, ChatColor.BOLD + "    Expand Confirmation");
+        confirmMenu.setInventory(WChest.guiConfirm);
 
         ItemStack denyButton = Materials.RED_STAINED_GLASS_PANE.toBukkitItem();
         ItemMeta denyMeta = denyButton.getItemMeta();
@@ -215,6 +215,20 @@ public final class InventoryListener implements Listener {
         WChest.guiConfirm.setItem(1, blankButton);
         WChest.guiConfirm.setItem(2, blankButton);
         WChest.guiConfirm.setItem(3, blankButton);
+    }
+
+    private static class ConfirmMenu implements InventoryHolder {
+
+        private Inventory inventory;
+
+        public void setInventory(Inventory inventory) {
+            this.inventory = inventory;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return this.inventory;
+        }
     }
 
 }
