@@ -227,12 +227,12 @@ public final class DataHandler {
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
                 new Column("placer", "UUID"),
                 new Column("chest_data", "TEXT"),
-                new Column("inventories", "TEXT"));
+                new Column("inventories", "LONGTEXT"));
         DBSession.createTable("linked_chests",
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
                 new Column("placer", "UUID"),
                 new Column("chest_data", "TEXT"),
-                new Column("inventories", "TEXT"),
+                new Column("inventories", "LONGTEXT"),
                 new Column("linked_chest", "LONG_UNIQUE_TEXT"));
         DBSession.createTable("storage_units",
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
@@ -244,6 +244,9 @@ public final class DataHandler {
         DBSession.createTable("offline_payment",
                 new Column("uuid", "UUID PRIMARY KEY"),
                 new Column("payment", "TEXT"));
+
+        DBSession.modifyColumnType("chests", "inventories", "LONGTEXT");
+        DBSession.modifyColumnType("linked_chests", "inventories", "LONGTEXT");
 
         List<IDatabaseTransaction> transactionsToExecute = new LinkedList<>();
 

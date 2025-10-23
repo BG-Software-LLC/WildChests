@@ -86,6 +86,11 @@ public class DBSession {
             globalSession.select(tableName, filters, queryResult);
     }
 
+    public static void modifyColumnType(String tableName, String columnName, String newType) {
+        if (isReady())
+            globalSession.modifyColumnType(tableName, columnName, newType, QueryResult.EMPTY_VOID_QUERY_RESULT);
+    }
+
     public static void close() {
         if (isReady()) {
             DatabaseTransactionsExecutor.stopActiveExecutors();
