@@ -32,10 +32,6 @@ public class Scheduler {
         // Do nothing, load static initializer
     }
 
-    public static boolean isRegionScheduler() {
-        return IMP.isRegionScheduler();
-    }
-
     public static void cancelTasks() {
         IMP.cancelTasks();
     }
@@ -88,6 +84,10 @@ public class Scheduler {
         return runTask(location, task, 0L);
     }
 
+    public static ScheduledTask runTask(World world, int chunkX, int chunkZ, Runnable task) {
+        return runTask(world, chunkX, chunkZ, task, 0L);
+    }
+
     public static ScheduledTask runTask(Runnable task) {
         return runTask(task, 0L);
     }
@@ -102,6 +102,30 @@ public class Scheduler {
 
     public static boolean isScheduledForRegion(Location location) {
         return isScheduledForRegion(location.getWorld(), location.getBlockX() >> 4, location.getBlockZ() >> 4);
+    }
+
+
+    public static void ensureMain(World world, int chunkX, int chunkZ, Runnable runnable) {
+        if (isScheduledForRegion(world, chunkX, chunkZ)) {
+            runnable.run();
+        } else {
+            runTask(world, chunkX, chunkZ, runnable);
+        }
+    }
+
+    public static void ensureMain(Entity entity, Runnable runnable) {
+        if (isScheduledForRegion(entity)) {
+            runnable.run();
+        } else {
+            runTask(entity, runnable);
+        }
+    }
+    public static void ensureMain(Location location, Runnable runnable) {
+        if (isScheduledForRegion(location)) {
+            runnable.run();
+        } else {
+            runTask(location, runnable);
+        }
     }
 
 }

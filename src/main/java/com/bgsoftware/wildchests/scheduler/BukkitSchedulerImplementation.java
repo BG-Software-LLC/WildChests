@@ -17,11 +17,6 @@ public class BukkitSchedulerImplementation implements ISchedulerImplementation {
     }
 
     @Override
-    public boolean isRegionScheduler() {
-        return false;
-    }
-
-    @Override
     public void cancelTasks() {
         Bukkit.getScheduler().cancelTasks(plugin);
     }

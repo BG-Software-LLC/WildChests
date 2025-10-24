@@ -33,14 +33,14 @@ public final class ChunksListener implements Listener {
     public static void handleChunkLoad(WildChestsPlugin plugin, Chunk chunk) {
         plugin.getChestsManager().loadChestsForChunk(chunk);
 
-        if (Scheduler.isRegionScheduler()) {
-            Scheduler.runTask(chunk, () -> loadChestsForChunk(plugin, chunk));
-        } else {
-            loadChestsForChunk(plugin, chunk);
-        }
+        Scheduler.ensureMain(chunk.getWorld(), chunk.getX(), chunk.getZ(), () ->
+                loadChestsForChunk(plugin, chunk));
     }
 
     private static void loadChestsForChunk(WildChestsPlugin plugin, Chunk chunk) {
+        if (!chunk.isLoaded())
+            return;
+
         plugin.getChestsManager().getChests(chunk).forEach(chest -> {
             Location location = chest.getLocation();
             Material blockType = location.getBlock().getType();

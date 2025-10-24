@@ -36,11 +36,7 @@ public class BaseNMSMenu {
     }
 
     public void removed(Player player) {
-        if (Scheduler.isRegionScheduler() && !Scheduler.isScheduledForRegion(location)) {
-            Scheduler.runTask(location, () -> doRemoved(player));
-        } else {
-            doRemoved(player);
-        }
+        Scheduler.ensureMain(location, () -> doRemoved(player));
     }
 
     private void doRemoved(Player player) {

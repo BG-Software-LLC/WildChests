@@ -36,11 +36,7 @@ public class BaseNMSMenu {
     }
 
     public void removed(EntityHuman entityHuman) {
-        if (Scheduler.isRegionScheduler() && !Scheduler.isScheduledForRegion(location)) {
-            Scheduler.runTask(location, () -> doRemoved(entityHuman));
-        } else {
-            doRemoved(entityHuman);
-        }
+        Scheduler.ensureMain(location, () -> doRemoved(entityHuman));
     }
 
     private void doRemoved(EntityHuman entityHuman) {

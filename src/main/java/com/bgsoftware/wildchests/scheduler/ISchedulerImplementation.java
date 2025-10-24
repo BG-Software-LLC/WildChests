@@ -5,8 +5,6 @@ import org.bukkit.entity.Entity;
 
 public interface ISchedulerImplementation {
 
-    boolean isRegionScheduler();
-
     void cancelTasks();
 
     ScheduledTask scheduleTask(World world, int chunkX, int chunkZ, Runnable task, long delay);

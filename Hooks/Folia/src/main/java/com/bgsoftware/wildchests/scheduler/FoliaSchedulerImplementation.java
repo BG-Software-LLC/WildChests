@@ -17,11 +17,6 @@ public class FoliaSchedulerImplementation implements ISchedulerImplementation {
     }
 
     @Override
-    public boolean isRegionScheduler() {
-        return true;
-    }
-
-    @Override
     public void cancelTasks() {
         Bukkit.getServer().getAsyncScheduler().cancelTasks(plugin);
     }

@@ -39,9 +39,9 @@ public final class InventoryListener implements Listener {
 
     private final WildChestsPlugin plugin;
 
-    public static final Map<UUID, InventoryData> buyNewPage = Maps.newHashMap();
+    public static final Map<UUID, InventoryData> buyNewPage = Maps.newConcurrentMap();
 
-    public InventoryListener(WildChestsPlugin plugin){
+    public InventoryListener(WildChestsPlugin plugin) {
         this.plugin = plugin;
         initGUIConfirm();
     }
@@ -54,16 +54,16 @@ public final class InventoryListener implements Listener {
     private final Map<UUID, ItemStack> latestClickedItem = new HashMap<>();
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onInventoryClickMonitor(InventoryClickEvent e){
-        if(e.getCurrentItem() != null && e.isCancelled() && isConfirmMenu(e.getView())) {
+    public void onInventoryClickMonitor(InventoryClickEvent e) {
+        if (e.getCurrentItem() != null && e.isCancelled() && isConfirmMenu(e.getView())) {
             latestClickedItem.put(e.getWhoClicked().getUniqueId(), e.getCurrentItem());
             Scheduler.runTask(() -> latestClickedItem.remove(e.getWhoClicked().getUniqueId()), 20L);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onInventoryCloseMonitor(InventoryCloseEvent e){
-        if(latestClickedItem.containsKey(e.getPlayer().getUniqueId())){
+    public void onInventoryCloseMonitor(InventoryCloseEvent e) {
+        if (latestClickedItem.containsKey(e.getPlayer().getUniqueId())) {
             ItemStack clickedItem = latestClickedItem.get(e.getPlayer().getUniqueId());
             Scheduler.runTask(e.getPlayer(), () -> {
                 e.getPlayer().getInventory().removeItem(clickedItem);
@@ -73,19 +73,19 @@ public final class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestOpen(PlayerInteractEvent e){
-        if(e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK ||
+    public void onChestOpen(PlayerInteractEvent e) {
+        if (e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK ||
                 e.getClickedBlock().getType() != Material.CHEST)
             return;
 
-        if(buyNewPage.containsKey(e.getPlayer().getUniqueId())){
+        if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {
             e.setCancelled(true);
             return;
         }
 
         Chest chest = plugin.getChestsManager().getChest(e.getClickedBlock().getLocation());
 
-        if(chest == null)
+        if (chest == null)
             return;
 
         plugin.getNMSInventory().updateTileEntity(chest);
@@ -94,11 +94,11 @@ public final class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestClose(InventoryCloseEvent e){
+    public void onChestClose(InventoryCloseEvent e) {
         Chest chest = WChest.viewers.get(e.getPlayer().getUniqueId());
 
         //Making sure it's still a valid chest
-        if(chest == null) {
+        if (chest == null) {
             WChest.viewers.remove(e.getPlayer().getUniqueId());
             return;
         }
@@ -107,10 +107,10 @@ public final class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onChestInteract(InventoryClickEvent e){
+    public void onChestInteract(InventoryClickEvent e) {
         Inventory clickedInventory = e.getView().getTopInventory();
 
-        if(!(clickedInventory instanceof CraftWildInventory))
+        if (!(clickedInventory instanceof CraftWildInventory))
             return;
 
         Chest chest = ((CraftWildInventory) clickedInventory).getOwner();
@@ -123,8 +123,8 @@ public final class InventoryListener implements Listener {
      */
 
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onPlayerBuyConfirm(AsyncPlayerChatEvent e){
-        if(!buyNewPage.containsKey(e.getPlayer().getUniqueId()))
+    public void onPlayerBuyConfirm(AsyncPlayerChatEvent e) {
+        if (!buyNewPage.containsKey(e.getPlayer().getUniqueId()))
             return;
 
         e.setCancelled(true);
@@ -133,8 +133,8 @@ public final class InventoryListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerBuyConfirm(InventoryClickEvent e){
-        if(!buyNewPage.containsKey(e.getWhoClicked().getUniqueId()))
+    public void onPlayerBuyConfirm(InventoryClickEvent e) {
+        if (!buyNewPage.containsKey(e.getWhoClicked().getUniqueId()))
             return;
 
         e.setCancelled(true);
@@ -142,17 +142,16 @@ public final class InventoryListener implements Listener {
         handleUpgrade((Player) e.getWhoClicked(), e.getRawSlot() == 4);
     }
 
-    private void handleUpgrade(Player player, boolean confirm){
+    private void handleUpgrade(Player player, boolean confirm) {
         try {
             Chest chest = WChest.viewers.get(player.getUniqueId());
             ChestData chestData = chest.getData();
             InventoryData inventoryData = buyNewPage.get(player.getUniqueId());
             int pageIndex = chest.getPagesAmount() - 1;
 
-            if(!chestData.getPagesData().containsKey(pageIndex + 2)){
+            if (!chestData.getPagesData().containsKey(pageIndex + 2)) {
                 Locale.EXPAND_FAILED.send(player);
-            }
-            else {
+            } else {
                 if (confirm) {
                     if (plugin.getProviders().withdrawPlayer(player, inventoryData.getPrice())) {
                         Locale.EXPAND_PURCHASED.send(player);
@@ -167,7 +166,7 @@ public final class InventoryListener implements Listener {
 
             final int PAGE = pageIndex;
             Scheduler.runTask(player, () -> chest.openPage(player, PAGE));
-        }catch(Exception ex){
+        } catch (Exception ex) {
             Locale.EXPAND_FAILED_CHEST_BROKEN.send(player);
         }
 
@@ -177,19 +176,15 @@ public final class InventoryListener implements Listener {
     @EventHandler
     public void onPlayerBuyConfirm(InventoryCloseEvent e) {
         if (isConfirmMenu(e.getView())) {
-            Scheduler.runTask(() -> {
+            Scheduler.runTask(e.getPlayer(), () -> {
                 if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {
-                    if(Scheduler.isRegionScheduler()) {
-                        Scheduler.runTask(e.getPlayer(), () -> e.getPlayer().openInventory(e.getInventory()));
-                    } else {
-                        e.getPlayer().openInventory(e.getInventory());
-                    }
+                    e.getPlayer().openInventory(e.getInventory());
                 }
             }, 1L);
         }
     }
 
-    private void initGUIConfirm(){
+    private void initGUIConfirm() {
         ConfirmMenu confirmMenu = new ConfirmMenu();
         WChest.guiConfirm = Bukkit.createInventory(confirmMenu, InventoryType.HOPPER, ChatColor.BOLD + "    Expand Confirmation");
         confirmMenu.setInventory(WChest.guiConfirm);

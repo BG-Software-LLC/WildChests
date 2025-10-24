@@ -401,17 +401,11 @@ public final class WStorageChest extends WChest implements StorageChest {
     }
 
     private void updateInventory(Inventory inventory) {
-        if (Scheduler.isRegionScheduler()) {
-            inventory.getViewers().forEach(viewer -> {
-                if (viewer instanceof Player)
-                    Scheduler.runTask(viewer, () -> openPage((Player) viewer, 0));
-            });
-        } else {
-            inventory.getViewers().forEach(viewer -> {
-                if (viewer instanceof Player)
-                    openPage((Player) viewer, 0);
-            });
-        }
+        inventory.getViewers().forEach(viewer -> {
+            if (viewer instanceof Player) {
+                Scheduler.ensureMain(viewer, () -> openPage((Player) viewer, 0));
+            }
+        });
     }
 
 }
