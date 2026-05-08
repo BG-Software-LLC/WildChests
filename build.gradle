@@ -31,7 +31,7 @@ allprojects {
     }
 
     dependencies {
-        compileOnly "com.bgsoftware.common.reflection:ReflectionUtils:b5"
+        compileOnly "com.bgsoftware.common.reflection:ReflectionUtils:b8"
     }
 
     tasks.register('checkDebug') {
@@ -60,7 +60,7 @@ repositories {
 dependencies {
     implementation project(":API")
 
-    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:b5'
+    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:b8'
     implementation 'com.bgsoftware.common.config:CommentedConfiguration:b1'
     implementation 'com.bgsoftware.common.updater:Updater:b1'
     implementation 'com.bgsoftware.common.shopsbridge:ShopsBridge:b21:all@jar'

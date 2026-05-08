@@ -21,7 +21,7 @@ public class NbtUtils {
     private static final ReflectMethod<Void> NBT_BASE_LOAD = new ReflectMethod<>(
             NBTBase.class, "load", DataInput.class, int.class, NBTReadLimiter.class);
 
-    private static final NBTTagEnd TAG_END = (NBTTagEnd) new ReflectConstructor<>(NBTTagEnd.class).newInstance();
+    private static final NBTTagEnd TAG_END = (NBTTagEnd) new ReflectConstructor<>(NBTTagEnd.class, new Class[0]).newInstance();
 
     private NbtUtils() {
 
