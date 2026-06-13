@@ -404,7 +404,7 @@ public final class WStorageChest extends WChest implements StorageChest {
         inventory.getViewers().forEach(viewer -> {
             if (viewer instanceof Player) {
                 Scheduler.ensureMain(viewer, () -> {
-                    if (viewer.getOpenInventory().getTopInventory() == inventory)
+                    if (inventory.equals(viewer.getOpenInventory().getTopInventory()))
                         openPage((Player) viewer, 0);
                 });
             }
