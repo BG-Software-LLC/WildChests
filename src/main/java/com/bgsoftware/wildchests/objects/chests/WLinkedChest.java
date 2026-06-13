@@ -11,7 +11,7 @@ import com.bgsoftware.wildchests.utils.SyncedArray;
 import com.google.common.base.Preconditions;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -57,7 +57,7 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
         }
 
         // Let's simulate this chest being broken
-        onBreak(new BlockBreakEvent(null, null));
+        onBreakInternal(null);
 
         // In case the linked chest is not part of chain, let's create for it a new chain.
         if (newChain == null) {
@@ -112,9 +112,9 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     }
 
     @Override
-    public boolean onBreak(BlockBreakEvent event) {
+    protected boolean onBreakInternal(@Nullable Player player) {
         if (!isLinkedIntoChest()) {
-            return super.onBreak(event);
+            return super.onBreakInternal(player);
         }
 
         return true;

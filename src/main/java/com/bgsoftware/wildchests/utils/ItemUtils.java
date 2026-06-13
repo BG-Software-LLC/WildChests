@@ -97,7 +97,7 @@ public final class ItemUtils {
         }
     }
 
-    public static void dropOrCollect(Player player, Collection<ItemStack> itemStacks, boolean collect,
+    public static void dropOrCollect(@Nullable Player player, Collection<ItemStack> itemStacks, boolean collect,
                                      Location location, boolean checkForMaxStacks) {
         if (collect && player != null) {
             List<ItemStack> toDropLater = new LinkedList<>();
