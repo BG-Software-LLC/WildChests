@@ -311,7 +311,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
             return;
 
         for (ItemEntity itemEntity : nearbyItems) {
-            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asBukkitCopy(itemEntity.getItem());
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem()).clone();
 
             Item item = (Item) itemEntity.getBukkitEntity();
 

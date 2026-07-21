@@ -133,7 +133,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
             ItemStack nmsItem = ItemStack.createStack(nbtTagCompoundRoot);
 
-            return CraftItemStack.asBukkitCopy(nmsItem);
+            return CraftItemStack.asCraftMirror(nmsItem);
         } catch (Exception ex) {
             return null;
         }
@@ -207,7 +207,7 @@ public final class NMSAdapterImpl implements NMSAdapter {
 
         for (int i = 0; i < itemsList.size(); i++) {
             NBTTagCompound nbtTagCompound = itemsList.get(i);
-            inventory.setItem(nbtTagCompound.getByte("Slot"), CraftItemStack.asBukkitCopy(ItemStack.createStack(nbtTagCompound)));
+            inventory.setItem(nbtTagCompound.getByte("Slot"), CraftItemStack.asCraftMirror(ItemStack.createStack(nbtTagCompound)));
         }
 
         return inventory;

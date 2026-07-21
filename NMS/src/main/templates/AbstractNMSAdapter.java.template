@@ -127,7 +127,7 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
 
         ItemStack itemStack = tryDeserializeNoDataVersionItem(new DataInputStream(new ByteArrayInputStream(buff)));
         if (itemStack != null)
-            return CraftItemStack.asBukkitCopy(itemStack);
+            return CraftItemStack.asCraftMirror(itemStack);
 
         return deserializeItemFromBytes(buff);
     }
@@ -297,7 +297,7 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
 
     private org.bukkit.inventory.ItemStack deserializeItemFromCompoundTagNoVersion(CompoundTag tag) {
         ItemStack itemStack = parseItemStack(tag);
-        return CraftItemStack.asBukkitCopy(itemStack);
+        return CraftItemStack.asCraftMirror(itemStack);
     }
 
 }

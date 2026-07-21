@@ -329,7 +329,7 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
             return;
 
         for (EntityItem entityItem : nearbyItems) {
-            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asBukkitCopy(entityItem.getItemStack());
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(entityItem.getItemStack()).clone();
 
             Item item = (Item) entityItem.getBukkitEntity();
 
