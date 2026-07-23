@@ -15,6 +15,7 @@ import com.bgsoftware.wildchests.objects.data.WChestData;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import com.bgsoftware.wildchests.utils.BlockPosition;
+import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.ChunkPosition;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.google.common.collect.Maps;
@@ -211,7 +212,8 @@ public final class ChestsHandler implements ChestsManager {
 
         Location location = new Location(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
 
-        if (Scheduler.isScheduledForRegion(location) && location.getBlock().getType() != Material.CHEST) {
+
+        if (Scheduler.isScheduledForRegion(location) && !ChestUtils.isChest(location.getBlock().getType())) {
             removeChest(chest);
             return null;
         }
@@ -291,7 +293,7 @@ public final class ChestsHandler implements ChestsManager {
         public final BigInteger maxAmount;
 
         public UnloadedStorageUnit(UUID placer, BlockPosition position, ChestData chestData,
-                            ItemStack itemStack, BigInteger amount, BigInteger maxAmount) {
+                                   ItemStack itemStack, BigInteger amount, BigInteger maxAmount) {
             super(placer, position, chestData);
             this.itemStack = itemStack;
             this.amount = amount;

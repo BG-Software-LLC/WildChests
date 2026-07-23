@@ -4,6 +4,7 @@ import com.bgsoftware.wildchests.Locale;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.ItemUtils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -39,9 +40,7 @@ public final class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onChestPlaceNearAnother(BlockPlaceEvent e) {
-        Material placedBlockType = e.getBlockPlaced().getType();
-
-        if (placedBlockType != Material.CHEST && placedBlockType != Material.TRAPPED_CHEST)
+        if (!ChestUtils.isChest(e.getBlockPlaced().getType()))
             return;
 
         boolean hasNearbyChest = false;
@@ -49,7 +48,7 @@ public final class BlockListener implements Listener {
         for (BlockFace blockFace : blockFaces) {
             Block block = e.getBlockPlaced().getRelative(blockFace);
             Material blockMaterial = block.getType();
-            if (blockMaterial == Material.CHEST || blockMaterial == Material.TRAPPED_CHEST) {
+            if (ChestUtils.isChest(blockMaterial)) {
                 hasNearbyChest = true;
                 if (plugin.getChestsManager().getChest(block.getLocation()) != null) {
                     e.setCancelled(true);
@@ -69,9 +68,7 @@ public final class BlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestPlace(BlockPlaceEvent e) {
-        Material placedBlockType = e.getBlockPlaced().getType();
-
-        if (placedBlockType != Material.CHEST && placedBlockType != Material.TRAPPED_CHEST)
+        if (!ChestUtils.isChest(e.getBlockPlaced().getType()))
             return;
 
         ChestData chestData = plugin.getChestsManager().getChestData(e.getItemInHand());
