@@ -17,7 +17,7 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_20_4.Abstra
 
     @Override
     protected int getCompoundTagInt(CompoundTag compoundTag, String key, int def) {
-        return compoundTag.contains(key, 3) ? compoundTag.getInt(key) : def;
+        return compoundTag.contains(key, 99) ? compoundTag.getInt(key) : def;
     }
 
     @Override
