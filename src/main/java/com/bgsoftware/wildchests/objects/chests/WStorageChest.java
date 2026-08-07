@@ -30,6 +30,14 @@ public final class WStorageChest extends WChest implements StorageChest {
     private static final int INVENTORY_SIZE = 5;
     private static final BigInteger DEFAULT_MAX_STACK_SIZE = BigInteger.valueOf(64);
 
+    // Refreshing an open storage unit's title requires re-sending an open-screen packet,
+    // which interrupts a player who is mid shift-click. We debounce the refresh so rapid
+    // changes (e.g. shift-clicking several stacks in) coalesce into a single refresh once
+    // the unit has been idle for this many ticks. This must stay above the gap between
+    // consecutive shift-clicks (~2 ticks) so a click burst isn't interrupted, and below
+    // the hopper cooldown (8 ticks) so a hopper feeding the unit still updates live.
+    private static final long TITLE_UPDATE_DELAY = 5L;
+
     private final CraftWildInventory inventory;
 
     private BigInteger amount = BigInteger.ZERO, maxAmount;
@@ -38,6 +46,7 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     private boolean broken = false;
     private Integer takeItemCheckSlot = null;
+    private volatile int titleUpdateToken = 0;
 
     public WStorageChest(UUID placer, Location location, ChestData chestData) {
         super(placer, location, chestData);
@@ -229,7 +238,13 @@ public final class WStorageChest extends WChest implements StorageChest {
 
     @Override
     public void update() {
-        Scheduler.runTask(() -> updateInventory(inventory), 1L);
+        int token = ++titleUpdateToken;
+        // Only refresh once no newer change has been requested within the debounce window,
+        // so a burst of shift-clicks isn't interrupted by an open-screen packet mid-click.
+        Scheduler.runTask(() -> {
+            if (token == titleUpdateToken)
+                updateInventory(inventory);
+        }, TITLE_UPDATE_DELAY);
     }
 
     @Override
@@ -405,7 +420,7 @@ public final class WStorageChest extends WChest implements StorageChest {
             if (viewer instanceof Player) {
                 Scheduler.ensureMain(viewer, () -> {
                     if (inventory.equals(viewer.getOpenInventory().getTopInventory()))
-                        openPage((Player) viewer, 0);
+                        plugin.getNMSInventory().updateInventoryTitle((Player) viewer, this.inventory);
                 });
             }
         });

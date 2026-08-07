@@ -112,6 +112,23 @@ public abstract class AbstractNMSInventory implements NMSInventory {
     }
 
     @Override
+    public void updateInventoryTitle(Player player, CraftWildInventory inventory) {
+        ServerPlayer serverPlayer = ((CraftPlayer) player).getHandle();
+        AbstractContainerMenu containerMenu = serverPlayer.containerMenu;
+
+        if (containerMenu == null)
+            return;
+
+        // Re-send the open-screen packet with the same window id so the client updates
+        // the title without the server rebuilding the container (which would break
+        // rapid multi-stack shift-clicking). The menu's title is set once at open and
+        // cannot be reassigned, so the new title is sent in the packet directly.
+        serverPlayer.connection.send(new ClientboundOpenScreenPacket(containerMenu.containerId,
+                containerMenu.getType(), CraftChatMessage.fromStringOrNull(inventory.getTitle())));
+        containerMenu.sendAllDataToRemote();
+    }
+
+    @Override
     public void createDesignItem(CraftWildInventory craftWildInventory,
                                  org.bukkit.inventory.ItemStack itemStack) {
         ItemStack designItem = CraftItemStack.asNMSCopy(itemStack == null || itemStack.getType() == Material.AIR ?

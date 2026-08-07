@@ -94,6 +94,22 @@ public final class NMSInventoryImpl implements NMSInventory {
     }
 
     @Override
+    public void updateInventoryTitle(Player player, com.bgsoftware.wildchests.objects.inventory.CraftWildInventory inventory) {
+        EntityPlayer entityPlayer = ((CraftPlayer) player).getHandle();
+        Container container = entityPlayer.activeContainer;
+
+        if (container == null)
+            return;
+
+        // Re-send the open-window packet with the same window id so the client updates
+        // the title without the server rebuilding the container (which would break
+        // rapid multi-stack shift-clicking).
+        TileEntityWildChest tileEntityWildChest = getTileEntity(inventory.getOwner());
+        entityPlayer.playerConnection.sendPacket(new PacketPlayOutOpenWindow(container.windowId, tileEntityWildChest.getContainerName(), new ChatComponentText(inventory.getTitle()), inventory.getSize()));
+        entityPlayer.updateInventory(container);
+    }
+
+    @Override
     public void createDesignItem(com.bgsoftware.wildchests.objects.inventory.CraftWildInventory craftWildInventory, org.bukkit.inventory.ItemStack itemStack) {
         ItemStack designItem = CraftItemStack.asNMSCopy(itemStack == null || itemStack.getType() == Material.AIR ?
                 new org.bukkit.inventory.ItemStack(Material.STAINED_GLASS_PANE, 1, (byte) 15) :

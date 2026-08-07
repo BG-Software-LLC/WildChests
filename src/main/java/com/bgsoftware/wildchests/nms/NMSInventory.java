@@ -18,6 +18,8 @@ public interface NMSInventory {
 
     void openPage(Player player, CraftWildInventory inventory);
 
+    void updateInventoryTitle(Player player, CraftWildInventory inventory);
+
     void createDesignItem(CraftWildInventory inventory, ItemStack itemStack);
 
 }
