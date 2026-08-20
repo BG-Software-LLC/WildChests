@@ -43,7 +43,7 @@ public final class NMSInventoryImpl implements NMSInventory {
 
         TileEntityWildChest tileEntityWildChest;
 
-        if (tileEntity instanceof TileEntityWildChest) {
+        if (tileEntity instanceof TileEntityWildChest && ((TileEntityWildChest) tileEntity).isOwner(chest)) {
             tileEntityWildChest = (TileEntityWildChest) tileEntity;
             ((WChest) chest).setTileEntityContainer(tileEntityWildChest);
         } else {
@@ -59,7 +59,7 @@ public final class NMSInventoryImpl implements NMSInventory {
         World world = ((CraftWorld) loc.getWorld()).getHandle();
         BlockPosition blockPosition = new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
         TileEntity currentTileEntity = world.getTileEntity(blockPosition);
-        if (currentTileEntity instanceof TileEntityWildChest)
+        if (currentTileEntity instanceof TileEntityWildChest && ((TileEntityWildChest) currentTileEntity).isOwner(chest))
             world.s(blockPosition);
     }
 

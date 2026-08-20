@@ -171,7 +171,13 @@ public final class SettingsHandler {
             return null;
         }
 
-        ItemStack itemStack = new ItemStack(Material.CHEST);
+        Material containerMaterial = Material.matchMaterial(section.getString("container", "CHEST").toUpperCase(Locale.ENGLISH));
+        if (!plugin.getNMSInventory().isContainerMaterialSupported(containerMaterial)) {
+            WildChestsPlugin.log("Found an invalid or unsupported container material for " + chestName + " - skipping...");
+            return null;
+        }
+
+        ItemStack itemStack = new ItemStack(containerMaterial);
         ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (section.contains("item.name")) {
@@ -190,6 +196,7 @@ public final class SettingsHandler {
         itemStack.setItemMeta(itemMeta);
 
         ChestData chestData = new WChestData(chestName, plugin.getNMSAdapter().setChestType(itemStack, chestType), chestType);
+        chestData.setContainerMaterial(containerMaterial);
 
         if (section.contains("size")) {
             int rows = section.getInt("size");

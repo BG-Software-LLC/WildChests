@@ -55,15 +55,18 @@ public abstract class WChest implements Chest {
     protected final UUID placer;
     protected final BlockPosition blockPosition;
     protected final ChestData chestData;
+    // The selected material belongs to this placed chest, not to its mutable config definition.
+    protected final Material containerMaterial;
 
     protected TileEntityContainer tileEntityContainer;
     protected boolean removed = false;
 
-    protected WChest(UUID placer, Location location, ChestData chestData) {
+    protected WChest(UUID placer, Location location, ChestData chestData, Material containerMaterial) {
         this.placer = placer;
         this.blockPosition = new BlockPosition(location.getWorld().getName(),
                 location.getBlockX(), location.getBlockY(), location.getBlockZ());
         this.chestData = chestData;
+        this.containerMaterial = containerMaterial;
     }
 
     /* CHEST RELATED METHODS */
@@ -82,6 +85,10 @@ public abstract class WChest implements Chest {
     @Override
     public ChestData getData() {
         return chestData;
+    }
+
+    public Material getContainerMaterial() {
+        return containerMaterial;
     }
 
     @Override

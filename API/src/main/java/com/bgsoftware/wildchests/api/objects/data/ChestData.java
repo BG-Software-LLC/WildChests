@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.api.objects.data;
 
 import com.bgsoftware.wildchests.api.key.Key;
 import com.bgsoftware.wildchests.api.objects.DepositMethod;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import com.bgsoftware.wildchests.api.objects.ChestType;
@@ -31,6 +32,11 @@ public interface ChestData {
      * Get the type of the chest.
      */
     ChestType getChestType();
+
+    /**
+     * Get the block material used to place this chest.
+     */
+    Material getContainerMaterial();
 
     /**
      * Get the default size for pages for the chest.
@@ -138,6 +144,12 @@ public interface ChestData {
      * @param size The size to set.
      */
     void setDefaultSize(int size);
+
+    /**
+     * Set the block material used to place this chest.
+     * @param containerMaterial The material to set.
+     */
+    void setContainerMaterial(Material containerMaterial);
 
     /**
      * Set the default title of the pages.

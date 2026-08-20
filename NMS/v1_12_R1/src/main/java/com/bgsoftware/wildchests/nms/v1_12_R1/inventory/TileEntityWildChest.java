@@ -73,6 +73,16 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
     }
 
     @Override
+    public boolean isOwner(Chest chest) {
+        return this.chest == chest;
+    }
+
+    @Override
+    public void closeContainer(HumanEntity humanEntity) {
+        closeContainer(((CraftHumanEntity) humanEntity).getHandle());
+    }
+
+    @Override
     protected NonNullList<ItemStack> q() {
         return getContents();
     }
@@ -217,9 +227,8 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
         if (--currentCooldown >= 0)
             return;
 
-        Block currentBlock = world.getType(position).getBlock();
-
-        if (((WChest) chest).isRemoved() || (currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST)) {
+        if (((WChest) chest).isRemoved() || ((WChest) chest).getContainerMaterial() !=
+                chest.getLocation().getBlock().getType()) {
             world.b(this);
             return;
         }
@@ -354,4 +363,3 @@ public class TileEntityWildChest extends TileEntityChest implements IWorldInvent
     }
 
 }
-
