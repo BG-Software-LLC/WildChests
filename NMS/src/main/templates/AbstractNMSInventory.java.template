@@ -5,12 +5,14 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.nms.NMSInventory;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.CraftWildInventoryImpl;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildBarrelBlockEntity;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildChestBlockEntity;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildChestMenu;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainer;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainerItemImpl;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildHopperMenu;
 import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -34,8 +36,14 @@ import org.bukkit.entity.Player;
 
 public abstract class AbstractNMSInventory implements NMSInventory {
 
+    private static final Material BARREL = Material.matchMaterial("BARREL");
     private static final ReflectMethod<TickingBlockEntity> CREATE_TICKING_BLOCK = new ReflectMethod<>(
             LevelChunk.class, 1, BlockEntity.class, BlockEntityTicker.class);
+
+    @Override
+    public boolean isContainerMaterialSupported(Material material) {
+        return material == Material.CHEST || material == Material.TRAPPED_CHEST || material == BARREL;
+    }
 
     @Override
     public void updateTileEntity(Chest chest) {
@@ -49,14 +57,19 @@ public abstract class AbstractNMSInventory implements NMSInventory {
         BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         BlockEntity blockEntity = serverLevel.getBlockEntity(blockPos);
 
-        if (blockEntity instanceof WildChestBlockEntity wildChestBlockEntity) {
-            ((WChest) chest).setTileEntityContainer(wildChestBlockEntity);
+        // A tile entity can outlive a removed or reloaded chest briefly. Never attach a chest to a
+        // tile entity created for another model instance at the same position.
+        if (blockEntity instanceof TileEntityContainer tileEntityContainer && tileEntityContainer.isOwner(chest)) {
+            ((WChest) chest).setTileEntityContainer(tileEntityContainer);
         } else {
-            WildChestBlockEntity wildChestBlockEntity = new WildChestBlockEntity(chest, serverLevel, blockPos);
+            BlockEntity wildChestBlockEntity = ((WChest) chest).getContainerMaterial() == BARREL ?
+                    new WildBarrelBlockEntity(chest, serverLevel, blockPos) :
+                    new WildChestBlockEntity(chest, serverLevel, blockPos);
             serverLevel.removeBlockEntity(blockPos);
             serverLevel.setBlockEntity(wildChestBlockEntity);
             LevelChunk levelChunk = serverLevel.getChunkAt(blockPos);
-            serverLevel.addBlockEntityTicker(CREATE_TICKING_BLOCK.invoke(levelChunk, wildChestBlockEntity, wildChestBlockEntity));
+            serverLevel.addBlockEntityTicker(CREATE_TICKING_BLOCK.invoke(levelChunk, wildChestBlockEntity,
+                    (BlockEntityTicker) wildChestBlockEntity));
         }
     }
 
@@ -71,7 +84,8 @@ public abstract class AbstractNMSInventory implements NMSInventory {
         ServerLevel serverLevel = ((CraftWorld) bukkitWorld).getHandle();
         BlockPos blockPos = new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         BlockEntity blockEntity = serverLevel.getBlockEntity(blockPos);
-        if (blockEntity instanceof WildChestBlockEntity)
+        // Do not remove a replacement tile entity when a stale chest is being unloaded.
+        if (blockEntity instanceof TileEntityContainer tileEntityContainer && tileEntityContainer.isOwner(chest))
             serverLevel.removeBlockEntity(blockPos);
     }
 

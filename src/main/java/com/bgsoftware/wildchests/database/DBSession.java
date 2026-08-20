@@ -91,6 +91,17 @@ public class DBSession {
             globalSession.modifyColumnType(tableName, columnName, newType, QueryResult.EMPTY_VOID_QUERY_RESULT);
     }
 
+    public static boolean addColumn(String tableName, String columnName, String type) {
+        if (!isReady())
+            return false;
+
+        boolean[] added = {false};
+        globalSession.addColumn(tableName, columnName, type, new QueryResult<Void>()
+                .onSuccess(ignored -> added[0] = true)
+                .onFail(error -> WildChestsPlugin.log("Couldn't add column " + columnName + " to " + tableName + ": " + error.getMessage())));
+        return added[0];
+    }
+
     public static void close() {
         if (isReady()) {
             DatabaseTransactionsExecutor.stopActiveExecutors();

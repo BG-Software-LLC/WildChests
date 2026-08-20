@@ -71,7 +71,7 @@ public final class ChestsHandler implements ChestsManager {
 
     @Override
     public Chest addChest(UUID placer, Location location, ChestData chestData) {
-        WChest chest = createChestInternal(placer, location, chestData);
+        WChest chest = createChestInternal(placer, location, chestData, chestData.getContainerMaterial());
         plugin.getDataHandler().insertChest(chest);
         Scheduler.runTask(location, () -> plugin.getNMSInventory().updateTileEntity(chest));
         return chest;
@@ -213,7 +213,7 @@ public final class ChestsHandler implements ChestsManager {
         Location location = new Location(world, blockPosition.getX(), blockPosition.getY(), blockPosition.getZ());
 
 
-        if (Scheduler.isScheduledForRegion(location) && !ChestUtils.isChest(location.getBlock().getType())) {
+        if (Scheduler.isScheduledForRegion(location) && location.getBlock().getType() != ((WChest) chest).getContainerMaterial()) {
             removeChest(chest);
             return null;
         }
@@ -231,18 +231,18 @@ public final class ChestsHandler implements ChestsManager {
             unloadedChests.values().forEach(this::loadChestInternal);
     }
 
-    private WChest createChestInternal(UUID placer, Location location, ChestData chestData) {
+    private WChest createChestInternal(UUID placer, Location location, ChestData chestData, Material containerMaterial) {
         WChest chest;
 
         switch (chestData.getChestType()) {
             case CHEST:
-                chest = new WRegularChest(placer, location, chestData);
+                chest = new WRegularChest(placer, location, chestData, containerMaterial);
                 break;
             case LINKED_CHEST:
-                chest = new WLinkedChest(placer, location, chestData);
+                chest = new WLinkedChest(placer, location, chestData, containerMaterial);
                 break;
             case STORAGE_UNIT:
-                chest = new WStorageChest(placer, location, chestData);
+                chest = new WStorageChest(placer, location, chestData, containerMaterial);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid chest at " + location);
@@ -266,8 +266,19 @@ public final class ChestsHandler implements ChestsManager {
         Location location = new Location(world, unloadedChest.position.getX(),
                 unloadedChest.position.getY(), unloadedChest.position.getZ());
 
-        WChest chest = createChestInternal(unloadedChest.placer, location, unloadedChest.chestData);
+        Material containerMaterial = unloadedChest.containerMaterial;
+        if (containerMaterial == null) {
+            // Legacy database rows did not store the appearance. Preserve the block already in the
+            // world when possible instead of applying the current configuration retroactively.
+            Material blockType = location.getBlock().getType();
+            containerMaterial = plugin.getNMSInventory().isContainerMaterialSupported(blockType) ? blockType : Material.CHEST;
+        }
+
+        WChest chest = createChestInternal(unloadedChest.placer, location, unloadedChest.chestData, containerMaterial);
         chest.loadFromData(unloadedChest);
+
+        if (unloadedChest.containerMaterial == null)
+            plugin.getDataHandler().saveContainerMaterial(chest);
 
         return chest;
     }
@@ -277,11 +288,14 @@ public final class ChestsHandler implements ChestsManager {
         public final UUID placer;
         public final BlockPosition position;
         public final ChestData chestData;
+        @Nullable
+        public final Material containerMaterial;
 
-        public UnloadedChest(UUID placer, BlockPosition position, ChestData chestData) {
+        public UnloadedChest(UUID placer, BlockPosition position, ChestData chestData, @Nullable Material containerMaterial) {
             this.placer = placer;
             this.position = position;
             this.chestData = chestData;
+            this.containerMaterial = containerMaterial;
         }
 
     }
@@ -292,9 +306,9 @@ public final class ChestsHandler implements ChestsManager {
         public final BigInteger amount;
         public final BigInteger maxAmount;
 
-        public UnloadedStorageUnit(UUID placer, BlockPosition position, ChestData chestData,
+        public UnloadedStorageUnit(UUID placer, BlockPosition position, ChestData chestData, @Nullable Material containerMaterial,
                                    ItemStack itemStack, BigInteger amount, BigInteger maxAmount) {
-            super(placer, position, chestData);
+            super(placer, position, chestData, containerMaterial);
             this.itemStack = itemStack;
             this.amount = amount;
             this.maxAmount = maxAmount;
@@ -309,9 +323,9 @@ public final class ChestsHandler implements ChestsManager {
         public final Location linkedChest;
         public boolean executeUpdate;
 
-        public UnloadedRegularChest(UUID placer, BlockPosition position, ChestData chestData,
+        public UnloadedRegularChest(UUID placer, BlockPosition position, ChestData chestData, @Nullable Material containerMaterial,
                                     InventoryHolder[] inventories, @Nullable Location linkedChest, boolean executeUpdate) {
-            super(placer, position, chestData);
+            super(placer, position, chestData, containerMaterial);
             this.inventories = inventories;
             this.linkedChest = linkedChest;
             this.executeUpdate = executeUpdate;

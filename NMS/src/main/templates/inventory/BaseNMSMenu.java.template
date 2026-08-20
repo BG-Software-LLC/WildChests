@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
 import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +41,11 @@ public class BaseNMSMenu {
     }
 
     private void doRemoved(Player player) {
-        ((WildChestBlockEntity) ((WChest) inventory.chest).getTileEntityContainer()).stopOpen(player);
+        TileEntityContainer tileEntityContainer = ((WChest) inventory.chest).getTileEntityContainer();
+        // This runs on the owning region after scheduling, so the chest may have been replaced in
+        // the meantime. The common contract also avoids assuming the entity is always a chest.
+        if (tileEntityContainer != null && tileEntityContainer.isOwner(inventory.chest))
+            tileEntityContainer.closeContainer(player.getBukkitEntity());
     }
 
 }
