@@ -1,0 +1,210 @@
+package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
+
+import com.bgsoftware.wildchests.WildChestsPlugin;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
+import com.bgsoftware.wildchests.api.objects.data.ChestData;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.NMSInventoryImpl;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.TransformingNonNullList;
+import com.bgsoftware.wildchests.objects.chests.WChest;
+import com.bgsoftware.wildchests.objects.chests.WStorageChest;
+import com.bgsoftware.wildchests.utils.ChestUtils;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import org.bukkit.Particle;
+import ${CRAFTBUKKIT_PACKAGE}.entity.CraftHumanEntity;
+import ${CRAFTBUKKIT_PACKAGE}.entity.CraftItem;
+import ${CRAFTBUKKIT_PACKAGE}.inventory.CraftItemStack;
+import ${CRAFTBUKKIT_PACKAGE}.util.CraftChatMessage;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Shared WildChest behavior for native block entities.
+ *
+ * Native chest and barrel entities cannot inherit from this class because Minecraft requires each
+ * replacement entity to retain its own native block-entity superclass. They delegate their shared
+ * inventory and ticking behavior here instead.
+ */
+public abstract class WildBaseBlockEntity {
+
+    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
+
+    protected final Chest chest;
+    protected final ServerLevel serverLevel;
+    protected final BlockPos blockPos;
+    private final org.bukkit.Material expectedBlock;
+
+    private short currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
+    private AABB suctionItems;
+    private boolean autoCraftMode;
+    private boolean autoSellMode;
+
+    protected WildBaseBlockEntity(Chest chest, ServerLevel serverLevel, BlockPos blockPos) {
+        this.chest = chest;
+        this.serverLevel = serverLevel;
+        this.blockPos = blockPos;
+        this.expectedBlock = ((WChest) chest).getContainerMaterial();
+        updateData();
+    }
+
+    public final boolean isOwner(Chest chest) {
+        return this.chest == chest;
+    }
+
+    public final void closeContainer(HumanEntity humanEntity) {
+        stopOpen(((CraftHumanEntity) humanEntity).getHandle());
+    }
+
+    protected abstract void startOpen(Player player);
+
+    protected abstract void stopOpen(Player player);
+
+    protected final NonNullList<ItemStack> getItems() {
+        return getContents();
+    }
+
+    public final void setItem(int slot, ItemStack itemStack) {
+        ((WChest) chest).setItem(slot, new WildContainerItemImpl(itemStack));
+    }
+
+    public final ItemStack getItem(int slot) {
+        return ((WildContainerItemImpl) ((WChest) chest).getWildItem(slot)).getHandle();
+    }
+
+    public final NonNullList<ItemStack> getContents() {
+        return TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.EMPTY,
+                WildContainerItemImpl::transform);
+    }
+
+    public final AbstractContainerMenu createMenu(int id, Inventory playerInventory) {
+        AbstractContainerMenu containerMenu = NMSInventoryImpl.createMenu(id, playerInventory,
+                (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
+        startOpen(playerInventory.player);
+        return containerMenu;
+    }
+
+    public final Component getDisplayName() {
+        return CraftChatMessage.fromStringOrNull(((com.bgsoftware.wildchests.objects.inventory.CraftWildInventory)
+                chest.getPage(0)).getTitle());
+    }
+
+    public final void tick(Level level, BlockPos blockPos) {
+        ChestData chestData = chest.getData();
+
+        double x = blockPos.getX() + level.getRandom().nextFloat();
+        double y = blockPos.getY() + level.getRandom().nextFloat();
+        double z = blockPos.getZ() + level.getRandom().nextFloat();
+        for (String particle : chestData.getChestParticles()) {
+            try {
+                sendParticles(Particle.valueOf(particle), x, y, z);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        if (--currentCooldown >= 0)
+            return;
+
+        org.bukkit.Material currentBlock = level.getWorld().getBlockAt(blockPos.getX(), blockPos.getY(), blockPos.getZ())
+                .getType();
+        if (((WChest) chest).isRemoved() || expectedBlock != currentBlock) {
+            level.removeBlockEntity(blockPos);
+            return;
+        }
+
+        currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
+
+        if (suctionItems != null)
+            handleSuctionItems(chestData);
+
+        if (autoCraftMode)
+            ChestUtils.tryCraftChest(chest);
+
+        if (autoSellMode)
+            ChestUtils.trySellChest(chest);
+    }
+
+    public final int getContainerSize() {
+        return chest.getPage(0).getSize() * chest.getPagesAmount();
+    }
+
+    public final void updateData() {
+        ChestData chestData = chest.getData();
+        suctionItems = !chestData.isAutoSuction() ? null : new AABB(
+                chestData.isAutoSuctionChunk() ? blockPos.getX() >> 4 << 4 : blockPos.getX() - chestData.getAutoSuctionRange(),
+                blockPos.getY() - chestData.getAutoSuctionRange(),
+                chestData.isAutoSuctionChunk() ? blockPos.getZ() >> 4 << 4 : blockPos.getZ() - chestData.getAutoSuctionRange(),
+                chestData.isAutoSuctionChunk() ? (blockPos.getX() >> 4 << 4) + 16 : blockPos.getX() + chestData.getAutoSuctionRange() + 1,
+                blockPos.getY() + chestData.getAutoSuctionRange(),
+                chestData.isAutoSuctionChunk() ? (blockPos.getZ() >> 4 << 4) + 16 : blockPos.getZ() + chestData.getAutoSuctionRange() + 1
+        );
+        autoCraftMode = chestData.isAutoCrafter();
+        autoSellMode = chestData.isSellMode();
+    }
+
+    public final int[] getSlotsForFace(Direction direction) {
+        return chest.getSlotsForFace();
+    }
+
+    public final boolean canPlaceItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
+        return chest.canPlaceItemThroughFace(CraftItemStack.asCraftMirror(itemStack));
+    }
+
+    public final boolean canTakeItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
+        return chest.canTakeItemThroughFace(slot, CraftItemStack.asCraftMirror(itemStack));
+    }
+
+    public final ItemStack removeStorageItem(int amount) {
+        return ((WildContainerItemImpl) ((WStorageChest) chest).splitItem(amount)).getHandle();
+    }
+
+    public final void updateStorageChest() {
+        if (chest instanceof StorageChest)
+            ((StorageChest) chest).update();
+    }
+
+    private void handleSuctionItems(ChestData chestData) {
+        List<ItemEntity> nearbyItems = serverLevel.getEntitiesOfClass(ItemEntity.class, suctionItems,
+                entityItem -> ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData));
+
+        for (ItemEntity itemEntity : nearbyItems) {
+            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem()).clone();
+            Item item = (Item) itemEntity.getBukkitEntity();
+            int actualItemCount = plugin.getProviders().getItemAmount(item);
+            List<org.bukkit.inventory.ItemStack> items = ChestUtils.fixItemStackAmount(itemStack, actualItemCount);
+            Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
+                    items.toArray(new org.bukkit.inventory.ItemStack[0]));
+
+            if (leftOvers.size() != items.size() ||
+                    (leftOvers.size() == 1 && leftOvers.get(0).getAmount() != actualItemCount)) {
+                if (leftOvers.isEmpty()) {
+                    sendParticles(Particle.CLOUD, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
+                    itemEntity.discard();
+                } else {
+                    int newStackAmount = 0;
+                    for (org.bukkit.inventory.ItemStack leftOver : leftOvers.values())
+                        newStackAmount += leftOver.getAmount();
+                    plugin.getProviders().setItemAmount(item, newStackAmount);
+                }
+            }
+        }
+    }
+
+    private void sendParticles(Particle particle, double x, double y, double z) {
+        serverLevel.getWorld().spawnParticle(particle, x, y, z, 0, 0D, 0D, 0D, 1.0, null, false);
+    }
+
+}

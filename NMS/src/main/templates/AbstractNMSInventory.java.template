@@ -36,7 +36,7 @@ import org.bukkit.entity.Player;
 
 public abstract class AbstractNMSInventory implements NMSInventory {
 
-    private static final Material BARREL = Material.matchMaterial("BARREL");
+    private static final Material BARREL = Material.BARREL;
     private static final ReflectMethod<TickingBlockEntity> CREATE_TICKING_BLOCK = new ReflectMethod<>(
             LevelChunk.class, 1, BlockEntity.class, BlockEntityTicker.class);
 
