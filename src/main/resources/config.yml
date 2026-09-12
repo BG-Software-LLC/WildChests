@@ -103,6 +103,9 @@ max-stacks-on-drop: -1
 # pages.<#>: Section that handles all settings for a specific page
 # pages.<#>.price: Price for upgrading to that page (DOUBLE) [REQUIRED]
 # pages.<#>.title: Custom title for that page.
+# container: The block used to place the chest (CHEST, TRAPPED_CHEST, or BARREL; default: CHEST).
+#            BARREL requires Minecraft 1.17 or newer.
+#            Existing chests keep the container material selected when they were placed.
 # item.name: Custom name for the chest (STRING)
 # item.lore: Custom lore for the chest (LIST)
 # multiplier: Money multiplier for sell chests. (DOUBLE)
@@ -119,6 +122,7 @@ max-stacks-on-drop: -1
 chests:
   linked_chest:
     chest-mode: LINKED_CHEST
+    container: CHEST
     title: Linked Chest
     item:
       name: '&6Linked Chest &7(Place to active)'
@@ -126,6 +130,7 @@ chests:
       - CRIT
   large_chest:
     chest-mode: CHEST
+    container: CHEST
     size: 6
     item:
       name: '&aLarge Chest &7(Place to active)'
@@ -147,6 +152,7 @@ chests:
       - TOTEM
   sell_chest:
     chest-mode: CHEST
+    container: CHEST
     size: 6
     title: Drop your items here to sell them.
     item:
@@ -156,6 +162,7 @@ chests:
       - SPELL_WITCH
   auto_crafter:
     chest-mode: CHEST
+    container: CHEST
     size: 6
     title: Drop your items here to auto-craft them.
     item:
@@ -166,6 +173,7 @@ chests:
       - LANDING_LAVA
   storage_unit:
     chest-mode: STORAGE_UNIT
+    container: CHEST
     size: 3
     title: Storage Unit {0}
     item:
@@ -174,6 +182,7 @@ chests:
       - CRIT_MAGIC
   chunk_collector:
     chest-mode: CHEST
+    container: CHEST
     size: 6
     title: Chunk Collector
     item:

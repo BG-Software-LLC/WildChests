@@ -25,6 +25,7 @@ import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.Inventory;
@@ -41,6 +42,7 @@ import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -142,10 +144,11 @@ public final class DataHandler {
         if (chest instanceof StorageChest) {
             WStorageChest storageChest = (WStorageChest) chest;
             DBSession.execute(new InsertSQLDatabaseTransaction("storage_units",
-                    Arrays.asList("location", "placer", "chest_data", "item", "amount", "max_amount"))
+                    Arrays.asList("location", "placer", "chest_data", "container", "item", "amount", "max_amount"))
                     .bindObject(serializeLocationInternal(chest.getLocation()))
                     .bindObject(chest.getPlacer().toString())
                     .bindObject(chest.getData().getName())
+                    .bindObject(((WChest) chest).getContainerMaterial().name())
                     .bindObject(serializeItemInternal(storageChest.getItemStackUnsafe()))
                     .bindObject(storageChest.getAmount().toString())
                     .bindObject(storageChest.getMaxAmount().toString())
@@ -154,19 +157,21 @@ public final class DataHandler {
             WLinkedChest linkedChest = (WLinkedChest) chest;
             boolean isLinkedIntoChest = linkedChest.isLinkedIntoChest();
             DBSession.execute(new InsertSQLDatabaseTransaction("linked_chests",
-                    Arrays.asList("location", "placer", "chest_data", "inventories", "linked_chest"))
+                    Arrays.asList("location", "placer", "chest_data", "container", "inventories", "linked_chest"))
                     .bindObject(serializeLocationInternal(chest.getLocation()))
                     .bindObject(chest.getPlacer().toString())
                     .bindObject(chest.getData().getName())
+                    .bindObject(((WChest) chest).getContainerMaterial().name())
                     .bindObject(serializeInventoriesInternal(isLinkedIntoChest ? null : linkedChest.getPages()))
                     .bindObject(serializeLocationInternal(isLinkedIntoChest ? linkedChest.getLinkedChest().getLocation() : null))
             );
         } else {
             DBSession.execute(new InsertSQLDatabaseTransaction("chests",
-                    Arrays.asList("location", "placer", "chest_data", "inventories"))
+                    Arrays.asList("location", "placer", "chest_data", "container", "inventories"))
                     .bindObject(serializeLocationInternal(chest.getLocation()))
                     .bindObject(chest.getPlacer().toString())
                     .bindObject(chest.getData().getName())
+                    .bindObject(((WChest) chest).getContainerMaterial().name())
                     .bindObject(serializeInventoriesInternal(chest.getPages()))
             );
         }
@@ -227,17 +232,20 @@ public final class DataHandler {
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
                 new Column("placer", "UUID"),
                 new Column("chest_data", "TEXT"),
+                new Column("container", "TEXT"),
                 new Column("inventories", "LONGTEXT"));
         DBSession.createTable("linked_chests",
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
                 new Column("placer", "UUID"),
                 new Column("chest_data", "TEXT"),
+                new Column("container", "TEXT"),
                 new Column("inventories", "LONGTEXT"),
                 new Column("linked_chest", "LONG_UNIQUE_TEXT"));
         DBSession.createTable("storage_units",
                 new Column("location", "LONG_UNIQUE_TEXT PRIMARY KEY"),
                 new Column("placer", "UUID"),
                 new Column("chest_data", "TEXT"),
+                new Column("container", "TEXT"),
                 new Column("item", "TEXT"),
                 new Column("amount", "TEXT"),
                 new Column("max_amount", "TEXT"));
@@ -247,6 +255,9 @@ public final class DataHandler {
 
         DBSession.modifyColumnType("chests", "inventories", "LONGTEXT");
         DBSession.modifyColumnType("linked_chests", "inventories", "LONGTEXT");
+        addColumnIfMissing("chests", "container", "TEXT");
+        addColumnIfMissing("linked_chests", "container", "TEXT");
+        addColumnIfMissing("storage_units", "container", "TEXT");
 
         List<IDatabaseTransaction> transactionsToExecute = new LinkedList<>();
 
@@ -289,6 +300,16 @@ public final class DataHandler {
                 continue;
             }
 
+            // Rows created before container appearances were introduced have no value here. Their
+            // material is resolved from the placed block when the chunk is first loaded.
+            String containerMaterialName = resultSet.getString("container");
+            Material containerMaterial = getContainerMaterial(containerMaterialName);
+            if (containerMaterialName != null && !containerMaterialName.isEmpty() && containerMaterial == null) {
+                WildChestsPlugin.log("Couldn't load the location " + stringLocation);
+                WildChestsPlugin.log("The stored container material `" + containerMaterialName + "` is not supported.");
+                continue;
+            }
+
             BlockPosition position = BlockPosition.deserialize(stringLocation);
 
             if (plugin.getSettings().invalidWorldDelete) {
@@ -308,7 +329,7 @@ public final class DataHandler {
                 String item = resultSet.getString("item");
                 String amount = resultSet.getString("amount");
                 String maxAmount = resultSet.getString("max_amount");
-                unloadedChest = new ChestsHandler.UnloadedStorageUnit(placer, position, chestData,
+                unloadedChest = new ChestsHandler.UnloadedStorageUnit(placer, position, chestData, containerMaterial,
                         plugin.getNMSAdapter().deserialzeItem(item), new BigInteger(amount), new BigInteger(maxAmount));
             } else {
                 String inventories = resultSet.getString("inventories");
@@ -320,7 +341,7 @@ public final class DataHandler {
 
                 boolean executeUpdate = !inventories.isEmpty() && inventories.toCharArray()[0] != '*';
 
-                unloadedChest = new ChestsHandler.UnloadedRegularChest(placer, position, chestData,
+                unloadedChest = new ChestsHandler.UnloadedRegularChest(placer, position, chestData, containerMaterial,
                         plugin.getNMSAdapter().deserialze(inventories), linkedChest, executeUpdate);
             }
 
@@ -329,6 +350,54 @@ public final class DataHandler {
 
         if (calledDeleteTransaction)
             transactionsToExecute.add(deleteNullWorldTransaction);
+
+    }
+
+    private void addColumnIfMissing(String tableName, String columnName, String columnType) {
+        // DatabaseBridge invokes these schema callbacks synchronously, so inspect the schema before
+        // attempting the migration and fail startup if it cannot be completed safely.
+        boolean[] exists = {false};
+        boolean[] queried = {false};
+        DBSession.select(tableName, " LIMIT 0", new QueryResult<ResultSet>().onSuccess(resultSet -> {
+            queried[0] = true;
+            try {
+                resultSet.findColumn(columnName);
+                exists[0] = true;
+            } catch (SQLException ignored) {
+            }
+        }).onFail(error -> WildChestsPlugin.log("Couldn't inspect table " + tableName + ": " + error.getMessage())));
+
+        if (!queried[0])
+            throw new IllegalStateException("Couldn't inspect table " + tableName + " before migration.");
+
+        if (!exists[0] && !DBSession.addColumn(tableName, columnName, columnType))
+            throw new IllegalStateException("Couldn't add column " + columnName + " to table " + tableName + ".");
+    }
+
+    @Nullable
+    private Material getContainerMaterial(@Nullable String materialName) {
+        if (materialName == null || materialName.isEmpty())
+            return null;
+
+        Material material = Material.matchMaterial(materialName);
+        return material != null && plugin.getNMSInventory().isContainerMaterialSupported(material) ? material : null;
+    }
+
+    public void saveContainerMaterial(WChest chest) {
+        String tableName = "chests";
+        if (chest instanceof StorageChest) {
+            tableName = "storage_units";
+        } else if (chest instanceof LinkedChest) {
+            tableName = "linked_chests";
+        }
+
+        // Persist the material inferred for legacy rows so later config changes cannot alter an
+        // already placed chest's appearance.
+        DBSession.execute(new UpdateSQLDatabaseTransaction(tableName,
+                Collections.singletonList("container"), Collections.singletonList("location"))
+                .bindObject(chest.getContainerMaterial().name())
+                .bindObject(serializeLocationInternal(chest.getLocation()))
+        );
     }
 
     private void loadOldDatabase() {

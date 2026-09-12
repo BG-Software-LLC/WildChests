@@ -9,7 +9,6 @@ import com.bgsoftware.wildchests.objects.Materials;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
-import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
 import com.google.common.collect.Maps;
 import org.bukkit.Bukkit;
@@ -74,8 +73,7 @@ public final class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChestOpen(PlayerInteractEvent e) {
-        if (e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK ||
-                !ChestUtils.isChest(e.getClickedBlock().getType()))
+        if (e instanceof LinkedChestInteractEvent || e.getAction() != Action.RIGHT_CLICK_BLOCK)
             return;
 
         if (buyNewPage.containsKey(e.getPlayer().getUniqueId())) {

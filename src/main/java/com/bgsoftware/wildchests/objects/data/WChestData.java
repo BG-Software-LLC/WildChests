@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.key.KeySet;
 import com.bgsoftware.wildchests.utils.RecipeUtils;
 import com.google.common.collect.Iterators;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 
@@ -29,6 +30,7 @@ public final class WChestData implements ChestData {
     private final String chestType;
 
     private ItemStack itemStack;
+    private Material containerMaterial;
     private int defaultSize;
     private String defaultTitle;
     private boolean sellMode;
@@ -50,6 +52,7 @@ public final class WChestData implements ChestData {
     public WChestData(String name, ItemStack itemStack, ChestType chestType) {
         this.name = name;
         this.itemStack = itemStack;
+        this.containerMaterial = Material.CHEST;
         this.chestType = chestType.name();
         this.defaultSize = 9 * 3;
         this.defaultTitle = "Chest";
@@ -85,6 +88,11 @@ public final class WChestData implements ChestData {
     @Override
     public ChestType getChestType() {
         return ChestType.valueOf(chestType);
+    }
+
+    @Override
+    public Material getContainerMaterial() {
+        return containerMaterial;
     }
 
     @Override
@@ -211,6 +219,11 @@ public final class WChestData implements ChestData {
     }
 
     @Override
+    public void setContainerMaterial(Material containerMaterial) {
+        this.containerMaterial = containerMaterial;
+    }
+
+    @Override
     public void setDefaultTitle(String title) {
         this.defaultTitle = title;
     }
@@ -309,6 +322,7 @@ public final class WChestData implements ChestData {
 
     public void loadFromData(WChestData chestData) {
         this.itemStack = chestData.itemStack;
+        this.containerMaterial = chestData.containerMaterial;
         this.defaultSize = chestData.defaultSize;
         this.defaultTitle = chestData.defaultTitle;
         this.sellMode = chestData.sellMode;

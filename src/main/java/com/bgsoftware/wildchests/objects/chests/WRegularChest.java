@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import com.bgsoftware.wildchests.utils.SyncedArray;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
 
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ public class WRegularChest extends WChest implements RegularChest {
 
     protected SyncedArray<CraftWildInventory> inventories;
 
-    public WRegularChest(UUID placer, Location location, ChestData chestData) {
-        super(placer, location, chestData);
+    public WRegularChest(UUID placer, Location location, ChestData chestData, Material containerMaterial) {
+        super(placer, location, chestData, containerMaterial);
         initContainer(chestData);
     }
 

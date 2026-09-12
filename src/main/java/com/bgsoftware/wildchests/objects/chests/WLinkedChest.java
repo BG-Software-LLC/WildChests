@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.utils.LocationUtils;
 import com.bgsoftware.wildchests.utils.SyncedArray;
 import com.google.common.base.Preconditions;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -28,8 +29,8 @@ public final class WLinkedChest extends WRegularChest implements LinkedChest {
     @Nullable
     private LinkedChestsChain linkedChestsChain;
 
-    public WLinkedChest(UUID placer, Location location, ChestData chestData) {
-        super(placer, location, chestData);
+    public WLinkedChest(UUID placer, Location location, ChestData chestData, Material containerMaterial) {
+        super(placer, location, chestData, containerMaterial);
         this.linkedChestsChain = null;
     }
 

@@ -3,10 +3,15 @@ package com.bgsoftware.wildchests.nms;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public interface NMSInventory {
+
+    default boolean isContainerMaterialSupported(Material material) {
+        return material == Material.CHEST || material == Material.TRAPPED_CHEST;
+    }
 
     void updateTileEntity(Chest chest);
 

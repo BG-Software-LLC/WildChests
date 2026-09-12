@@ -6,7 +6,6 @@ import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.LinkedChest;
 import com.bgsoftware.wildchests.command.ICommand;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
-import com.bgsoftware.wildchests.utils.ChestUtils;
 import com.bgsoftware.wildchests.utils.LinkedChestInteractEvent;
 import com.bgsoftware.wildchests.utils.LocationUtils;
 import org.bukkit.Bukkit;
@@ -84,7 +83,7 @@ public final class CommandLink implements ICommand {
 
         Block targetBlock = player.getTargetBlock(TRANSPARENT_TYPES, 5);
 
-        if (targetBlock == null || !ChestUtils.isChest(targetBlock.getType())) {
+        if (targetBlock == null || plugin.getChestsManager().getChest(targetBlock.getLocation()) == null) {
             Locale.INVALID_BLOCK_CHEST.send(player);
             return;
         }

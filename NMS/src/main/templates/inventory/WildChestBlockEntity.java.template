@@ -1,16 +1,9 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
-import com.bgsoftware.common.reflection.ReflectMethod;
-import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
-import com.bgsoftware.wildchests.api.objects.data.ChestData;
-import com.bgsoftware.wildchests.nms.${NMS_VERSION}.NMSInventoryImpl;
-import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
-import com.bgsoftware.wildchests.objects.chests.WStorageChest;
 import com.bgsoftware.wildchests.objects.containers.TileEntityContainer;
-import com.bgsoftware.wildchests.utils.ChestUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -19,7 +12,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -28,41 +20,25 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import org.bukkit.Particle;
-import ${CRAFTBUKKIT_PACKAGE}.CraftParticle;
 import ${CRAFTBUKKIT_PACKAGE}.entity.CraftHumanEntity;
-import ${CRAFTBUKKIT_PACKAGE}.entity.CraftItem;
 import ${CRAFTBUKKIT_PACKAGE}.event.CraftEventFactory;
-import ${CRAFTBUKKIT_PACKAGE}.inventory.CraftItemStack;
-import ${CRAFTBUKKIT_PACKAGE}.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Item;
 
 import java.util.List;
-import java.util.Map;
 
 public class WildChestBlockEntity extends ChestBlockEntity implements
         WorldlyContainer, TileEntityContainer, BlockEntityTicker<WildChestBlockEntity> {
 
-    private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
-
-    private final ChestBlockEntity chestBlockEntity;
     private final Chest chest;
-    protected final ServerLevel serverLevel;
+    private final ServerLevel serverLevel;
     private final BlockPos blockPos;
     private final boolean isTrappedChest;
+    private final WildBaseBlockEntity base;
 
-    private short currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
     private int viewingCount = 0;
-
-    private AABB suctionItems = null;
-    private boolean autoCraftMode = false;
-    private boolean autoSellMode = false;
 
     public WildChestBlockEntity(Chest chest, ServerLevel serverLevel, BlockPos blockPos) {
         super(blockPos, serverLevel.getBlockState(blockPos));
@@ -70,44 +46,59 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
         this.serverLevel = serverLevel;
         this.blockPos = blockPos;
         this.level = serverLevel;
-        BlockState blockState = getBlockState();
-        this.chestBlockEntity = new ChestBlockEntity(blockPos, blockState);
-        isTrappedChest = blockState.getBlock() == Blocks.TRAPPED_CHEST;
+        this.isTrappedChest = getBlockState().getBlock() == Blocks.TRAPPED_CHEST;
+        this.base = new WildBaseBlockEntity(chest, serverLevel, blockPos) {
+            @Override
+            protected void startOpen(Player player) {
+                WildChestBlockEntity.this.startOpen(player);
+            }
+
+            @Override
+            protected void stopOpen(Player player) {
+                WildChestBlockEntity.this.stopOpen(player);
+            }
+        };
         ((WChest) chest).setTileEntityContainer(this);
-        updateData();
+    }
+
+    @Override
+    public boolean isOwner(Chest chest) {
+        return base.isOwner(chest);
+    }
+
+    @Override
+    public void closeContainer(HumanEntity humanEntity) {
+        base.closeContainer(humanEntity);
     }
 
     @Override
     protected NonNullList<ItemStack> getItems() {
-        return getContents();
+        return base.getItems();
     }
 
     @Override
-    public void setItem(int i, ItemStack itemStack) {
-        ((WChest) chest).setItem(i, new WildContainerItemImpl(itemStack));
+    public void setItem(int slot, ItemStack itemStack) {
+        base.setItem(slot, itemStack);
     }
 
     @Override
-    public ItemStack getItem(int i) {
-        return ((WildContainerItemImpl) ((WChest) chest).getWildItem(i)).getHandle();
+    public ItemStack getItem(int slot) {
+        return base.getItem(slot);
     }
 
     @Override
     public NonNullList<ItemStack> getContents() {
-        return TransformingNonNullList.transform(((WChest) chest).getWildContents(), ItemStack.EMPTY, WildContainerItemImpl::transform);
+        return base.getContents();
     }
 
     @Override
     public AbstractContainerMenu createMenu(int id, Inventory playerInventory) {
-        AbstractContainerMenu containerMenu = NMSInventoryImpl.createMenu(id, playerInventory,
-                (com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0));
-        startOpen(playerInventory.player);
-        return containerMenu;
+        return base.createMenu(id, playerInventory);
     }
 
     @Override
     public Component getDisplayName() {
-        return CraftChatMessage.fromStringOrNull(((com.bgsoftware.wildchests.objects.inventory.CraftWildInventory) chest.getPage(0)).getTitle());
+        return base.getDisplayName();
     }
 
     @Override
@@ -121,7 +112,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
         }
 
         CraftHumanEntity craftHumanEntity = player.getBukkitEntity();
-
         this.transaction.remove(craftHumanEntity);
 
         if (!player.isSpectator()) {
@@ -130,9 +120,8 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
 
             if (isTrappedChest) {
                 int newPower = Math.max(0, Math.min(15, this.viewingCount));
-                if (oldPower != newPower) {
+                if (oldPower != newPower)
                     CraftEventFactory.callRedstoneChange(this.serverLevel, this.blockPos, oldPower, newPower);
-                }
             }
 
             onOpen();
@@ -152,22 +141,19 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
         }
 
         CraftHumanEntity craftHumanEntity = player.getBukkitEntity();
-
         this.transaction.add(craftHumanEntity);
 
         if (!player.isSpectator()) {
-            if (this.viewingCount < 0) {
+            if (this.viewingCount < 0)
                 this.viewingCount = 0;
-            }
 
             int oldPower = Math.max(0, Math.min(15, this.viewingCount));
             this.viewingCount++;
 
             if (isTrappedChest) {
                 int newPower = Math.max(0, Math.min(15, this.viewingCount));
-                if (oldPower != newPower) {
+                if (oldPower != newPower)
                     CraftEventFactory.callRedstoneChange(this.serverLevel, this.blockPos, oldPower, newPower);
-                }
             }
 
             onOpen();
@@ -186,49 +172,12 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
 
     @Override
     public void tick(Level level, BlockPos blockPos, BlockState blockState, WildChestBlockEntity blockEntity) {
-        ChestData chestData = chest.getData();
-
-        {
-            double x = blockPos.getX() + level.getRandom().nextFloat();
-            double y = blockPos.getY() + level.getRandom().nextFloat();
-            double z = blockPos.getZ() + level.getRandom().nextFloat();
-            for (String particle : chestData.getChestParticles()) {
-                try {
-                    sendParticlesInternal(Particle.valueOf(particle), x, y, z);
-                } catch (Exception ignored) {
-                }
-            }
-        }
-
-        if (--currentCooldown >= 0)
-            return;
-
-        Block currentBlock = level.getBlockState(blockPos).getBlock();
-
-        if (((WChest) chest).isRemoved() || (currentBlock != Blocks.CHEST && currentBlock != Blocks.TRAPPED_CHEST)) {
-            level.removeBlockEntity(blockPos);
-            return;
-        }
-
-        currentCooldown = ChestUtils.DEFAULT_COOLDOWN;
-
-        if (suctionItems != null) {
-            handleSuctionItems(chestData);
-        }
-
-        if (autoCraftMode) {
-            ChestUtils.tryCraftChest(chest);
-        }
-
-        if (autoSellMode) {
-            ChestUtils.trySellChest(chest);
-        }
-
+        base.tick(level, blockPos);
     }
 
     @Override
     public int getContainerSize() {
-        return chest.getPage(0).getSize() * chest.getPagesAmount();
+        return base.getContainerSize();
     }
 
     @Override
@@ -247,45 +196,34 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
 
     @Override
     public void updateData() {
-        ChestData chestData = chest.getData();
-        suctionItems = !chestData.isAutoSuction() ? null : new AABB(
-                chestData.isAutoSuctionChunk() ? blockPos.getX() >> 4 << 4 : blockPos.getX() - chestData.getAutoSuctionRange(),
-                blockPos.getY() - chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? blockPos.getZ() >> 4 << 4 : blockPos.getZ() - chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (blockPos.getX() >> 4 << 4) + 16 : blockPos.getX() + chestData.getAutoSuctionRange() + 1,
-                blockPos.getY() + chestData.getAutoSuctionRange(),
-                chestData.isAutoSuctionChunk() ? (blockPos.getZ() >> 4 << 4) + 16 : blockPos.getZ() + chestData.getAutoSuctionRange() + 1
-        );
-        autoCraftMode = chestData.isAutoCrafter();
-        autoSellMode = chestData.isSellMode();
+        base.updateData();
     }
 
     @Override
     public int[] getSlotsForFace(Direction direction) {
-        return chest.getSlotsForFace();
+        return base.getSlotsForFace(direction);
     }
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
-        return chest.canPlaceItemThroughFace(CraftItemStack.asCraftMirror(itemStack));
+        return base.canPlaceItemThroughFace(slot, itemStack, direction);
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
-        return chest.canTakeItemThroughFace(slot, CraftItemStack.asCraftMirror(itemStack));
+        return base.canTakeItemThroughFace(slot, itemStack, direction);
     }
 
     @Override
     public ItemStack removeItem(int slot, int amount) {
         return slot != -2 || !(chest instanceof StorageChest) ? super.removeItem(slot, amount) :
-                ((WildContainerItemImpl) ((WStorageChest) chest).splitItem(amount)).getHandle();
+                base.removeStorageItem(amount);
     }
 
     @Override
     public void setChanged() {
         super.setChanged();
-        if (chest instanceof StorageChest)
-            ((StorageChest) chest).update();
+        base.updateStorageChest();
     }
 
     private void playOpenSound(SoundEvent soundEvent) {
@@ -295,56 +233,11 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
     private void onOpen() {
         Block block = getBlockState().getBlock();
         if (block instanceof ChestBlock) {
-            if (!this.openersCounter.opened) {
+            if (!this.openersCounter.opened)
                 this.serverLevel.blockEvent(this.blockPos, block, 1, this.viewingCount);
-            }
 
             this.serverLevel.updateNeighborsAt(this.blockPos, block);
         }
-    }
-
-    private void handleSuctionItems(ChestData chestData) {
-        List<ItemEntity> nearbyItems = level.getEntitiesOfClass(ItemEntity.class, suctionItems,
-                entityItem -> ChestUtils.SUCTION_PREDICATE.test((CraftItem) entityItem.getBukkitEntity(), chestData));
-
-        if (nearbyItems.isEmpty())
-            return;
-
-        for (ItemEntity itemEntity : nearbyItems) {
-            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem()).clone();
-
-            Item item = (Item) itemEntity.getBukkitEntity();
-
-            int actualItemCount = plugin.getProviders().getItemAmount(item);
-
-            List<org.bukkit.inventory.ItemStack> suctionItems = ChestUtils.fixItemStackAmount(itemStack, actualItemCount);
-
-            Map<Integer, org.bukkit.inventory.ItemStack> leftOvers = chest.addItems(
-                    suctionItems.toArray(new org.bukkit.inventory.ItemStack[0]));
-
-            // We check that if there was any item that was added.
-            // If not, we can just do nothing.
-            if (leftOvers.size() != suctionItems.size() ||
-                    (leftOvers.size() == 1 && leftOvers.get(0).getAmount() != actualItemCount)) {
-                if (leftOvers.isEmpty()) {
-                    handleItemSuctionRemoval(itemEntity);
-                } else {
-                    int newStackAmount = 0;
-                    for (org.bukkit.inventory.ItemStack leftOverItem : leftOvers.values())
-                        newStackAmount += leftOverItem.getAmount();
-                    plugin.getProviders().setItemAmount(item, newStackAmount);
-                }
-            }
-        }
-    }
-
-    private void handleItemSuctionRemoval(ItemEntity itemEntity) {
-        sendParticlesInternal(Particle.CLOUD, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ());
-        itemEntity.discard();
-    }
-
-    private void sendParticlesInternal(Particle particle, double x, double y, double z) {
-        this.serverLevel.getWorld().spawnParticle(particle, x, y, z, 0, 0D, 0D, 0D, 1.0, null, false);
     }
 
 }
