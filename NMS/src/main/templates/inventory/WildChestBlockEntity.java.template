@@ -1,11 +1,12 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
-import com.bgsoftware.common.reflection.ReflectMethod;
 import com.bgsoftware.wildchests.WildChestsPlugin;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildchests.api.objects.chests.StorageChest;
 import com.bgsoftware.wildchests.api.objects.data.ChestData;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.NMSInventoryImpl;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainerItemImpl;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.NMSUtils;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.TransformingNonNullList;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.chests.WStorageChest;
@@ -28,17 +29,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import org.bukkit.Particle;
-import ${CRAFTBUKKIT_PACKAGE}.CraftParticle;
 import ${CRAFTBUKKIT_PACKAGE}.entity.CraftHumanEntity;
 import ${CRAFTBUKKIT_PACKAGE}.entity.CraftItem;
 import ${CRAFTBUKKIT_PACKAGE}.event.CraftEventFactory;
-import ${CRAFTBUKKIT_PACKAGE}.inventory.CraftItemStack;
 import ${CRAFTBUKKIT_PACKAGE}.util.CraftChatMessage;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
@@ -51,7 +49,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
 
     private static final WildChestsPlugin plugin = WildChestsPlugin.getPlugin();
 
-    private final ChestBlockEntity chestBlockEntity;
     private final Chest chest;
     protected final ServerLevel serverLevel;
     private final BlockPos blockPos;
@@ -71,7 +68,6 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
         this.blockPos = blockPos;
         this.level = serverLevel;
         BlockState blockState = getBlockState();
-        this.chestBlockEntity = new ChestBlockEntity(blockPos, blockState);
         isTrappedChest = blockState.getBlock() == Blocks.TRAPPED_CHEST;
         ((WChest) chest).setTileEntityContainer(this);
         updateData();
@@ -267,12 +263,12 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
 
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
-        return chest.canPlaceItemThroughFace(CraftItemStack.asCraftMirror(itemStack));
+        return chest.canPlaceItemThroughFace(NMSUtils.asMirror(itemStack));
     }
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack itemStack, Direction direction) {
-        return chest.canTakeItemThroughFace(slot, CraftItemStack.asCraftMirror(itemStack));
+        return chest.canTakeItemThroughFace(slot, NMSUtils.asMirror(itemStack));
     }
 
     @Override
@@ -311,7 +307,7 @@ public class WildChestBlockEntity extends ChestBlockEntity implements
             return;
 
         for (ItemEntity itemEntity : nearbyItems) {
-            org.bukkit.inventory.ItemStack itemStack = CraftItemStack.asCraftMirror(itemEntity.getItem()).clone();
+            org.bukkit.inventory.ItemStack itemStack = NMSUtils.asMirror(itemEntity.getItem()).clone();
 
             Item item = (Item) itemEntity.getBukkitEntity();
 

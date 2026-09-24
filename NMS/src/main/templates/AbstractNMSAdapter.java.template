@@ -2,6 +2,7 @@ package com.bgsoftware.wildchests.nms.${NMS_VERSION};
 
 import com.bgsoftware.wildchests.api.objects.ChestType;
 import com.bgsoftware.wildchests.nms.NMSAdapter;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.NMSUtils;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.NbtUtils;
 import com.bgsoftware.wildchests.objects.inventory.InventoryHolder;
 import com.mojang.serialization.Dynamic;
@@ -126,8 +127,9 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
         }
 
         ItemStack itemStack = tryDeserializeNoDataVersionItem(new DataInputStream(new ByteArrayInputStream(buff)));
-        if (itemStack != null)
-            return CraftItemStack.asCraftMirror(itemStack);
+        if (itemStack != null) {
+            return NMSUtils.asMirror(itemStack);
+        }
 
         return deserializeItemFromBytes(buff);
     }
@@ -165,14 +167,14 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
     public org.bukkit.inventory.ItemStack setChestType(org.bukkit.inventory.ItemStack bukkitItem, ChestType chestType) {
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
         setItemTag(itemStack, "chest-type", chestType.name());
-        return CraftItemStack.asCraftMirror(itemStack);
+        return NMSUtils.asMirror(itemStack);
     }
 
     @Override
     public org.bukkit.inventory.ItemStack setChestName(org.bukkit.inventory.ItemStack bukkitItem, String chestName) {
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
         setItemTag(itemStack, "chest-name", chestName);
-        return CraftItemStack.asCraftMirror(itemStack);
+        return NMSUtils.asMirror(itemStack);
     }
 
     @Override
@@ -187,8 +189,10 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
     public void dropItemAsPlayer(HumanEntity humanEntity, org.bukkit.inventory.ItemStack bukkitItem) {
         Player player = ((CraftHumanEntity) humanEntity).getHandle();
         ItemStack itemStack = CraftItemStack.asNMSCopy(bukkitItem);
-        player.drop(itemStack, false);
+        dropItemAsPlayer(player, itemStack);
     }
+
+    protected abstract void dropItemAsPlayer(Player player, ItemStack itemStack);
 
     protected abstract void setItemTag(ItemStack itemStack, String key, String value);
 
@@ -235,7 +239,7 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
 
         ItemStack itemStack = parseItemStack(compoundTag);
 
-        return CraftItemStack.asCraftMirror(itemStack);
+        return NMSUtils.asMirror(itemStack);
     }
 
     private void serializeInventory(Inventory inventory, CompoundTag compoundTag) {
@@ -297,7 +301,7 @@ public abstract class AbstractNMSAdapter implements NMSAdapter {
 
     private org.bukkit.inventory.ItemStack deserializeItemFromCompoundTagNoVersion(CompoundTag tag) {
         ItemStack itemStack = parseItemStack(tag);
-        return CraftItemStack.asCraftMirror(itemStack);
+        return NMSUtils.asMirror(itemStack);
     }
 
 }

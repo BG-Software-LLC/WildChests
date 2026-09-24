@@ -1,6 +1,8 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainer;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainerItemImpl;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import com.bgsoftware.wildchests.objects.inventory.WildContainerItem;
 import net.minecraft.world.Container;

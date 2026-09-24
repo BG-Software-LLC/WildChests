@@ -5,6 +5,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
@@ -42,6 +43,11 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_21_3.Abstra
         }
 
         return null;
+    }
+
+    @Override
+    protected void dropItemAsPlayer(Player player, ItemStack itemStack) {
+        player.drop(itemStack, false);
     }
 
     @Override

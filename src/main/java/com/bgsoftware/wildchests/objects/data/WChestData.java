@@ -236,9 +236,18 @@ public final class WChestData implements ChestData {
         KeySet recipesSet = new KeySet(recipes);
 
         while (bukkitRecipes.hasNext()) {
-            Recipe recipe = bukkitRecipes.next();
-            if (recipesSet.contains(recipe.getResult()))
+            Recipe recipe;
+
+            // Spigot throws AbstractMethodError for brewing recipes when iterating Bukkit recipes.
+            try {
+                recipe = bukkitRecipes.next();
+            } catch (AbstractMethodError ignored) {
+                continue;
+            }
+
+            if (recipesSet.contains(recipe.getResult())) {
                 this.recipes.put(recipe, RecipeUtils.getIngredients(recipe));
+            }
         }
     }
 

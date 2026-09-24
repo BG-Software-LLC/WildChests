@@ -1,6 +1,8 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
 import com.bgsoftware.wildchests.listeners.InventoryListener;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.BaseNMSMenu;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;

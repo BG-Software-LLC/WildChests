@@ -10,6 +10,7 @@ import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildChestMenu;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainer;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainerItemImpl;
 import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildHopperMenu;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.utils.NMSUtils;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.objects.inventory.CraftWildInventory;
 import net.minecraft.core.BlockPos;
@@ -85,7 +86,7 @@ public abstract class AbstractNMSInventory implements NMSInventory {
         WildContainer wildContainer = new WildContainer(size, title, chest, index);
 
         if (chest instanceof StorageChest)
-            wildContainer.setItemFunction = (slot, itemStack) -> chest.setItem(slot, CraftItemStack.asCraftMirror(itemStack));
+            wildContainer.setItemFunction = (slot, itemStack) -> chest.setItem(slot, NMSUtils.asMirror(itemStack));
 
         return new CraftWildInventoryImpl(wildContainer);
     }
