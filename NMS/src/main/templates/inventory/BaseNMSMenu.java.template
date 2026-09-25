@@ -1,5 +1,8 @@
 package com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory;
 
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.CraftWildInventoryImpl;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildChestBlockEntity;
+import com.bgsoftware.wildchests.nms.${NMS_VERSION}.inventory.WildContainer;
 import com.bgsoftware.wildchests.objects.chests.WChest;
 import com.bgsoftware.wildchests.scheduler.Scheduler;
 import net.minecraft.world.entity.player.Inventory;

@@ -3,6 +3,7 @@ package com.bgsoftware.wildchests.nms.v1_18;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_18.AbstractNMSAdapter {
@@ -32,6 +33,11 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_18.Abstract
         CompoundTag compoundTag = itemStack.getTag();
         return compoundTag == null || !compoundTag.contains("chest-name") ? null :
                 compoundTag.getString("chest-name");
+    }
+
+    @Override
+    protected void dropItemAsPlayer(Player player, ItemStack itemStack) {
+        player.drop(itemStack, false);
     }
 
     @Override

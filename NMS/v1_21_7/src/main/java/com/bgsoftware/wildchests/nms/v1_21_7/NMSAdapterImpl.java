@@ -9,6 +9,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
@@ -49,6 +50,11 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v1_21_7.Abstra
         }
 
         return null;
+    }
+
+    @Override
+    protected void dropItemAsPlayer(Player player, ItemStack itemStack) {
+        player.drop(itemStack, false);
     }
 
     @Override

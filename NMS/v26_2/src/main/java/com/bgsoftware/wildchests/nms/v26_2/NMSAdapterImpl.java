@@ -1,6 +1,7 @@
 package com.bgsoftware.wildchests.nms.v26_2;
 
 import com.bgsoftware.common.reflection.ReflectField;
+import com.bgsoftware.common.reflection.ReflectMethod;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicOps;
 import net.minecraft.SharedConstants;
@@ -10,6 +11,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import org.slf4j.Logger;
@@ -18,8 +20,9 @@ import java.lang.reflect.Modifier;
 
 public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v26_2.AbstractNMSAdapter {
 
-    private static final ReflectField<CompoundTag> CUSTOM_DATA_TAG = new ReflectField<>(CustomData.class,
-            CompoundTag.class, Modifier.PRIVATE | Modifier.FINAL, 1);
+    private static final boolean SUPPORT_CUSTOM_DATA_UNSAFE = new ReflectMethod<>(CustomData.class, "getUnsafe").isValid();
+    private static final ReflectField<CompoundTag> CUSTOM_DATA_TAG = SUPPORT_CUSTOM_DATA_UNSAFE ? null :
+            new ReflectField<>(CustomData.class, CompoundTag.class, Modifier.PRIVATE | Modifier.FINAL, 1);
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -58,6 +61,11 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v26_2.Abstract
     }
 
     @Override
+    protected void dropItemAsPlayer(Player player, ItemStack itemStack) {
+        player.drop(itemStack, false);
+    }
+
+    @Override
     protected void setItemTag(ItemStack itemStack, String key, String value) {
         CustomData customData = itemStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         customData = customData.update(compoundTag -> compoundTag.putString(key, value));
@@ -81,11 +89,7 @@ public class NMSAdapterImpl extends com.bgsoftware.wildchests.nms.v26_2.Abstract
     }
 
     private static CompoundTag getCustomDataTag(CustomData customData) {
-        try {
-            return customData.getUnsafe();
-        } catch (Throwable error) {
-            return CUSTOM_DATA_TAG.get(customData);
-        }
+        return SUPPORT_CUSTOM_DATA_UNSAFE ? customData.getUnsafe() : CUSTOM_DATA_TAG.get(customData);
     }
 
 }
